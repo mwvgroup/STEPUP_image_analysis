@@ -17,7 +17,7 @@ OUTPUTS:
 (flats) - 3D numpy array of all flat images stored in dirstar
 
 RESTRICTIONS:
-dirstar must be a string.
+Must accept one parameter, dirstar, which must be a string.
 '''
 
 from astropy.io import fits
@@ -25,7 +25,7 @@ import numpy as np
 import os
 import glob
 
-def get_flats():
+def get_flats(dirstar):
     files = glob.glob(os.path.joing(dircalib, '*.fit'))
     flats = []
     for file in files:

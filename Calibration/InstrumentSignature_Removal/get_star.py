@@ -17,7 +17,7 @@ OUTPUTS:
 (star) - 3D numpy array of all target images located in dirstar
 
 RESTRICTIONS:
-dirstar must be a string.
+Must accept on parameter, dirstar, which must be a string.
 '''
 
 from astropy.io import fits
@@ -25,7 +25,7 @@ import numpy as np
 import os
 import glob
 
-def get_star():
+def get_star(dirstar):
     files = glob.glob(os.path.join(dirstar, '*.fit'))
     star = []
     for file in files:

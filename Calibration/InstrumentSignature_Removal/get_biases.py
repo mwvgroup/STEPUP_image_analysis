@@ -17,7 +17,7 @@ OUTPUTS:
 (biases) - 3D numpy array of all bias images within dirstar
 
 RESTRICTIONS:
-dirstar must be a string.
+Must accept one parameter, dirstar, which must be a string.
 '''
 
 from astropy.io import fits
@@ -25,7 +25,7 @@ import numpy as np
 import os
 import glob
 
-def get_biases():
+def get_biases(dirstar):
     files = glob.glob(os.path.join(dirstar, '*.fit'))
     biases = []
     for file in files:

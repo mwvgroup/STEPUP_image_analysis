@@ -17,14 +17,14 @@ OUTPUTS:
 (darks) - 3D numpy array of all dark images located within dirdark
 
 RESTRICTIONS:
-dirdark must be a string.
+Must accept one parameter, dirdark, which must be a string.
 '''
 from astropy.io import fits
 import numpy as np
 import os
 import glob
 
-def get_darks():
+def get_darks()dirdark):
     files = glob.glob(os.path.join(dirdark, '*.fit'))
     darks = []
     for file in files:
