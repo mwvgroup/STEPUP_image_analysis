@@ -1,20 +1,39 @@
 import numpy as np
 from astropy.io import fits
 
-def add_saturation():
-    mbias = create_mbias()
-    mflat = create_mflat()
-    mdark = create_mdark()
-    darks = get_darks()
-    star = get_star()
-    hdulist = fits.open(darks)
-    exptime = hdulist.header['EXPTIME']
+def add_saturation(mbias, mdark, mflat, dark_exptime):
+    """Adds all saturations of reduced images to their headers.
+
+    Calls calibstar to get reduced array of target images. It then subtracts
+    the median of the master bias and time-corrected master dark, and divides
+    by the median of the master flat. This sequence *=0.97 yields the final
+    saturation of each image. It then opens the primary HDR of each image
+    and adds the saturation.
+
+    Parameters
+    ----------
+    mbias : numpy array
+        2D array containing master bias image.
+    mdark : numpy array
+        2D array containing master dark image.
+    mflat : numpy array
+        2D array containing master flat image.
+    dark_exptime : float
+        Module variable that is the exposure time of the dark images.
+
+    Returns
+    -------
+    None
+    """
+    calibstar = calibstar(mbias, mflat, mdark, dark_exptime)
 
     saturation = 65535
     saturation -= np.median(mbias)
-    saturation -= exptime*np.median(mdark)
+    saturation -= dark_exptime*np.median(mdark)
     saturation /= np.median(mflat)
     saturation *= 0.97
-
-    prihdr = hdulist[0].header
-    prihdr['SATLEVEL'] = saturation
+    
+    for file in calibstar:
+        hdulist = fits.open(file)
+        prihdr = hdulist[0].header
+        prihdr['SATLEVEL'] = saturation
