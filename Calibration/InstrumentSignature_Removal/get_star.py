@@ -4,26 +4,25 @@ import os
 import glob
 
 def get_star(dirstar):
-    '''NAME: get_star
+    """Retrieves all raw target images from dirstar.
 
-    PURPOSE:
-    Get all target images from dirstar.
+    Extended Summary
+    ----------------
+    Searches in primary HDU headers of all files in dirstar for files with
+    keyword "IMAGETYP" that point to "Light Frame". It then puts all target
+    images found into an array which is returned to the caller.
 
-    EXPLANATION:
-    Searches in the primary HDU headers of all files in dirstar for files with
-    keyword "IMAGETYP" to point to "Light Frame". It then puts these FITS files
-    into a 3D numpy array and returns it to the caller.
+    Parameters
+    ----------
+    dirstar : str
+        Module variable that is the directory in which all flat, bias, and
+        target images are located. /home/depot/STEPUP/raw/<date>
 
-    INPUTS:
-    (dirstar) - module variable, directory in which all flat, bias, and
-    target images are located: /home/depot/STEPUP/raw/<date>
-
-    OUTPUTS:
-    (star) - 3D numpy array of all target images located in dirstar
-
-    RESTRICTIONS:
-    Must accept on parameter, dirstar, which must be a string.
-    '''
+    Returns
+    -------
+    star : numpy array
+        3D array of all raw target images stored in dirstar
+    """
     
     files = glob.glob(os.path.join(dirstar, '*.fit'))
     star = []

@@ -4,25 +4,24 @@ import os
 import glob
 
 def get_darks(dirdark):
-    '''NAME: get_darks
+    '''Retrieves all dark images from dirdark.
 
-    PURPOSE:
-    Retrieve all dark images from dirdark.
-
-    EXPLANATION:
+    Extended Summary
+    ----------------
     Searches in primary HDU headers of all files in dirdark for files with
-    keyword "IMAGETYP" to point to "Dark Frame". It then puts all of these 
-    FITS files into a 3D nump array and returns it to the caller.
+    keyword "IMAGETYP" that point to "Dark Frame". It then puts all darks
+    found into an array which is returned to the caller.
 
-    INPUTS:
-    (dirdark) - module variable, directory in which all darks are stored:
-    /home/depot/STEPUP/raw/caliration/Dark/default
+    Parameters
+    ----------
+    dirdark : str
+        Module variable that is the directory in which all darks are
+        stored. /home/depot/STEPUP/raw/caliration/Dark/default
 
-    OUTPUTS:
-    (darks) - 3D numpy array of all dark images located within dirdark
-
-    RESTRICTIONS:
-    Must accept one parameter, dirdark, which must be a string.
+    Returns
+    -------
+    darks : numpy array
+        3D numpy array of all dark images located within dirdark
     '''
     
     files = glob.glob(os.path.join(dirdark, '*.fit'))

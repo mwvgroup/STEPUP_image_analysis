@@ -1,29 +1,25 @@
 import numpy as np
 
 def create_mdark(mbias):
-    '''
-    NAME: create_mdark
+    """Creates array of master dark images.
 
-    PURPOSE:
-    Create master dark array that will be used to subtract imperfections from 
-    raw target image data.
+    Extended Summary
+    ----------------
+    Calls get_darks to retrieve all dark images and takes the median
+    along the 3rd axis. Then subtracts the master bias image. This creates
+    the master dark image that will later be used to reduce the raw
+    target images.
 
-    EXPLANATION:
-    Calls get_darks in order to begin sequence. Then takes the
-    median of the dark images along the 3rd axis and subtracts the master bias
-    to remove those imperfections.
+    Parameters
+    ----------
+    mbias : numpy array
+        2D array containing master bias image.
 
-    INPUTS:
-    (mbias) - this is the module variable equal to the result of calling
-    create_mbias in the main function.
-
-    OUTPUTS:
-    (mdark) - 2D numpy array containing the master dark array that will be
-    subtracted from the raw target dataset.
-
-    RESTRICTIONS:
-    Function must accept one parameter, mbias, which is a 2D numpy array.
-    '''
+    Returns
+    -------
+    mdark : numpy array
+        2D array containing master dark image.
+    """
     
     darks = get_darks()
     mdark = np.median(darks, 2) - mbias

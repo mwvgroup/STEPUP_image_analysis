@@ -4,26 +4,26 @@ import os
 import glob
 
 def get_flats(dirstar):
-    '''NAME: get_flats
-    
-    PURPOSE:
-    Get all flat files from dirstar to use for image reduction.
+    """Retrieves all flat files from dirstar.
 
-    EXPLANATION:
-    Searches in the primary HDU headers of all files in dirstar to find ones 
-    with keyword "IMAGETYP" to point to "Flat Frame". It then puts these FITS 
-    files into a 3D numpy array and returns it to the caller.
+    Extended Summary
+    ----------------
+    Searches in primary HDU headers of all files in dirstar for files with
+    keyword "IMAGETYP" that point to "Flat Frame". It then puts all flats
+    found into an array which is returned to the caller.
 
-    INPUTS:
-    (dirstar) - module variable which is the directory that 
-    image, flat, and bias files are stored in: /home/depot/STEPUP/raw/<date>
+    Parameters
+    ----------
+    dirstar : str
+        Module variable that is the directory in which all flat, bias, and
+        target images are located. /home/depot/STEPUP/raw/<date>
 
-    OUTPUTS:
-    (flats) - 3D numpy array of all flat images stored in dirstar
+    Returns
+    -------
+    flats : numpy array
+        3D array of all flat images stored in dirstar
 
-    RESTRICTIONS:
-    Must accept one parameter, dirstar, which must be a string.
-    '''
+    """
     
     files = glob.glob(os.path.joing(dircalib, '*.fit'))
     flats = []

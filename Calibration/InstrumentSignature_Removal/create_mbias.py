@@ -1,25 +1,23 @@
 import numpy as np
 
 def create_mbias():
-    '''
-    NAME: create_mbias
+    """Creates master bias array.
 
-    PURPOSE:
-    Create master bias array that will be used to subtract imperfections from 
-    raw target image data.
+    Extended Summary
+    ----------------
+    Calls get_biases to retrieve all bias iamges and takes the median
+    along the 3rd axis. This creates the master bias image that will
+    later be used to reduce the raw target images.
 
-    EXPLANATION:
-    Calls get_biases to get the array of all bias images. It then takes the 
-    median of this array along the third axis and returns the array to the 
-    caller.
+    Parameters
+    ----------
+    None
 
-    INPUTS:
-    none
-
-    OUTPUTS:
-    (mbias) - 2D array of master bias image that will be subtracted from each 
-    image in the raw target dataset.
-    '''
+    Returns
+    -------
+    mbias : numpy array
+        2D array containing master bias image.
+    """
     
     biases = get_biases()
     mbias = np.median(biases, 2)

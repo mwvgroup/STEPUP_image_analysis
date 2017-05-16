@@ -1,34 +1,29 @@
 import numpy as np
 
 def create_mflat(mbias, mdark):
-    '''NAME: create_mflat
+    """Creates master flat array.
 
-    PURPOSE:
-    Create master flat array that will be subtracted from each image in raw 
-    target dataset to remove imperfections.
+    Extended Summary
+    ----------------
+    Calls get_flats to retrieve all flat images and takes the median along
+    the third axis. Then subtracts master bias and master dark images. Then
+    divides by the median of the flat array. This creates the master flat
+    image that will later be used to reduce the raw target images.
 
-    EXPLANATION:
-    Calls get_flats and removes imperfections by subtracting mdark and mbias. 
-    Also takes the median and mean along 3rd axis. Returns array, mflat, to 
-    user.
+    Parameters
+    ----------
+    mbias : numpy array
+        2D array containing master bias image.
+    mdark : numpy array
+        2D array containing master dark image.
 
-    INPUTS:
-    (mbias) - this is the module variable equal to the result of calling
-    create_mbias in the main function.
-    (mdark) - this is the module variable equal to the result of calling
-    create_mdark in the main function.
-
-    OUTPUTS:
-    (mflat) - a 2D numpy array containing the master flat image which will be
-    subtracted from each image in the raw target dataset.
-
-    RESTRICTIONS:
-    Function must accept two parameters; mdark and mbias, which are 2D numpy 
-    arrays.
-    '''
+    Returns
+    -------
+    mflat : numpy array
+        2D array containing master flat image.
+    """
     
     flats = get_flats()
     mflat = ((np.median(flats, 2) - mdark - mbias)/np.mean(flats, 2))
     return mflat
 
-help(create_mflat)

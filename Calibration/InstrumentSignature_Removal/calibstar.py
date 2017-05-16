@@ -1,46 +1,37 @@
 from astropy.io import fits
 import numpy as np
 
-def calibstar(mbias, mflat, mdark):
-    '''
-    NAME: reduction
+def calibstar(mbias, mflat, mdark, dark_exptime):
+    """Creates reduced array of target images.
 
-    PURPOSE:
-    Remove all instrument-signatures that may appear on raw array of target 
-    images.
+    Extended Summary
+    ----------------
+    Calls get_star to retrieve all raw target images and subtracts the time-
+    corrected master dark, the masterbias, and divides by the master flat.
+    This removes the instrument signatures from the raw dataset.
 
-    EXPLANATION:
-    Calls get_darks and get_star to get all needed arrays. Also gets EXPTIME 
-    for dark images in order to time correct the master dark array. Then loops
-    through array of target images and subtracts the imperfections
-    (instrument-singatures) from the images by subtracting the
-    mdarks, mbias, and mflat from each image and appends it to a new
-    array, calibstar. It then returns this 3D numpy array to the caller.
+    Parameters
+    ----------
+    mbias : numpy array
+        2D array containing master bias image.
+    mdark : numpy array
+        2D array containing master dark image.
+    mflat : numpy array
+        2D array containing master flat image.
+    dark_exptime : float
+        Module variable that is the exposure time of the dark images.
 
-    INPUTS:
-    (mbias) - this is the module variable equal to the result of calling
-    create_mbias in the main function.
-    (mdark) - this is the module variable equal to the result of calling
-    create_mdark in the main function.
-    (mflat) - this is the module variable equal to the result of calling
-    create_mflat in the main function.
-
-    OUTPUTS:
-    (calibstar) - 3D numpy array of all reduced target images.
-
-    RESTRICTIONS:
-    Function must accept three parameters; mbias, mflat, and mdark, which are
-    2D numpy arrays.
-    '''
+    Returns
+    -------
+    calibstar - numpy array
+        3D array containing reduced array of target images.
+    """
     
     star = get_star()
-    darks = get_darks
-    hdulist = fits.open(darks)
-    exptime = hdulist.header['EXPTIME']
     calibstar = []
 
     for image in star:
-        image -= exptime*mdark
+        image -= dark_exptime*mdark
         image -= mbias
         image /= mflat
         calibstar.append(image)
