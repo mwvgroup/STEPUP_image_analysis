@@ -23,8 +23,10 @@ def add_saturation(mbias, mdark, mflat, dark_exptime):
 
     Returns
     -------
-    None
+    calibstar : numpy array
+        3D array of reduced target images with saturation levels in headers.
     """
+    
     calibstar = calibstar(mbias, mflat, mdark, dark_exptime)
 
     saturation = 65535
@@ -37,3 +39,5 @@ def add_saturation(mbias, mdark, mflat, dark_exptime):
         hdulist = fits.open(file)
         prihdr = hdulist[0].header
         prihdr['SATLEVEL'] = saturation
+
+    return calibstar
