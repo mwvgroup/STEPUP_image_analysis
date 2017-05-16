@@ -39,7 +39,7 @@ Returns: 3D numpy array of instrument-signature-removed images.
   # Saturation/Astrometry:
 Overview - includes: calibration
     
-      # calibration
+      # calibration:
 Subtracts the medians of all master calibration images from the initial saturation level. Then, for each image in calibstar, opens up primary HDU and adds new 'SATLEVEL' to header. 
 
 Parameters: mbias, mdark, mflat, and dark_exptime. 
