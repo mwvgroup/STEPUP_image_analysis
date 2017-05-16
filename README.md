@@ -4,7 +4,7 @@
     dirstar = str, /home/depot/STEPUP/raw/<date>, retrieved from user input
     dirdark = sty, /home/depot/STEPUP/raw/calibration/Dark/default, retrieved from user input
     target = str, <starname>, retrieved from user input
-    date = str, <MM/DD/YYYY>, retrieved from user input
+    date = str, <MM/DD/YYYY>, retrieved from program
     dark_exptime = float, exposure time for darks, retrieved by calling get_darks and looking in FITS header
     mbias = numpy array, 2D array containing master flat image, retrieved by calling create_mbias
     mdark = numpy array, 2D array containing master dark image, retrieved by calling create_mdark
