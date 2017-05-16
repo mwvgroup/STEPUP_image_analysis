@@ -17,6 +17,6 @@ def create_mbias():
         2D array containing master bias image.
     """
     
-    biases = get_biases()
+    biases = get_biases(dirstar)
     mbias = np.median(biases, 2)
     return mbias

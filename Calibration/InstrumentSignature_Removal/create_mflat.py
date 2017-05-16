@@ -21,7 +21,7 @@ def create_mflat(mbias, mdark):
         2D array containing master flat image.
     """
     
-    flats = get_flats()
+    flats = get_flats(dirstar)
     mflat = ((np.median(flats, 2) - mdark - mbias)/np.mean(flats, 2))
     return mflat
 

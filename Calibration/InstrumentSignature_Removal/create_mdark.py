@@ -19,7 +19,7 @@ def create_mdark(mbias):
         2D array containing master dark image.
     """
     
-    darks = get_darks()
+    darks = get_darks(dirdark)
     mdark = np.median(darks, 2) - mbias
     return mdark
     

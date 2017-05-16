@@ -1,7 +1,7 @@
 from astropy.io import fits
 import numpy as np
 
-def calibstar(mbias, mflat, mdark, dark_exptime):
+def calibstar(mbias, mdark, mflat, dark_exptime):
     """Creates reduced array of target images.
 
     Calls get_star to retrieve all raw target images and subtracts the time-
@@ -25,7 +25,7 @@ def calibstar(mbias, mflat, mdark, dark_exptime):
         3D array containing reduced array of target images.
     """
     
-    star = get_star()
+    star = get_star(dirstar)
     calibstar = []
 
     for image in star:
