@@ -6,8 +6,6 @@ import glob
 def get_star(dirstar):
     """Retrieves all raw target images from dirstar.
 
-    Extended Summary
-    ----------------
     Searches in primary HDU headers of all files in dirstar for files with
     keyword "IMAGETYP" that point to "Light Frame". It then puts all target
     images found into an array which is returned to the caller.

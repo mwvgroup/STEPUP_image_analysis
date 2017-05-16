@@ -6,8 +6,6 @@ import glob
 def get_biases(dirstar):
     """Retrieves all bias images from dirstar.
 
-    Extended Summary
-    ----------------
     Searches in primary HDU headers of all files in dirstar for files with
     keyword "IMAGETYP" that point to "Bias Frame". It then puts all biases
     found into an array which is returned to the caller.

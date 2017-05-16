@@ -4,8 +4,6 @@ import numpy as np
 def calibstar(mbias, mflat, mdark, dark_exptime):
     """Creates reduced array of target images.
 
-    Extended Summary
-    ----------------
     Calls get_star to retrieve all raw target images and subtracts the time-
     corrected master dark, the masterbias, and divides by the master flat.
     This removes the instrument signatures from the raw dataset.

@@ -4,10 +4,8 @@ import os
 import glob
 
 def get_darks(dirdark):
-    '''Retrieves all dark images from dirdark.
+    """Retrieves all dark images from dirdark.
 
-    Extended Summary
-    ----------------
     Searches in primary HDU headers of all files in dirdark for files with
     keyword "IMAGETYP" that point to "Dark Frame". It then puts all darks
     found into an array which is returned to the caller.
@@ -22,7 +20,7 @@ def get_darks(dirdark):
     -------
     darks : numpy array
         3D numpy array of all dark images located within dirdark
-    '''
+    """
     
     files = glob.glob(os.path.join(dirdark, '*.fit'))
     darks = []

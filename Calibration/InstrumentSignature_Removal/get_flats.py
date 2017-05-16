@@ -6,8 +6,6 @@ import glob
 def get_flats(dirstar):
     """Retrieves all flat files from dirstar.
 
-    Extended Summary
-    ----------------
     Searches in primary HDU headers of all files in dirstar for files with
     keyword "IMAGETYP" that point to "Flat Frame". It then puts all flats
     found into an array which is returned to the caller.

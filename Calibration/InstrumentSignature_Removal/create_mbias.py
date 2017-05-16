@@ -3,8 +3,6 @@ import numpy as np
 def create_mbias():
     """Creates master bias array.
 
-    Extended Summary
-    ----------------
     Calls get_biases to retrieve all bias iamges and takes the median
     along the 3rd axis. This creates the master bias image that will
     later be used to reduce the raw target images.

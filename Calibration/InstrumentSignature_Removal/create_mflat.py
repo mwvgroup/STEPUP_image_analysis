@@ -3,8 +3,6 @@ import numpy as np
 def create_mflat(mbias, mdark):
     """Creates master flat array.
 
-    Extended Summary
-    ----------------
     Calls get_flats to retrieve all flat images and takes the median along
     the third axis. Then subtracts master bias and master dark images. Then
     divides by the median of the flat array. This creates the master flat
