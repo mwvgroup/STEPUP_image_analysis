@@ -15,21 +15,21 @@
   # Instrument-Signature Removal:
 Overview - includes: get_star, get_flat, get_bias, get_dark functions, create_mbias, create_mflat, create_mdark, and reduction.
 
-  # get_star, get_flat, get_bias get_dark:
+      # get_star, get_flat, get_bias get_dark:
 Each function loops through all files in dirstar (except get_dark, which uses files in dirdark) by opening up FITS header and looking at the keyword 'IMAGETYP'. 
 
 Paramaters: dirstar or dirdark 
 
 Returns: 3D numpy array of flat, bias, dark, or target images. 
 
-  # create_mbias, create_mdark, create_mflat:
+      # create_mbias, create_mdark, create_mflat:
 Each function calls the get_<calibration_image> of their respective type and assigns the 3D numpy array to a variable flats, biases, or darks. Performs necessary calculations (this includes taking the median along the 3rd axis) to create the master images. Each function returns a 2D numpy array of this data. Each function will be assigned to module variable mbias, mdark, and mflat that will be called by calibstar and calibration.
 
 Parameters: None
 
 Returns: 2D arrays of master calibration images.
 
-  # calibstar:
+      # calibstar:
 Calls get_star and assigns to variable name star. Performs necessary calculations on star array. 
 
 Paramaters: mbias, mdark, mflat, and dark_exptime. 
