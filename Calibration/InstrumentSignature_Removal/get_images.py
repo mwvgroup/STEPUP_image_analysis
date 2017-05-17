@@ -3,20 +3,13 @@ import numpy as np
 import os
 import glob
 
-"""date = input('Enter date of observation (MM/DD/YYYY): ')
-target = input('Enter name of target: ')
-dirdark = '/home/depot/STEPUP/raw/calibration/Dark/default'
-dirstar = '/home/depot/STEPUP/raw/' + date"""
-
-
 def get_images(dirstar, dirdark):
     """Retrieves all flat, bias, dark, and target images.
 
-    Calls get_biases, get_flats, get_darks, and get_star. Each function (except
-    get_darks, which looks in dirdark) looks at all FITS file headers at the
-    "IMAGETYP" keyword and adds each type to its respective array. It then
-    returns an array of bias, dark, flat, and target images in a tuple of
-    that order.
+    Calls get_biases, get_flats, get_darks, and get_star. Each function
+    looks in all FITS files' headers at the "IMAGETYP" keyword. It then adds
+    each image type to its respective array. It then returns an array of bias,
+    dark, flat, and target images in a tuple of that order.
 
     Parameters
     ----------
@@ -41,20 +34,18 @@ def get_images(dirstar, dirdark):
         """Retrieves all bias images from dirstar.
     
         Searches in primary HDU headers of all files in dirstar for files with
-        keyword "IMAGETYP" that point to "Bias Frame". It then puts all biases
+        keyword "IMAGETYP" that points to "Bias Frame". It then puts all biases
         found into an array which is returned to the caller.
     
         Parameters
         ----------
         dirstar : string
-            module variable which is the directory that
-            image, flat, and bias files are saved in
-            /home/depot/STEPUP/raw/<date>
+            Directory containing all flat, bias, and target images.
     
         Returns
         -------
         biases : numpy array
-            3D array of all bias images stored in dirstar
+            3D array of all bias images stored in dirstar.
         """
         
         files = glob.glob(os.path.join(dirstar, '*.fit'))
@@ -72,19 +63,18 @@ def get_images(dirstar, dirdark):
         """Retrieves all dark images from dirdark.
     
         Searches in primary HDU headers of all files in dirdark for files with
-        keyword "IMAGETYP" that point to "Dark Frame". It then puts all darks
+        keyword "IMAGETYP" that points to "Dark Frame". It then puts all darks
         found into an array which is returned to the caller.
     
         Parameters
         ----------
         dirdark : str
-            Module variable that is the directory in which all darks are
-            stored. /home/depot/STEPUP/raw/caliration/Dark/default
+            Directory containing all dark images.
     
         Returns
         -------
         darks : numpy array
-            3D numpy array of all dark images located within dirdark
+            3D numpy array of all dark images located within dirdark.
         """
         
         files = glob.glob(os.path.join(dirdark, '*.fit'))
@@ -103,19 +93,18 @@ def get_images(dirstar, dirdark):
         """Retrieves all flat files from dirstar.
     
         Searches in primary HDU headers of all files in dirstar for files with
-        keyword "IMAGETYP" that point to "Flat Frame". It then puts all flats
+        keyword "IMAGETYP" that points to "Flat Field". It then puts all flats
         found into an array which is returned to the caller.
     
         Parameters
         ----------
         dirstar : str
-            Module variable that is the directory in which all flat, bias, and
-            target images are located. /home/depot/STEPUP/raw/<date>
+            Directory in which all flat, bias, and target images are stored.
     
         Returns
         -------
         flats : numpy array
-            3D array of all flat images stored in dirstar
+            3D array of all flat images stored in dirstar.
     
         """
         
@@ -134,19 +123,18 @@ def get_images(dirstar, dirdark):
         """Retrieves all raw target images from dirstar.
     
         Searches in primary HDU headers of all files in dirstar for files with
-        keyword "IMAGETYP" that point to "Light Frame". It then puts all target
+        keyword "IMAGETYP" that points to "Light Frame". It then puts all target
         images found into an array which is returned to the caller.
     
         Parameters
         ----------
         dirstar : str
-            Module variable that is the directory in which all flat, bias, and
-            target images are located. /home/depot/STEPUP/raw/<date>
-    
+            Directory containing all bias, flat, and target images.
+
         Returns
         -------
         star : numpy array
-            3D array of all raw target images stored in dirstar
+            3D array of all raw target images stored in dirstar.
         """
         
         files = glob.glob(os.path.join(dirstar, '*.fit'))
