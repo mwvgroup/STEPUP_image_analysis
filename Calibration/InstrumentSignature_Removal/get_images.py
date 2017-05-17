@@ -3,10 +3,10 @@ import numpy as np
 import os
 import glob
 
-date = input('Enter date of observation (MM/DD/YYYY): ')
+"""date = input('Enter date of observation (MM/DD/YYYY): ')
 target = input('Enter name of target: ')
 dirdark = '/home/depot/STEPUP/raw/calibration/Dark/default'
-dirstar = '/home/depot/STEPUP/raw/' + date
+dirstar = '/home/depot/STEPUP/raw/' + date"""
 
 
 def get_images(dirstar, dirdark):
@@ -166,5 +166,3 @@ def get_images(dirstar, dirdark):
     star = get_star(dirstar)
     
     return (biases, darks, flats, star)
-
-(biases, darks, flats, star) = get_images(dirstar, dirdark)
