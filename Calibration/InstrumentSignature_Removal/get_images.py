@@ -8,29 +8,33 @@ target = input('Enter name of target: ')
 dirdark = '/home/depot/STEPUP/raw/calibration/Dark/default'
 dirstar = '/home/depot/STEPUP/raw/' + date
 
+
 def get_images(dirstar, dirdark):
-    """Retrives bias, dark, flat, and target image arrays.
-    
-    Calls get_biases, get_darks, get_flats and get_stars in order to
-    get arrays of needed images. Returns all arrays to user.
+    """Retrieves all flat, bias, dark, and target images.
+
+    Calls get_biases, get_flats, get_darks, and get_star. Each function (except
+    get_darks, which looks in dirdark) looks at all FITS file headers at the
+    "IMAGETYP" keyword and adds each type to its respective array. It then
+    returns an array of bias, dark, flat, and target images in a tuple of
+    that order.
 
     Parameters
     ----------
     dirstar : str
-        Directory in which flat, bias, and target images are stored.
+        Directory in which bias, flat, and target images are stored.
     dirdark : str
         Directory in which dark images are stored.
 
     Returns
     -------
     biases : numpy array
-        3D array containing all bias images located in dirstar.
+        3D numpy array containing all bias images found in dirstar.
     darks : numpy array
-        3D array containing all dark images located in dirdark.
+        3D numpy array containing all dark images found in dirdark.
     flats : numpy array
-        3D array containing all flat images located in dirstar.
+        3D numpy array containing all flat images found in dirstar.
     star : numpy array
-        3D array of all raw target images located in dirstar.
+        3D numpy array containing all target images found in dirstar.
     """
     
     def get_biases(dirstar):
@@ -115,12 +119,12 @@ def get_images(dirstar, dirdark):
     
         """
         
-        files = glob.glob(os.path.joing(dircalib, '*.fit'))
+        files = glob.glob(os.path.join(dirstar, '*.fit'))
         flats = []
         for file in files:
             hdulist = fits.open(file)
-            if hdulist[0].header('IMAGTYP') == 'Flat Frame':
-                image = fis.getdata(file)
+            if hdulist[0].header['IMAGETYP'] == 'Flat Field':
+                image = fits.getdata(file)
                 flats.append(image)
             hdulist.close()
         flats = np.array(flats, dtype = float)
