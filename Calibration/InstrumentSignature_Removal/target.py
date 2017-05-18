@@ -1,7 +1,7 @@
 from astropy.io import fits
 import numpy as np
 
-def calibtarget(mbias, mdark, mflat, dark_exptime):
+def calibtarget(target, mbias, mdark, mflat, dark_exptime):
     """Creates reduced array of target images.
 
     Calls get_target to retrieve all raw target images and subtracts the time-
@@ -24,8 +24,6 @@ def calibtarget(mbias, mdark, mflat, dark_exptime):
     calibtarget - numpy array
         3D array containing reduced array of target images.
     """
-    
-    target = get_target(dirtarget)
     calibtarget = []
 
     for image in target:
@@ -34,5 +32,5 @@ def calibtarget(mbias, mdark, mflat, dark_exptime):
         image /= mflat
         calibtarget.append(image)
 
-    calibtarget = np.array(image)
+    calibtarget = np.array(calibtarget)
     return calibtarget
