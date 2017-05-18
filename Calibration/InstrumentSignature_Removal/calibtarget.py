@@ -1,10 +1,10 @@
 from astropy.io import fits
 import numpy as np
 
-def calibstar(mbias, mdark, mflat, dark_exptime):
+def calibtarget(mbias, mdark, mflat, dark_exptime):
     """Creates reduced array of target images.
 
-    Calls get_star to retrieve all raw target images and subtracts the time-
+    Calls get_target to retrieve all raw target images and subtracts the time-
     corrected master dark, the masterbias, and divides by the master flat.
     This removes the instrument signatures from the raw dataset.
 
@@ -21,18 +21,18 @@ def calibstar(mbias, mdark, mflat, dark_exptime):
 
     Returns
     -------
-    calibstar - numpy array
+    calibtarget - numpy array
         3D array containing reduced array of target images.
     """
     
-    star = get_star(dirstar)
-    calibstar = []
+    target = get_target(dirtarget)
+    calibtarget = []
 
-    for image in star:
+    for image in target:
         image -= dark_exptime*mdark
         image -= mbias
         image /= mflat
-        calibstar.append(image)
+        calibtarget.append(image)
 
-    calibstar = np.array(image)
-    return calibstar
+    calibtarget = np.array(image)
+    return calibtarget

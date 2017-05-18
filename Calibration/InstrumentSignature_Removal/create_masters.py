@@ -1,6 +1,6 @@
 import numpy as np
 
-def create_mcalib(dirstar, dirdark):
+def create_mcalib(dirtarget, dirdark):
     """Creates master flat, bias, and dark arrays.
 
     Calls get_images to get 3D arrays of biases, darks, flats and target
@@ -9,11 +9,11 @@ def create_mcalib(dirstar, dirdark):
     is called in order (bias, dark, flat) as each preceding master image is
     used in the creation of the next type. Each array of each type of master
     calibration image is then returned to the user in a tuple ordered mbias,
-    mdark, mflat, star.
+    mdark, mflat, target.
     
     Parameters
     ----------
-    dirstar : str
+    dirtarget : str
         Directory in which all bias, flat and target images are stored.
     dirdark : str
         Directory in which all dark images are stored.
@@ -26,8 +26,8 @@ def create_mcalib(dirstar, dirdark):
         2D numpy array containing the master dark image.
     mflat : numpy array
         2D numpy array containing the master flat image.
-    star : numpy array
-        3D numpy array containing all raw target images in dirstar.
+    target : numpy array
+        3D numpy array containing all raw target images in dirtarget.
     """
     
     def create_mbias(biases):
@@ -40,7 +40,7 @@ def create_mcalib(dirstar, dirdark):
         Parameters
         ----------
         biases : numpy array
-            3D array containing all bias images found in dirstar.        
+            3D array containing all bias images found in dirtarget.        
     
         Returns
         -------
@@ -87,7 +87,7 @@ def create_mcalib(dirstar, dirdark):
         Parameters
         ----------
         flats : numpy array
-            3D array containing all flat images found in dirstar.
+            3D array containing all flat images found in dirtarget.
         mbias : numpy array
             2D array containing master bias image.
         mdark : numpy array
@@ -102,11 +102,11 @@ def create_mcalib(dirstar, dirdark):
         mflat = ((np.median(flats, 0) - mdark - mbias)/np.mean(flats, 0))
         return mflat
 
-    (biases, darks, flats, star) = get_images(dirstar, dirdark)
+    (biases, darks, flats, target) = get_images(dirtarget, dirdark)
     
     mbias = create_mbias(biases)
     mdark = create_mdark(mbias, darks)
     mflat = create_mflat(mbias, mdark, flats)
     
-    return (mbias, mdark, mflat, star)
+    return (mbias, mdark, mflat, target)
 

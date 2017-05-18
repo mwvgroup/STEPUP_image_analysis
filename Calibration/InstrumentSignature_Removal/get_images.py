@@ -3,17 +3,17 @@ import numpy as np
 import os
 import glob
 
-def get_images(dirstar, dirdark):
+def get_images(dirtarget, dirdark):
     """Retrieves all flat, bias, dark, and target images.
 
-    Calls get_biases, get_flats, get_darks, and get_star. Each function
+    Calls get_biases, get_flats, get_darks, and get_target. Each function
     looks in all FITS files' headers at the "IMAGETYP" keyword. It then adds
     each image type to its respective array. It then returns an array of bias,
     dark, flat, and target images in a tuple of that order.
 
     Parameters
     ----------
-    dirstar : str
+    dirtarget : str
         Directory in which bias, flat, and target images are stored.
     dirdark : str
         Directory in which dark images are stored.
@@ -21,17 +21,17 @@ def get_images(dirstar, dirdark):
     Returns
     -------
     biases : numpy array
-        3D numpy array containing all bias images found in dirstar.
+        3D numpy array containing all bias images found in dirtarget.
     darks : numpy array
         3D numpy array containing all dark images found in dirdark.
     flats : numpy array
-        3D numpy array containing all flat images found in dirstar.
-    star : numpy array
-        3D numpy array containing all target images found in dirstar.
+        3D numpy array containing all flat images found in dirtarget.
+    target : numpy array
+        3D numpy array containing all target images found in dirtarget.
     """
     
-    def get_biases(dirstar):
-        """Retrieves all bias images from dirstar.
+    def get_biases(dirtarget):
+        """Retrieves all bias images from dirtarget.
     
         Searches in primary HDU headers of all files in dirstar for files with
         keyword "IMAGETYP" that points to "Bias Frame". It then puts all biases
@@ -39,16 +39,16 @@ def get_images(dirstar, dirdark):
     
         Parameters
         ----------
-        dirstar : string
+        dirtarget : string
             Directory containing all flat, bias, and target images.
     
         Returns
         -------
         biases : numpy array
-            3D array of all bias images stored in dirstar.
+            3D array of all bias images stored in dirtarget.
         """
         
-        files = glob.glob(os.path.join(dirstar, '*.fit'))
+        files = glob.glob(os.path.join(dirtarget, '*.fit'))
         biases = []
         for file in files:
             hdulist = fits.open(file)
@@ -89,26 +89,26 @@ def get_images(dirstar, dirdark):
         return darks
     
     
-    def get_flats(dirstar):
-        """Retrieves all flat files from dirstar.
+    def get_flats(dirtarget):
+        """Retrieves all flat files from dirtarget.
     
-        Searches in primary HDU headers of all files in dirstar for files with
+        Searches in primary HDU headers of all files in dirtarget for files with
         keyword "IMAGETYP" that points to "Flat Field". It then puts all flats
         found into an array which is returned to the caller.
     
         Parameters
         ----------
-        dirstar : str
+        dirtarget : str
             Directory in which all flat, bias, and target images are stored.
     
         Returns
         -------
         flats : numpy array
-            3D array of all flat images stored in dirstar.
+            3D array of all flat images stored in dirtarget.
     
         """
         
-        files = glob.glob(os.path.join(dirstar, '*.fit'))
+        files = glob.glob(os.path.join(dirtarget, '*.fit'))
         flats = []
         for file in files:
             hdulist = fits.open(file)
@@ -119,38 +119,38 @@ def get_images(dirstar, dirdark):
         flats = np.array(flats, dtype = float)
         return flats
     
-    def get_star(dirstar):
-        """Retrieves all raw target images from dirstar.
+    def get_target(dirtarget):
+        """Retrieves all raw target images from dirtarget.
     
-        Searches in primary HDU headers of all files in dirstar for files with
+        Searches in primary HDU headers of all files in dirtarget for files with
         keyword "IMAGETYP" that points to "Light Frame". It then puts all target
         images found into an array which is returned to the caller.
     
         Parameters
         ----------
-        dirstar : str
+        dirtarget : str
             Directory containing all bias, flat, and target images.
 
         Returns
         -------
-        star : numpy array
+        target : numpy array
             3D array of all raw target images stored in dirstar.
         """
         
-        files = glob.glob(os.path.join(dirstar, '*.fit'))
-        star = []
+        files = glob.glob(os.path.join(dirtarget, '*.fit'))
+        target = []
         for file in files:
             hdulist = fits.open(file)
             if hdulist[0].header['IMAGETYP'] == 'Light Frame':
                 image = fits.getdata(file)
-                star.append(image)
+                target.append(image)
             hdulist.close()
-        star = np.array(star, dtype = float)
-        return star
+        target = np.array(star, dtype = float)
+        return target
     
-    biases = get_biases(dirstar)
+    biases = get_biases(dirtarget)
     darks = get_darks(dirdark)
-    flats = get_flats(dirstar)
-    star = get_star(dirstar)
+    flats = get_flats(dirtarget)
+    target = get_star(dirtarget)
     
-    return (biases, darks, flats, star)
+    return (biases, darks, flats, target)
