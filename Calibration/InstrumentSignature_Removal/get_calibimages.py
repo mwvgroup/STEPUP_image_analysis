@@ -24,7 +24,7 @@ def get_biases(dirtarget):
     files = glob.glob(os.path.join(dirtarget, '*.fit'))
     biases = []
     for file in files:
-        hdulist = fits.open(file)
+        hdulist = fits.open(file, memmap=True)
         if hdulist[0].header['IMAGETYP'] == 'Bias Frame':
             image = fits.getdata(file)
             biases.append(image)
@@ -53,7 +53,7 @@ def get_darks(dirdark):
     files = glob.glob(os.path.join(dirdark, '*.fit'))
     darks = []
     for file in files:
-        hdulist = fits.open(file)
+        hdulist = fits.open(file, memmap=True)
         if hdulist[0].header['IMAGETYP'] == 'Dark Frame':
             image = fits.getdata(file)
             darks.append(image)
@@ -83,7 +83,7 @@ def get_flats(dirtarget):
     files = glob.glob(os.path.join(dirtarget, '*.fit'))
     flats = []
     for file in files:
-        hdulist = fits.open(file)
+        hdulist = fits.open(file, memmap=True)
         if hdulist[0].header['IMAGETYP'] == 'Flat Field':
             image = fits.getdata(file)
             flats.append(image)

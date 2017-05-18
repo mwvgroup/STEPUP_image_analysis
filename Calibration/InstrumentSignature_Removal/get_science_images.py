@@ -24,7 +24,7 @@ def get_science_images(dirtarget):
     files = glob.glob(os.path.join(dirtarget, '*.fit'))
     target = []
     for file in files:
-        hdulist = fits.open(file)
+        hdulist = fits.open(file, memmap=True)
         if hdulist[0].header['IMAGETYP'] == 'Light Frame':
             image = fits.getdata(file)
             target.append(image)
