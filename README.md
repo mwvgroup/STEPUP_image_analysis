@@ -2,9 +2,9 @@
   
   # Module variables:
     dirtarget = str, /home/depot/STEPUP/raw/<date>, retrieved from user input
-    dirdark = str, /home/depot/STEPUP/raw/calibration/Dark/default, retrieved from user input
+    dirdark = str, /home/depot/STEPUP/raw/calibration/Dark/default
     target = str, <starname>, retrieved from user input
-    date = str, <MM/DD/YYYY>, retrieved from program
+    date = str, <MM/DD/YYYY>, retrieved user input
     dark_exptime = float, exposure time for darks, retrieved by calling get_darks and looking in FITS header
     mbias = numpy array, 2D array containing master flat image, retrieved by calling create_mbias
     mdark = numpy array, 2D array containing master dark image, retrieved by calling create_mdark
