@@ -12,7 +12,7 @@
 
 # main:
   
-      main
+      main:
 Overview - Imports and uses modules get_calibimages, get_science_images, create_mcalib, and target_reduction.
 
 Parameters: dirtarget, dirdark
