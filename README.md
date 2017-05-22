@@ -5,7 +5,7 @@
     dirdark = str, /home/depot/STEPUP/raw/calibration/Dark/default
     target = str, <starname>, retrieved from user input
     date = str, <MM/DD/YYYY>, retrieved user input
-    dark_exptime = float, exposure time for darks, retrieved by calling get_darks and looking in FITS header
+    dark_exptime = float, exposure time for darks, retrieved by calling in FITS header of dark images.
     mbias = numpy array, 2D array containing master flat image, retrieved by calling create_mbias
     mdark = numpy array, 2D array containing master dark image, retrieved by calling create_mdark
     mflat = numpy array, 2D array containing master flat image, retrieved by calling create_mflat
@@ -13,37 +13,37 @@
 # main:
   
       main:
-Overview - Imports and uses modules get_calibimages, get_science_images, create_mcalib, and target_reduction.
+Overview - Imports and uses modules get_calibimages, create_mcalib, and target_reduction. Saves ISR reduced images to new directory.
 
 Parameters: dirtarget, dirdark
 
-Returns: will alwasy return reduced_target, but can return others if needed.
+Returns: None
 
 # Calibration:
 
   # Instrument-Signature Removal:
-Overview - includes: get_star, get_flat, get_bias, get_dark functions, create_mbias, create_mflat, create_mdark, and target_reduction.
+Overview - includes: get_calibimage, create_mcalib, and isr_removal.
 
-      get_star, get_flat, get_bias get_dark:
-Each function loops through all files in dirtarget (except get_dark, which uses files in dirdark) by opening up FITS header and looking at the keyword 'IMAGETYP'. 
+      get_mcalib:
+Loops through all FITS files in dirtarget. If header index 'IMAGETYP' == 'Flat Field', file is appended to flats and 'Bias Frame', to biases. Then loops through dirdark and does the same thing for 'Dark Frame' image types. 
 
-Paramaters: dirtarget or dirdark 
+Paramaters: dirtarget, dirdark 
 
-Returns: 3D numpy array of flat, bias, dark, or target images. 
+Returns: 3D numpy array of flat, bias, or dark images. 
 
-      create_mbias, create_mdark, create_mflat:
-Each function calls the get_<calibration_image> of their respective type and assigns the 3D numpy array to a variable flats, biases, or darks. Performs necessary calculations (this includes taking the median along the 3rd axis) to create the master images. Each function returns a 2D numpy array of this data. Each function will be assigned to module variable mbias, mdark, and mflat that will be called by target_reduction and calibration.
+      create_mcalib :: create_mbias, create_mdark, create_mflat:
+Each function has their respective type of calibration image passed in as a parameter. Performs necessary calculations (this includes taking the median along the first axis) to create the master images. Each function returns a 2D numpy array of this data.
 
 Parameters: biases, darks, flats, mbias, mdark
 
 Returns: 2D arrays of master calibration images.
 
-      target_reduction:
-Performs necessary calculations on star array using mbias, mdark, and mflat.
+      isr_removal:
+Loops through FITS file in dirtarget for 'Light Frame' image types and reduces them using mbias, time-corrected mdark, and mflat. Saves instrument signature removed FITS files to new directory.
 
 Paramaters: target, mbias, mdark, mflat, and dark_exptime. 
 
-Returns: 3D numpy array of instrument-signature-removed images.
+Returns: None
 
   # Saturation/Astrometry:
 Overview - includes: calibration
