@@ -1,7 +1,7 @@
 from astropy.io import fits
 import numpy as np
 
-def isr_removal(target, mbias, mdark, mflat, dark_exptime):
+def isr_removal(dirtarget, mbias, mdark, mflat, dark_exptime):
     """Creates reduced array of target images.
 
     Loops through images in dirtarget
@@ -24,13 +24,16 @@ def isr_removal(target, mbias, mdark, mflat, dark_exptime):
         target images.
     """
 
+    n = 0
+
     for image in dirtarget:
+        n += 1
         hdulist = fits.open(image)
         if hdulist[0].header['IMAGETYP'] == 'Light Frame':
             image -= dark_exptime*mdark
             image -= mbias
             image /= mflat
-            hdulist.writeto(dirstar + '/isr_science_image/' + image)
+            hdulist.writeto('scimage_isr{}.fits'.format(n))
 
     
              
