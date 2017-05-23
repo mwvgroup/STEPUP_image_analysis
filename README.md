@@ -20,10 +20,9 @@ Parameters: dirtarget, dirdark
 Returns: None
 
 # Calibration:
-
-  # Instrument-Signature Removal:
-Overview - includes: get_calibimage, create_mcalib, and isr_removal.
-
+    
+# ISR (Instrument Signature Removal):
+     
       get_mcalib:
 Loops through all FITS files in dirtarget. If header index 'IMAGETYP' == 'Flat Field', file is appended to flats and 'Bias Frame', to biases. Then loops through dirdark and does the same thing for 'Dark Frame' image types. 
 
@@ -45,12 +44,10 @@ Paramaters: target, mbias, mdark, mflat, and dark_exptime.
 
 Returns: None
 
-  # Saturation/Astrometry:
-Overview - includes: calibration
-    
       calibration:
 Subtracts the medians of all master calibration images from the initial saturation level. Then, for each image in calibstar, opens up primary HDU and adds new 'SATLEVEL' to header. 
 
 Parameters: mbias, mdark, mflat, and dark_exptime. 
 
 Returns: 3D numpy array of reduced images whose headers include saturation level.
+
