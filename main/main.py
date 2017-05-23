@@ -3,6 +3,7 @@ sys.path.insert(0, 'directory where code is stored')
 import get_calibimages 
 import create_mcalib
 import isr_removal
+import calibration
 
 date = input('Enter the date of observation (MM/DD/YYYY): ')
 target = input('Enter the name of the target: ')
@@ -17,8 +18,10 @@ def main(dirtarget, dirdark):
     mdark = create_mcalib.create_mdark(darks, mbias)
     mflat = create_mcalib.create_mflat(flats, mbias, mdark)
 
-    isr_removal.isr_removal(dirtarget, mbias, mdark, mflat, dark_exptime)
-    
+    isr_scimage = isr_removal.isr_removal(dirtarget, mbias, mdark, mflat, dark_exptime)
+
+    isr_scimage = calibration.calibration(mbias, mdark, mflat, dark_exptime, isr_scimage)
+       
 main(dirtarget, dirdark)
     
     
