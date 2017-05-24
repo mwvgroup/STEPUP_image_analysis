@@ -3,7 +3,7 @@ import glob
 from astropy.io import fits
 import numpy as np
 
-def instrument_signature_removal(dirtarget, mbias, mdark, mflat, dark_exptime):
+def instrument_signature_removal(dirtarget, mbias, mdark, mflat, dark_exptime, target):
     """Removes instrument signatures from science images.
 
     Searches in dirtarget for all FITS files with "IMAGETYP" keyword that
@@ -60,6 +60,8 @@ def instrument_signature_removal(dirtarget, mbias, mdark, mflat, dark_exptime):
             isr_scimages.append(file)
             
     isr_scimages = np.array(isr_scimages, dtype = float)
+
+    os.mkdir(dirtarget + '/ISR_Images')
 
     for i in scimages:
         n+=1
