@@ -1,12 +1,15 @@
 import sys
-sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR')
+sys.path.insert(0, 'directory where code is stored')
 import get_calibimages
 import create_mcalib
 import instrument_signature_removal
 
-dirtarget = dirdark = '/Users/helenarichie/HAT-P-3_Test_Images'
+date = input('Enter the date of observation (MM/DD/YYYY): ')
+target = input('Enter the name of the target: ')
+dirtarget = '/home/depot/STEPUP/raw/' + date
+dirdark = '/home/depot/STEPUP/raw/calibration/Dark/default'
 
-def main(dirtarget, dirdark):
+def main(dirtarget, dirdark, target):
     """Creates ISR FITS files by executing a preliminary calibration sequence.
 
     Imports all ISR modules (get_calibimage, instrument_signature_removal, and calibration)
@@ -33,9 +36,7 @@ def main(dirtarget, dirdark):
     mdark = create_mcalib.create_mdark(darks, mbias)
     mflat = create_mcalib.create_mflat(flats, mbias, mdark)
 
-    instrument_signature_removal.instrument_signature_removal(dirtarget, mbias, mflat, mdark, dark_exptime)
-
-    
+    instrument_signature_removal.instrument_signature_removal(dirtarget, mbias, mflat, mdark, dark_exptime, target)
 
     
     
