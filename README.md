@@ -13,7 +13,7 @@
 # main:
   
       main:
-Overview - Imports and uses modules get_calibimages, create_mcalib, and target_reduction. Saves ISR reduced images to new directory.
+Overview - Imports and uses modules get_calibimages, create_mcalib, and instrument_signature_removal. Saves ISR reduced images to new directory.
 
 Parameters: dirtarget, dirdark
 
@@ -37,17 +37,9 @@ Parameters: biases, darks, flats, mbias, mdark
 
 Returns: 2D arrays of master calibration images.
 
-      isr_removal:
-Loops through FITS file in dirtarget for 'Light Frame' image types and reduces them using mbias, time-corrected mdark, and mflat. Saves instrument signature removed FITS files to new directory.
+      instrument_signature_removal:
+Loops through FITS file in dirtarget for 'Light Frame' image types and reduces them using mbias, time-corrected mdark, and mflat. Then adds expected saturation to header. Saves instrument signature removed FITS files to new directory.
 
-Paramaters: target, mbias, mdark, mflat, and dark_exptime. 
+Paramaters: target, mbias, mdark, mflat, dark_exptime, and target. 
 
 Returns: None
-
-      calibration:
-Subtracts the medians of all master calibration images from the initial saturation level. Then, for each image in calibstar, opens up primary HDU and adds new 'SATLEVEL' to header. 
-
-Parameters: mbias, mdark, mflat, and dark_exptime. 
-
-Returns: 3D numpy array of reduced images whose headers include saturation level.
-
