@@ -19,25 +19,25 @@ Parameters: dirtarget, dirdark
 
 Returns: None
     
-# ISR (Instrument Signature Removal):
-     
-      get_mcalib:
-Loops through all FITS files in dirtarget. If header index 'IMAGETYP' == 'Flat Field', file is appended to flats and 'Bias Frame', to biases. Then loops through dirdark and does the same thing for 'Dark Frame' image types. 
+  # ISR (Instrument Signature Removal):
 
-Paramaters: dirtarget, dirdark 
+        get_mcalib:
+  Loops through all FITS files in dirtarget. If header index 'IMAGETYP' == 'Flat Field', file is appended to flats and 'Bias Frame', to biases. Then loops through dirdark and does the same thing for 'Dark Frame' image types. 
 
-Returns: 3D numpy array of flat, bias, or dark images. 
+  Paramaters: dirtarget, dirdark 
 
-      create_mcalib :: create_mbias, create_mdark, create_mflat:
-Each function has their respective type of calibration image passed in as a parameter. Performs necessary calculations (this includes taking the median along the first axis) to create the master images. Each function returns a 2D numpy array of this data.
+  Returns: 3D numpy array of flat, bias, or dark images. 
 
-Parameters: biases, darks, flats, mbias, mdark
+        create_mcalib :: create_mbias, create_mdark, create_mflat:
+  Each function has their respective type of calibration image passed in as a parameter. Performs necessary calculations (this includes taking the median along the first axis) to create the master images. Each function returns a 2D numpy array of this data.
 
-Returns: 2D arrays of master calibration images.
+  Parameters: biases, darks, flats, mbias, mdark
 
-      instrument_signature_removal:
-Loops through FITS file in dirtarget for 'Light Frame' image types and reduces them using mbias, time-corrected mdark, and mflat. Then adds expected saturation to header. Saves instrument signature removed FITS files to new directory.
+  Returns: 2D arrays of master calibration images.
 
-Paramaters: target, mbias, mdark, mflat, dark_exptime, and target. 
+        instrument_signature_removal:
+  Loops through FITS file in dirtarget for 'Light Frame' image types and reduces them using mbias, time-corrected mdark, and mflat. Then adds expected saturation to header. Saves instrument signature removed FITS files to new directory.
 
-Returns: None
+  Paramaters: target, mbias, mdark, mflat, dark_exptime, and target. 
+
+  Returns: None
