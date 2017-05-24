@@ -10,7 +10,7 @@
     mdark = numpy array, 2D array containing master dark image, retrieved by calling create_mdark
     mflat = numpy array, 2D array containing master flat image, retrieved by calling create_mflat
 
-# main:
+# ISR_main:
   
       main:
 Overview - Imports and uses modules get_calibimages, create_mcalib, and instrument_signature_removal. Saves ISR reduced images to new directory.
@@ -18,8 +18,6 @@ Overview - Imports and uses modules get_calibimages, create_mcalib, and instrume
 Parameters: dirtarget, dirdark
 
 Returns: None
-
-# Calibration:
     
 # ISR (Instrument Signature Removal):
      
