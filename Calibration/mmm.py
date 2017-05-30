@@ -70,14 +70,14 @@ def mmm(science_images, highbad = False, minsky = 20, maxiter = 50,
     
     sky = np.sort(science_images)  # Sort in ascending values
     
-    skymid = 0.5 * sky[int((nsky - 1)/2)] + 0.5 * sky[int(nsky/2)] # Median value
+    skymid = 0.5 * sky[int((nsky - 1)/2)] + 0.5 * sky[int(nsky/2)] # Median value (per pixel?)
     
     cut1 = np.min([skymid - sky[0], sky[nsky - 1] - skymid])
     
     if highbad:
         cut1[np.where(cut1 > highbad - skymid)[0]] = highbad - skymid
-        cut2 = skymid + cut1
-        cut1 = skymid - cut1
+    cut2 = skymid + cut1  # this creates a range of acceptable sky values
+    cut1 = skymid - cut1
         
     good = np.where((sky <= cut2) & (sky >= cut1))[0]
     ngood = len(good)
@@ -90,18 +90,22 @@ def mmm(science_images, highbad = False, minsky = 20, maxiter = 50,
               ' and ' + str(cut2))
         return(skymod, sigma, skew)
     
-    delta = sky[good] - skymid
+    delta = sky[good] - skymid # deviation of sky from median
     sumd = np.sum(delta.astype('float64'))        
     sumdsq = np.sum(delta.astype('float64')**2)
 
-    maximm = np.max(good) 
-    minimm = np.min(good)
-    minimm -= 1
+    maximm = np.max(good) # Highest value accepted at upper end of vector
+    minimm = np.min(good) 
+    minimm -= 1 # Highest value rejected at lower end of vector
     
-    skymed = 0.5 * sky[(minimm + maximm + 1)/2] + 0.5 * sky[(minimm + maximm)/2 +1]
-    skymn = sumd / (maximm - minimm) - skumn**2
-    sigma = np.sqrt(sumdsq / (maximm - minimm) - skymn**2)
-    skymn = skymn + skymid
+    skymed = 0.5 * sky[(minimm + maximm + 1)/2] + 0.5 * sky[(minimm + maximm)/2 +1] # Median
+    skymn = sumd / (maximm - minimm) - skumn**2 # Mean
+    sigma = np.sqrt(sumdsq / (maximm - minimm) - skymn**2) # Sigma
+    skymn = skymn + skymid # Add median which was subtracted off earlier
+
+    # If mean is less than mode, then the contamination is lsight, and the
+    # mean value is what we really want.
+    # skymod = (skymed < skymn) ? 3.*skymed - 2.*skymn : skymn
     
     if skymed < skymn:
         skymod = 3. * skymed - 2. * skymn
