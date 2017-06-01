@@ -16,16 +16,16 @@ def instrument_signature_removal(dirtarget, mbias, mdark, mflat, dark_exptime, t
     ----------
     dirtarget : str
         Directory containing all bias, flat, and raw science images.
-    mbias : numpy array
+    mbias : numpy.ndarray
         2D array containing master bias image.
-    mdark : numpy array
+    mdark : numpy.ndarray
         2D array containing master dark image.
-    mfalt : numpy array
+    mfalt : numpy.ndarray
         2D array containing master flat image.
 
     Returns
     -------
-    isr_scimages : numpy array
+    isr_scimages : numpy.ndarray
         3D array containing all science images with instrument signatures
         removed.
     """
@@ -63,9 +63,10 @@ def instrument_signature_removal(dirtarget, mbias, mdark, mflat, dark_exptime, t
 
     os.mkdir(dirtarget + '/ISR_Images')
 
-    for i in scimages:
+    for i in isr_scimages:
         n+=1
         hdu = fits.PrimaryHDU(i,header=prihdr)
         hdulist = fits.HDUList([hdu])
-        hdulist.writeto(dirtarget + '/ISR_Images/' + target + '{}.fits'.format(n),
+        hdulist.writeto(dirtarget + '/ISR_Images/' + target + '_{}.fits'.format(n),
                         overwrite=True)
+    return isr_scimages
