@@ -1,9 +1,5 @@
 import sys
-sys.path.insert(0, 'directory where code is stored')
-import get_calibimages
-import create_mcalib
-import sys
-sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR_main/ISR')
+sys.path.insert(0, '')
 import get_calibimages
 import create_mcalib
 import instrument_signature_removal
@@ -11,11 +7,11 @@ import instrument_signature_removal
 def ISR_main(dirtarget, dirdark, target):
     """Creates ISR FITS files by executing a preliminary calibration sequence.
 
-    Imports all ISR modules (get_calibimage, instrument_signature_removal, and calibration)
-    which get all calibration images, create master calibration images, and
-    subtract them from the raw science images. It then adds the expected
-    saturation to the header and saves the ISR science images to the specified
-    directory.
+    Imports all ISR modules (get_calibimage, instrument_signature_removal, and
+    calibration) which get all calibration images, create master calibration
+    images, and subtracts them from the raw science images. It then adds the
+    expected saturation to the header and saves the ISR science images to the
+    specified directory.
 
     Parameters
     ----------
@@ -26,7 +22,8 @@ def ISR_main(dirtarget, dirdark, target):
 
     Returns
     -------
-    None
+    science_images : numpy.ndarray
+        3D array containing ISR science images.
     """
 
     (biases, darks, flats, dark_exptime) = get_calibimages.get_calibimages(dirtarget, dirdark)

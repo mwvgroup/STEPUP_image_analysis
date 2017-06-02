@@ -9,12 +9,12 @@ def create_mbias(biases):
 
     Parameters
     ----------
-    biases : numpy array
+    biases : numpy.ndarray
         3D array containing all bias images found in dirtarget.        
 
     Returns
     -------
-    mbias : numpy array
+    mbias : numpy.ndarray
         2D array containing master bias image.
     """
     
@@ -30,14 +30,14 @@ def create_mdark(darks, mbias):
     
     Parameters
     ----------
-    darks : numpy array
+    darks : numpy.ndarray
         3D array containing all dark images found in dirdark.
-    mbias : numpy array
+    mbias : numpy.ndarray
         2D array containing master bias image.
     
     Returns
     -------
-    mdark : numpy array
+    mdark : numpy.ndarray
         2D array containing master dark image.
     """
         
@@ -54,16 +54,16 @@ def create_mflat(flats, mbias, mdark):
 
     Parameters
     ----------
-    flats : numpy array
+    flats : numpy.ndarray
         3D array containing all flat images found in dirtarget.
-    mbias : numpy array
+    mbias : numpy.ndarray
         2D array containing master bias image.
-    mdark : numpy array
+    mdark : numpy.ndarray
         2D array containing master dark image.
 
     Returns
     -------
-    mflat : numpy array
+    mflat : numpy.ndarray
         2D array containing master flat image.
     """
     

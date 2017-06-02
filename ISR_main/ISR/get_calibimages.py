@@ -22,11 +22,11 @@ def get_calibimages(dirtarget, dirdark):
 
     Returns
     -------
-    biases : numpy array
+    biases : numpy.ndarray
         3D array containing all bias images found in dirtarget.
-    darks : numpy array
+    darks : numpy.ndarray
         3D array containing all dark images found in dirdark.
-    flats : numpy array
+    flats : numpy.ndarray
         3D array containing all flat images found in dirtarget.
     dark_exptime : float
         Exposure time of dark images.

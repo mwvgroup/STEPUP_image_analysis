@@ -4,7 +4,7 @@ import glob
 import os
 
 def mmm(science_images, minsky=20, highbad=False):
-    """Estimate sky background in a stellar contaminated field
+    """Estimate sky background in a stellar contaminated field.
 
     Looks at all pixels in each file in science_images and determines
     several statistical values used to find the sky background. Assumes
