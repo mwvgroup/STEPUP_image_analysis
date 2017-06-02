@@ -1,4 +1,5 @@
 import numpy as np
+from astropy.io import fits
 
 def create_mbias(biases):
     """Creates master bias array.
@@ -17,7 +18,6 @@ def create_mbias(biases):
     mbias : numpy.ndarray
         2D array containing master bias image.
     """
-    
     mbias = np.median(biases, 0)
     return mbias
 
@@ -39,8 +39,7 @@ def create_mdark(darks, mbias):
     -------
     mdark : numpy.ndarray
         2D array containing master dark image.
-    """
-        
+    """      
     mdark = np.median(darks, 0) - mbias
     return mdark
 
@@ -66,7 +65,6 @@ def create_mflat(flats, mbias, mdark):
     mflat : numpy.ndarray
         2D array containing master flat image.
     """
-    
     mflat = ((np.median(flats, 0) - mdark - mbias)/np.mean(flats, 0))
     return mflat
 

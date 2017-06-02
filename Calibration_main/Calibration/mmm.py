@@ -1,7 +1,5 @@
 import numpy as np
 from astropy.io import fits
-import glob
-import os
 
 def mmm(science_images, minsky=20, highbad=False):
     """Estimate sky background in a stellar contaminated field.
@@ -40,6 +38,8 @@ def mmm(science_images, minsky=20, highbad=False):
         sky_vector = np.flatten(sky_vector)
 
         nsky = len(sky_vector)
+        
+        sigma = 0
     
         if nsky < minsky:
             sigma -= 1.0
@@ -57,7 +57,7 @@ def mmm(science_images, minsky=20, highbad=False):
         skymid = 0.5*sky[int(nlast / 2)] + 0.5*sky[int(nsky / 2)]
         # Median of all sky values
 
-        cut1 = np.min([skymid-sky[0], sky[nksy-1] - skymid])
+        cut1 = np.min([skymid-sky[0], sky[nsky-1] - skymid])
 
         if highbad:
             cut1[np.where(cut1 > highbad - skymid)[0]] = highbad - skymid
@@ -68,7 +68,9 @@ def mmm(science_images, minsky=20, highbad=False):
         # *Select pixels between cut1 and cut2*
 
         good = np.where((sky <= cut2) & (sky >= cut1))[0]
+        bad = np.where((sky >= cut2) & (sky <= cut1))[0]
         ngood = len(good)
+        nbad = len(bad)
 
         if ngood == 0:
             sigma = -1.0
@@ -90,7 +92,7 @@ def mmm(science_images, minsky=20, highbad=False):
         skymed = 0.5 * sky[(minimm + maximm + 1) / 2] + 0.5 * sky[(minimm + maximm) / 2 + 1]
         skymn = sumdel / (maximm - minimm)
         skymn = skymn + skymid
-        sigma = np.sqrt(sumsq / (maximm-minimm) - skymn ** 2)
+        sigma = np.sqrt(sumdel_sq / (maximm-minimm) - skymn ** 2)
 
         if skymed < skymn:
             skymod = 3. * skymed - 2. * skymn
