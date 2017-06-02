@@ -41,7 +41,7 @@ Parameters: darks, mbias
 
 Returns: mdark
   
-          create_mflat:
+        create_mflat:
 Takes median of flats along first axis. Then subtracts mbias and mdark. Then divides by the median, taken along the first axis, of flats.
 
 Parameters: flats, mbias, mdark
