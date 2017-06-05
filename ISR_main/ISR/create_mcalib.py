@@ -50,7 +50,7 @@ def create_mdark(darks, mbias, dark_prihdr, dirtarget):
 
     hdu = fits.PrimaryHDU(mdark, header=dark_prihdr)
     hdulist = fits.HDUList([hdu])
-    hdulist.writeto(dirtarget + + '/mdark.fits', overwrite=True)
+    hdulist.writeto(dirtarget + '/mdark.fits', overwrite=True)
 
     return mdark
 
