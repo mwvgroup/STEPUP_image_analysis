@@ -48,8 +48,14 @@ def create_mdark(darks, mbias, dark_prihdr, dirtarget):
     mdark : numpy.ndarray
         2D array containing master dark image.
     """      
+    bias_subtracted_darks = []
+    for dark in darks:
+        dark -= mbias
+        bias_subtracted_darks.append(dark)
 
-    mdark = np.median(darks, 0) - mbias
+    bias_subtracted_darks = np.array(bias_subtracted_darks, dtype=float)
+
+    mdark = np.median(bias_subtracted_darks, 0)
 
     hdu = fits.PrimaryHDU(mdark, header=dark_prihdr)
     hdulist = fits.HDUList([hdu])
