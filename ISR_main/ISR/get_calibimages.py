@@ -44,9 +44,11 @@ def get_calibimages(dirtarget, dirdark):
     for file in files:
         hdulist = fits.open(file)
         if hdulist[0].header['IMAGETYP'] == 'Bias Frame':
+            bias_prihdr = hdulist[0].header
             image = fits.getdata(file)
             biases.append(image)
         if hdulist[0].header['IMAGETYP'] == 'Flat Field':
+            flat_prihdr = hdulist[0].header
             image = fits.getdata(file)
             flats.append(image)
         hdulist.close()
@@ -54,7 +56,9 @@ def get_calibimages(dirtarget, dirdark):
     for file in d_files:
         hdulist = fits.open(file)
         if hdulist[0].header['IMAGETYP'] == 'Dark Frame':
+            dark_prihdr = hdulist[0].header
             dark_exptime = hdulist[0].header['EXPTIME']
+            dark_exptime = float(dark_exptime)
             image = fits.getdata(file)
             darks.append(image)
 
@@ -62,4 +66,4 @@ def get_calibimages(dirtarget, dirdark):
     darks = np.array(darks, dtype=float)
     flats = np.array(flats, dtype=float)
 
-    return(biases, darks, flats, dark_exptime)
+    return(biases, darks, flats, dark_exptime, bias_prihdr, flat_prihdr, dark_prihdr)
