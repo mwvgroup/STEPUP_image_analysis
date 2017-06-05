@@ -1,7 +1,7 @@
 import numpy as np
 from astropy.io import fits
 
-def create_mbias(biases):
+def create_mbias(biases, bias_prihdr, dirtarget):
     """Creates master bias array.
 
     Takes median of biases along the first axis. This creates
@@ -19,9 +19,14 @@ def create_mbias(biases):
         2D array containing master bias image.
     """
     mbias = np.median(biases, 0)
+
+    hdu = fits.PrimaryHDU(mbias, header=bias_prihdr)
+    hdulist = fits.HDUList([hdu])
+    hdulist.writeto(dirtarget + '/mbias.fits', overwrite=True)
+        
     return mbias
 
-def create_mdark(darks, mbias):
+def create_mdark(darks, mbias, dark_prihdr, dirtarget):
     """Creates array of master dark images.
     
     Takes median of darks along first axis. Then subtracts mbias.
@@ -40,10 +45,16 @@ def create_mdark(darks, mbias):
     mdark : numpy.ndarray
         2D array containing master dark image.
     """      
+
     mdark = np.median(darks, 0) - mbias
+
+    hdu = fits.PrimaryHDU(mdark, header=dark_prihdr)
+    hdulist = fits.HDUList([hdu])
+    hdulist.writeto(dirtarget + + '/mdark.fits', overwrite=True)
+
     return mdark
 
-def create_mflat(flats, mbias, mdark):
+def create_mflat(flats, mbias, mdark, flat_prihdr, dirtarget):
     """Creates master flat array.
     
     Takes median of flats along first axis. Then subtracts mbias
@@ -65,6 +76,12 @@ def create_mflat(flats, mbias, mdark):
     mflat : numpy.ndarray
         2D array containing master flat image.
     """
-    mflat = ((np.median(flats, 0) - mdark - mbias)/np.mean(flats, 0))
+
+    mflat = (np.median(flats, 0) - mbias - mdark)/np.mean(flats, 0)
+
+    hdu = fits.PrimaryHDU(mflat, header=flat_prihdr)
+    hdulist = fits.HDUList([hdu])
+    hdulist.writeto(dirtarget + '/mflat.fits', overwrite=True)
+                 
     return mflat
 
