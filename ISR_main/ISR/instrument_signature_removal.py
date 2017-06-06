@@ -32,7 +32,7 @@ def instrument_signature_removal(dirtarget, mbias, mdark, mflat, dark_exptime, t
 
     saturation = 65535
     saturation -= np.median(mbias)
-    saturation -= np.median(mdark*dark_exptime)
+    saturation -= np.median(mdark)
     saturation /= np.median(mflat)
     saturation *= 0.97
 
