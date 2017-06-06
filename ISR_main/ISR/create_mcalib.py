@@ -29,7 +29,7 @@ def create_mbias(biases, bias_prihdr, dirtarget):
         
     return mbias
 
-def create_mdark(darks, mbias, dark_prihdr, dirtarget):
+def create_mdark(darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime):
     """Creates array of master dark images.
     
     Takes median of darks along first axis. Then subtracts mbias.
@@ -51,11 +51,13 @@ def create_mdark(darks, mbias, dark_prihdr, dirtarget):
     bias_subtracted_darks = []
     for dark in darks:
         dark -= mbias
+        dark /= dark_exptime
+        dark *= exptime
         bias_subtracted_darks.append(dark)
 
     bias_subtracted_darks = np.array(bias_subtracted_darks, dtype=float)
 
-    mdark = np.median(bias_subtracted_darks, 0)
+    mdark = np.median(darks, 0) - mbias
 
     hdu = fits.PrimaryHDU(mdark, header=dark_prihdr)
     hdulist = fits.HDUList([hdu])
@@ -63,7 +65,7 @@ def create_mdark(darks, mbias, dark_prihdr, dirtarget):
 
     return mdark
 
-def create_mflat(flats, mbias, mdark, flat_prihdr, dirtarget):
+def create_mflat(flats, mbias, flat_prihdr, dirtarget):
     """Creates master flat array.
     
     Takes median of flats along first axis. Then subtracts mbias
@@ -86,7 +88,13 @@ def create_mflat(flats, mbias, mdark, flat_prihdr, dirtarget):
         2D array containing master flat image.
     """
 
-    mflat = (np.median(flats, 0) - mbias)/np.mean(flats, 0)
+    bias_subtracted_flats = []
+    for flat in flats:
+        flat -= mbias
+        bias_subtracted_flats.append(flat)
+    bias_subtracted_flats = np.array(bias_subtracted_flats, dtype=float)
+    
+    mflat = np.median(bias_subtracted_flats, 0)/np.mean(bias_subtracted_flats, 0)
 
     hdu = fits.PrimaryHDU(mflat, header=flat_prihdr)
     hdulist = fits.HDUList([hdu])

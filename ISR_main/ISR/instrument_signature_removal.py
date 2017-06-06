@@ -44,6 +44,7 @@ def instrument_signature_removal(dirtarget, mbias, mdark, mflat, dark_exptime, t
         hdulist = fits.open(file)
         if hdulist[0].header['IMAGETYP'] == 'Light Frame':
             hdulist[0].header['SATLEVEL'] = (saturation)
+            exptime = hdulist[0].header['EXPTIME']
             prihdr = hdulist[0].header
             image = fits.getdata(file)
             scimages.append(image)
@@ -55,7 +56,7 @@ def instrument_signature_removal(dirtarget, mbias, mdark, mflat, dark_exptime, t
 
     for file in scimages:
             file -= mbias
-            file -= mdark * dark_exptime
+            file -= mdark
             file /= mflat
             isr_scimages.append(file)
             

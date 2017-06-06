@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '')
+sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR_main/ISR')
 import get_calibimages
 import create_mcalib
 import instrument_signature_removal
@@ -26,13 +26,13 @@ def ISR_main(dirtarget, dirdark, target):
         3D array containing ISR science images.
     """
 
-    (biases, darks, flats, dark_exptime) = get_calibimages.get_calibimages(dirtarget, dirdark)
+    (biases, darks, flats, dark_exptime, bias_prihdr, flat_prihdr, dark_prihdr, exptime) = get_calibimages.get_calibimages(dirtarget, dirdark)
 
-    mbias = create_mcalib.create_mbias(biases)
-    mdark = create_mcalib.create_mdark(darks, mbias)
-    mflat = create_mcalib.create_mflat(flats, mbias, mdark)
+    mbias = create_mcalib.create_mbias(biases, bias_prihdr, dirtarget)
+    mdark = create_mcalib.create_mdark(darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime)
+    mflat = create_mcalib.create_mflat(flats, mbias, flat_prihdr, dirtarget)
 
-    science_images = instrument_signature_removal.instrument_signature_removal(dirtarget, mbias, mflat, mdark, dark_exptime, target)
+    science_images = instrument_signature_removal.instrument_signature_removal(dirtarget, mbias, mdark, mflat, dark_exptime, target)
     
     return science_images    
 
