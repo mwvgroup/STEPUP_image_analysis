@@ -21,11 +21,11 @@ def create_mbias(biases, bias_prihdr, dirtarget):
     """
     mbias = np.median(biases, 0)
 
-    os.mkdir(dirtarget + '/mcalib')
+    os.mkdir(dirtarget + '/mcalib', overwrite=True)
 
     hdu = fits.PrimaryHDU(mbias, header=bias_prihdr)
     hdulist = fits.HDUList([hdu])
-    hdulist.writeto(dirtarget + '/mcalib/mbias.fits', overwrite=True)
+    hdulist.writeto(dirtarget + '/mcalib/mbias.fits')
         
     return mbias
 
@@ -57,7 +57,7 @@ def create_mdark(darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime):
 
     bias_subtracted_darks = np.array(bias_subtracted_darks, dtype=float)
 
-    mdark = np.median(darks, 0) - mbias
+    mdark = np.median(darks, 0)
 
     hdu = fits.PrimaryHDU(mdark, header=dark_prihdr)
     hdulist = fits.HDUList([hdu])

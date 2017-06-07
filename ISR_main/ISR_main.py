@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR_main/ISR')
+sys.path.insert(0, '')
 import get_calibimages
 import create_mcalib
 import instrument_signature_removal
