@@ -3,16 +3,20 @@ from astropy.io import fits
 import os
 
 def create_mbias(biases, bias_prihdr, dirtarget):
-    """Creates master bias array.
+    """Creates and saves master bias.
 
     Takes median of biases along the first axis. This creates
-    the master bias image that is used to reduce the raw
-    target imgaes.
+    the master bias array that is used to reduce the science imgaes.
+    It then saves that FITS file in a folder "mcalib" within dirtarget.
 
     Parameters
     ----------
     biases : numpy.ndarray
-        3D array containing all bias images found in dirtarget.        
+        3D array containing all bias images found in dirtarget.
+    bias_prihdr : astropy.io.fits.header.Header
+        Primary HDR from HDU of bias images.
+    dirtarget : str
+        Directory containing all bias, flat, and science images.
 
     Returns
     -------
@@ -21,7 +25,7 @@ def create_mbias(biases, bias_prihdr, dirtarget):
     """
     mbias = np.median(biases, 0)
 
-    os.mkdir(dirtarget + '/mcalib', overwrite=True)
+    os.mkdir(dirtarget + '/mcalib')
 
     hdu = fits.PrimaryHDU(mbias, header=bias_prihdr)
     hdulist = fits.HDUList([hdu])
@@ -30,11 +34,13 @@ def create_mbias(biases, bias_prihdr, dirtarget):
     return mbias
 
 def create_mdark(darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime):
-    """Creates array of master dark images.
+    """Creates and saves master dark.
     
-    Takes median of darks along first axis. Then subtracts mbias.
-    This creates the master dark image that is used to reduce the
-    raw target images.
+    Subtracts mbias out of each individual dark. Then, takes median of
+    darks of this array along the first axis. It then time-corrects each image
+    to match the light frame exposure time. This creates the master dark
+    array that is used to reduce the science images. It then saves that
+    FITS file in a folder "mcalib" within dirtarget.
     
     Parameters
     ----------
@@ -42,6 +48,14 @@ def create_mdark(darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime):
         3D array containing all dark images found in dirdark.
     mbias : numpy.ndarray
         2D array containing master bias image.
+    dark_prihdr : astropy.io.fits.header.Header
+        Primary HDR from HDU of dark images.
+    dirtarget : str
+        Directory containing all bias, flat and science images.
+    dark_exptime : float
+        Exposure time of dark frame in seconds.
+    exptime : float
+        Exposure time of light frame in seconds.
     
     Returns
     -------
@@ -66,12 +80,12 @@ def create_mdark(darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime):
     return mdark
 
 def create_mflat(flats, mbias, flat_prihdr, dirtarget):
-    """Creates master flat array.
+    """Creates and saves master flat.
     
-    Takes median of flats along first axis. Then subtracts mbias
-    and mdark. Then divides by the median, taken along the first
-    axis, of flats. This creates the master flat image that is used
-    to reduce the raw target images.
+    Subtracts mbias out of and normalizes each individual flat.
+    It then takes the average along the first axis. This creates the master
+    flat array that is used to reduce the science images. It then saves
+    that FITS file in a folder "mcalib" within dirtarget.
 
     Parameters
     ----------
@@ -79,8 +93,10 @@ def create_mflat(flats, mbias, flat_prihdr, dirtarget):
         3D array containing all flat images found in dirtarget.
     mbias : numpy.ndarray
         2D array containing master bias image.
-    mdark : numpy.ndarray
-        2D array containing master dark image.
+    flat_prihdr : astropy.io.fits.header.Header
+        HDR from HDU of flat images.
+    dirtarget : str
+        Directory containing all bias, flat, and science images.
 
     Returns
     -------
@@ -88,13 +104,14 @@ def create_mflat(flats, mbias, flat_prihdr, dirtarget):
         2D array containing master flat image.
     """
 
-    bias_subtracted_flats = []
+    normalized_flats = []
     for flat in flats:
         flat -= mbias
-        bias_subtracted_flats.append(flat)
-    bias_subtracted_flats = np.array(bias_subtracted_flats, dtype=float)
+        flat /= np.average(flat)
+        normalized_flats.append(flat)
+    normalized_flats = np.array(normalized_flats, dtype=float)
     
-    mflat = np.median(bias_subtracted_flats, 0)/np.mean(bias_subtracted_flats, 0)
+    mflat = np.average(normalized_flats, 0)
 
     hdu = fits.PrimaryHDU(mflat, header=flat_prihdr)
     hdulist = fits.HDUList([hdu])

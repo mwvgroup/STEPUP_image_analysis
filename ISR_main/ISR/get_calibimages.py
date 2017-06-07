@@ -6,12 +6,13 @@ import glob
 def get_calibimages(dirtarget, dirdark):
     """Retrieves flats and biases from dirtarget and darks from dirdark.
 
-    Searches for all files in dirtarget/dirdark with primary HDU header
+    Searches for all files in dirtarget/dirdark with primary HDR header
     keyword, "IMAGETYP", to equal "Bias Frame", "Flat Field", or "Dark Frame".
     It then appends each file to an array, biases, flats, or darks. It also
-    retrieves the exposure time for the dark images (dark_exptime). It then
-    converts each array to a numpy array. These arrays are returned to the
-    caller in the order biases, darks, flats.
+    retrieves the exposure times for the dark images (dark_exptime) and
+    light frame images (exptime). It then gets the primary HDRs for each
+    type of calibration image. It then converts each array to a numpy array.
+    These arrays are returned to the caller in the order biases, darks, flats.
 
     Parameters
     ----------
@@ -29,8 +30,15 @@ def get_calibimages(dirtarget, dirdark):
     flats : numpy.ndarray
         3D array containing all flat images found in dirtarget.
     dark_exptime : float
-        Exposure time of dark images.
-
+        Exposure time of dark frame in seconds.
+    exptime : float
+        Exposure time of light frame in seconds.
+    bias_prihdr : astropy.io.fits.header.Header
+        Primary HDR from HDU of bias images.
+    dark_prihdr : astropy.io.fits.header.Header
+        Primary HDR from HDU of dark images.
+    flat_prihdr : astropy.io.fits.header.Header
+        HDR from HDU of flat images.   
     """
 
     files = glob.glob(os.path.join(dirtarget, '*.fit'))
@@ -68,4 +76,4 @@ def get_calibimages(dirtarget, dirdark):
     darks = np.array(darks, dtype=float)
     flats = np.array(flats, dtype=float)
 
-    return(biases, darks, flats, dark_exptime, bias_prihdr, flat_prihdr, dark_prihdr, exptime)
+    return(biases, darks, flats, dark_exptime, exptime, bias_prihdr, dark_prihdr, flat_prihdr)

@@ -26,13 +26,13 @@ def ISR_main(dirtarget, dirdark, target):
         3D array containing ISR science images.
     """
 
-    (biases, darks, flats, dark_exptime, bias_prihdr, flat_prihdr, dark_prihdr, exptime) = get_calibimages.get_calibimages(dirtarget, dirdark)
+    (biases, darks, flats, dark_exptime, exptime, bias_prihdr, dark_prihdr, flat_prihdr) = get_calibimages.get_calibimages(dirtarget, dirdark)
 
     mbias = create_mcalib.create_mbias(biases, bias_prihdr, dirtarget)
     mdark = create_mcalib.create_mdark(darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime)
     mflat = create_mcalib.create_mflat(flats, mbias, flat_prihdr, dirtarget)
 
-    science_images = instrument_signature_removal.instrument_signature_removal(dirtarget, mbias, mdark, mflat, dark_exptime, target)
+    science_images = instrument_signature_removal.instrument_signature_removal(dirtarget, target, mbias, mdark, mflat, dark_exptime, exptime)
     
     return science_images    
 
