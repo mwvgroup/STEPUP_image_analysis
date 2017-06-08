@@ -47,7 +47,12 @@ def get_calibimages(dirtarget, dirdark):
     biases = []
     darks = []
     flats = []
+
     dark_exptime = None
+    exptime = None
+    bias_prihdr = None
+    dark_prihdr = None
+    flat_prihdr = None
     
     for file in files:
         hdulist = fits.open(file)
@@ -76,4 +81,4 @@ def get_calibimages(dirtarget, dirdark):
     darks = np.array(darks, dtype=float)
     flats = np.array(flats, dtype=float)
 
-    return(biases, darks, flats, dark_exptime, exptime, bias_prihdr, dark_prihdr, flat_prihdr)
+    return biases, darks, flats, dark_exptime, exptime, bias_prihdr, dark_prihdr, flat_prihdr
