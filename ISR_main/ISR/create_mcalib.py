@@ -79,7 +79,9 @@ def create_mdark(darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime):
 
     return mdark
 
-def create_mflat(flats, mbias, flat_prihdr, dirtarget):
+def create_mflat(r_flats, b_flats, v_flats, mbias, r_flat_prihdr,
+                 b_flat_prihdr, v_flat_prihdr, r_filter, b_filter,
+                 v_filter, dirtarget):
     """Creates and saves master flat.
     
     Subtracts mbias out of and normalizes each individual flat.
@@ -103,19 +105,50 @@ def create_mflat(flats, mbias, flat_prihdr, dirtarget):
     mflat : numpy.ndarray
         2D array containing master flat image.
     """
-
-    normalized_flats = []
-    for flat in flats:
-        flat -= mbias
-        flat /= np.average(flat)
-        normalized_flats.append(flat)
-    normalized_flats = np.array(normalized_flats, dtype=float)
+    r_mflat = None
+    b_mflat = None
+    v_mflat = None
+    if r_filter:
+        normalized_r_flats = []
+        for flat in r_flats:
+            flat -= mbias
+            flat /= np.average(r_flat)
+            normalized_r_flats.append(flat)
+        normalized_r_flats = np.array(normalized_r_flats, dtype=float)
     
-    mflat = np.average(normalized_flats, 0)
+        r_mflat = np.average(normalized_r_flats, 0)
 
-    hdu = fits.PrimaryHDU(mflat, header=flat_prihdr)
-    hdulist = fits.HDUList([hdu])
-    hdulist.writeto(dirtarget + '/mcalib/mflat.fits', overwrite=True)
+        hdu = fits.PrimaryHDU(mflat, header=r_flat_prihdr)
+        hdulist = fits.HDUList([hdu])
+        hdulist.writeto(dirtarget + '/mcalib/r_mflat.fits', overwrite=True)
+
+    if b_filter:
+        normalized_b_flats = []
+        for flat in b_flats:
+            flat -= mbias
+            flat /= np.average(b_flat)
+            normalized_b_flats.append(flat)
+        normalized_b_flats = np.array(normalized_b_flats, dtype=float)
+    
+        b_mflat = np.average(normalized_b_flats, 0)
+
+        hdu = fits.PrimaryHDU(mflat, header=b_flat_prihdr)
+        hdulist = fits.HDUList([hdu])
+        hdulist.writeto(dirtarget + '/mcalib/b_mflat.fits', overwrite=True)
+
+    if v_filter:
+        normalized_v_flats = []
+        for flat in v_flats:
+            flat -= mbias
+            flat /= np.average(b_flat)
+            normalized_b_flats.append(flat)
+        normalized_b_flats = np.array(normalized_b_flats, dtype=float)
+    
+        b_mflat = np.average(normalized_b_flats, 0)
+
+        hdu = fits.PrimaryHDU(mflat, header=b_flat_prihdr)
+        hdulist = fits.HDUList([hdu])
+        hdulist.writeto(dirtarget + '/mcalib/b_mflat.fits', overwrite=True)
                  
-    return mflat
+    return r_mflat, b_mlat, v_mflat
 
