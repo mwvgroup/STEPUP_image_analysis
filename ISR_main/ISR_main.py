@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '')
+sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR_main/ISR')
 import get_calibimages
 import create_mcalib
 import instrument_signature_removal
@@ -25,15 +25,22 @@ def ISR_main(dirtarget, dirdark, target):
     science_images : numpy.ndarray
         3D array containing ISR science images.
     """
-
-    (biases, darks, flats, dark_exptime, exptime, bias_prihdr, dark_prihdr, flat_prihdr) = get_calibimages.get_calibimages(dirtarget, dirdark)
+    (biases, darks, r_flats, b_flats, v_flats, dark_exptime,
+    exptime, bias_prihdr, dark_prihdr, r_flat_prihdr, b_flat_prihdr,
+    v_flat_prihdr, r_filter, b_filter, v_filter) = get_calibimages.get_calibimages(dirtarget, dirdark)
 
     mbias = create_mcalib.create_mbias(biases, bias_prihdr, dirtarget)
     mdark = create_mcalib.create_mdark(darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime)
-    mflat = create_mcalib.create_mflat(flats, mbias, flat_prihdr, dirtarget)
+    (r_mflat, b_mflat, v_mflat) = create_mcalib.create_mflat(r_flats, b_flats, v_flats, mbias, r_flat_prihdr,
+                                                             b_flat_prihdr, v_flat_prihdr, r_filter, b_filter,
+                                                             v_filter, dirtarget)
 
-    science_images = instrument_signature_removal.instrument_signature_removal(dirtarget, target, mbias, mdark, mflat, dark_exptime, exptime)
+    (r_science_images,
+     b_scimages,
+     v_scimages) = instrument_signature_removal.instrument_signature_removal(dirtarget, target, mbias, mdark,
+                                                                               r_mflat, b_mflat, v_mflat, dark_exptime,
+                                                                               exptime)
     
-    return science_images    
+    return r_science_images, b_scimages, v_scimages
 
     
