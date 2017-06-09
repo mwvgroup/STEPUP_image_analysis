@@ -3,7 +3,7 @@ import glob
 from astropy.io import fits
 import numpy as np
 
-def instrument_signature_removal(dirtarget, target, mbias, mdark, mflat, dark_exptime, exptime):
+def instrument_signature_removal(dirtarget, target, mbias, mdark, r_mflat, b_mflat, v_mflat, dark_exptime, exptime):
     """Removes instrument signatures from science images.
 
     Searches in dirtarget for all FITS files with "IMAGETYP" keyword that
