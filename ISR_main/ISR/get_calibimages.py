@@ -46,13 +46,20 @@ def get_calibimages(dirtarget, dirdark):
 
     biases = []
     darks = []
-    flats = []
+    r_flats = []
+    b_flats = []
+    v_flats = []
 
     dark_exptime = None
     exptime = None
     bias_prihdr = None
     dark_prihdr = None
-    flat_prihdr = None
+    r_flat_prihdr = None
+    b_flat_prihdr = None
+    v_flat_prihdr = None
+    r_filter = False
+    b_filter = False
+    v_filter = False
     
     for file in files:
         hdulist = fits.open(file)
@@ -63,11 +70,23 @@ def get_calibimages(dirtarget, dirdark):
         if hdulist[0].header['IMAGETYP'] == 'Light Frame':
             exptime = hdulist[0].header['EXPTIME']
         if hdulist[0].header['IMAGETYP'] == 'Flat Field':
-            flat_prihdr = hdulist[0].header
-            image = fits.getdata(file)
-            flats.append(image)
+            if hdulist[0].header.['FILTER'] == 'r':
+                r_filter = True
+                r_flat_prihdr = hdulist[0].header
+                image = fits.getdata(file)
+                r_flats.append(image)
+            if hdulist[0].header.['FILTER'] == 'b':
+                b_filter = True
+                b_flat_prihdr = hdulist[0].header
+                image = fits.getdata(file)
+                b_flats.append(image)
+            if hdulist[0].header.['FILTER'] == 'v':
+                v_filter = True
+                b_flat_prihdr = hdulist[0].header
+                image = fits.getdata(file)
+                v_flats.append(image)
         hdulist.close()
-        
+
     for file in d_files:
         hdulist = fits.open(file)
         if hdulist[0].header['IMAGETYP'] == 'Dark Frame':
@@ -79,6 +98,10 @@ def get_calibimages(dirtarget, dirdark):
 
     biases = np.array(biases, dtype=float)
     darks = np.array(darks, dtype=float)
-    flats = np.array(flats, dtype=float)
+    r_flats = np.array(r_flats, dtype=float)
+    b_flats = np.array(b_flats, dtype=float)
+    v_flats = np.array(v_flats, dtype=float)
 
-    return biases, darks, flats, dark_exptime, exptime, bias_prihdr, dark_prihdr, flat_prihdr
+    return (biases, darks, r_flats, b_flats, v_flats, dark_exptime,
+            exptime, bias_prihdr, dark_prihdr, r_flat_prihdr, b_flat_prihdr,
+            v_flat_prihdr, r_filter, b_filter, v_filter)
