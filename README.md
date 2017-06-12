@@ -11,50 +11,51 @@
 #       ISR_main:
 Overview - Imports and uses modules get_calibimages, create_mcalib, and instrument_signature_removal. Saves ISR reduced images to new directory.
 
-Parameters: dirtarget, dirdark
+Parameters: dirtarget, dirdark, filters
 
 Returns: science_images
     
   # ISR:
 
 #       get_mcalib:
-Loops through all FITS files in dirtarget. If header index 'IMAGETYP' == 'Flat Field', file is appended to <filter_name>flats and 'Bias Frame', to biases. Then loops through dirdark and does the same thing for 'Dark Frame' image types. 
+Looks at headers of all FITS files in dirtarget and dirdark. Returns arrays of each type of calibration image. Flat images are separated by filters into their own arrays.
 
 Paramaters: dirtarget, dirdark, target, filters
 
 Returns: biases, darks, r_flats, b_flats, v_flats, dark_exptime, exptime, bias_prihdr, dark_prihdr, r_flat_prihdr, b_flat_prihdr, v_flat_prihdr, r_filter, b_filter, v_filter 
-      # trying to find a way to create a filter object to cut back on returns for this function
+
+      # Currently working on restructuring the filter separation process by creating a filter object.
 
 #       create_mcalib
  Module containing functions to create master bias, dark, and flat images.
         
         create_mbias:
-Takes median of darks along first axis of bias images.
+Takes median of darks along first axis of bias images. Then saves mbias.fits to dirtarget in "mcalib" folder.
  
-Parameters: biases
+Parameters: biases, bias_prihdr, dirtarget
   
 Returns: mbias
   
         create_mdark:
-Takes median of darks along first axis of dark images. Then subtracts mbias.
+Subtracts mbias from and time-corrects each dark image. Then takes median along first axis of all dark images. Then saves mdark.fits to dirtarget in "mcalib" folder.
 
-Parameters: darks, mbias
+Parameters: darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime
 
 Returns: mdark
   
         create_mflat:
-Takes median of flats along first axis. Then subtracts mbias and mdark. Then divides by the median, taken along the first axis, of flats.
+Subtracts mbias from and normalizes each flat image. Then takes average along first axis of all flat images. Then saves <filter>_mflat.fits to dirtarget in "mcalib" folder. (This algorithm is executed for each filter of flat images.)
 
-Parameters: flats, mbias, mdark
+Parameters: r_flats, b_flats, v_flats, mbias, r_flat_prihdr, b_flat_prihdr, v_flat_prihdr, r_filter, b_filter, v_filter, dirtarget
 
-Returns: mflat
+Returns: r_mflat, b_mflat, v_mflat
 
 #       instrument_signature_removal:
-Loops through FITS file in dirtarget for 'Light Frame' image types and reduces them using mbias, time-corrected mdark, and mflat. Then adds expected saturation to header. Saves instrument signature removed FITS files to new directory.
+Loops through FITS file in dirtarget for 'Light Frame' image types and reduces them using mbias, mdark, and <filter>_mflat for each different filter. Then adds expected saturation to header. Saves instrument signature removed FITS files to new directory.
 
-Paramaters: target, mbias, mdark, mflat, dark_exptime, and target. 
+Paramaters: irtarget, target, mbias, mdark, r_mflat, b_mflat, v_mflat, dark_exptime, exptime, r_filter, b_filter, v_filter
 
-Returns: isr_scimages
+Returns: r_isr_scimages, b_isr_scimages, v_isr_scimages
   
 # Calibration_main:
   
