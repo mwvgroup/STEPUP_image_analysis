@@ -18,11 +18,12 @@ Returns: science_images
   # ISR:
 
 #       get_mcalib:
-Loops through all FITS files in dirtarget. If header index 'IMAGETYP' == 'Flat Field', file is appended to flats and 'Bias Frame', to biases. Then loops through dirdark and does the same thing for 'Dark Frame' image types. 
+Loops through all FITS files in dirtarget. If header index 'IMAGETYP' == 'Flat Field', file is appended to <filter_name>flats and 'Bias Frame', to biases. Then loops through dirdark and does the same thing for 'Dark Frame' image types. 
 
-Paramaters: dirtarget, dirdark 
+Paramaters: dirtarget, dirdark, target, filters
 
-Returns: mbias, mdark, mfalt, 3D numpy array of bias, dark, or flat images. 
+Returns: biases, darks, r_flats, b_flats, v_flats, dark_exptime, exptime, bias_prihdr, dark_prihdr, r_flat_prihdr, b_flat_prihdr, v_flat_prihdr, r_filter, b_filter, v_filter 
+      # trying to find a way to create a filter object to cut back on returns for this function
 
 #       create_mcalib
  Module containing functions to create master bias, dark, and flat images.
