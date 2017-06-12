@@ -5,6 +5,7 @@
     dirdark = str, /home/depot/STEPUP/raw/calibration/Dark/default
     target = str, <starname>, retrieved from user input
     date = str, <MM/DD/YYYY>, retrieved user input
+    filters = list, retrieved from user input
 
 # ISR_main:
   
