@@ -4,12 +4,21 @@ import ISR_main
 sys.path.insert(0, '')
 import Calibration_main
 
-date = input('Input date of observation: ')
+date = input('Input date of observation (MM/DD/YYYY): ')
 target = input('Input target name: ')
 dirtarget = '/home/depot/STEPUP/raw' + date
 dirdark = '/home/depot/STEPUP/Calibration'
+filters = []
 
-def main(dirtaget, dirdark, target):
+im_filter = input('Input filter name (if finished type "Done"): ')
+filters.append(im_filter)
+while im_filter != 'Done':
+    im_filter = input('Input filter name (if finished type "Done"): ')
+    filters.append(im_filter)
+
+filters.remove('Done')
+
+def main(dirtaget, dirdark, target, filters):
     science_images = ISR_main.ISR_main(dirtarget, dirdark, target)
 
     
