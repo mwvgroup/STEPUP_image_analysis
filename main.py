@@ -18,7 +18,4 @@ while im_filter != 'Done':
 
 filters.remove('Done')
 
-def main(dirtaget, dirdark, target, filters):
-    science_images = ISR_main.ISR_main(dirtarget, dirdark, target)
-
     
