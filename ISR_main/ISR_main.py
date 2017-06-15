@@ -26,9 +26,9 @@ def ISR_main(dirtarget, dirdark, target):
     """
 
 
-    get_unfiltered_calibimages.get_unfiltered_calibimages(dirtarget, dirdark)
-    get_filtered_calibimages.get_filtered_calibimages(dirtarget)
+    exptime = get_unfiltered_calibimages.get_unfiltered_calibimages(dirtarget, dirdark)
+    image_filters = get_filtered_calibimages.get_filtered_calibimages(dirtarget)
 
-    return None
+    instrument_signature_removal.instrument_signature_removal(dirtarget, target, exptime, image_filters)
 
     
