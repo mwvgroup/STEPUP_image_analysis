@@ -28,7 +28,8 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
 
     d_files = glob.glob(os.path.join(dirdark, '*.fit'))
     
-    os.mkdir(dirtarget + '/mcalib')    
+    os.mkdir(dirtarget + '/mcalib')
+    
     biases = []
     bias_prihdr = None
 
@@ -79,4 +80,6 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
 
     hdu = fits.PrimaryHDU(mdark, header=dark_prihdr)
     hdulist = fits.HDUList([hdu])
-    hdulist.writeto(dirtarget + '/mcalib/mdark.fits', overwrite=True)       
+    hdulist.writeto(dirtarget + '/mcalib/mdark.fits', overwrite=True)
+
+    return exptime

@@ -77,7 +77,6 @@ def get_filtered_calibimages(dirtarget):
         hdulist= fits.HDUList([hdu])
         hdulist.writeto(dirtarget + '/mcalib/' + i + '_mflat.fits', overwrite=True)
     
-            
-                    
+    return image_filters
 
                     
