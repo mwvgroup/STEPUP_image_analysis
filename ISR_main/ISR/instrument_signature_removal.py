@@ -13,7 +13,7 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
     calib_files = glob.glob(os.path.join(dirtarget + '/mcalib/', '*.fits'))
 
     for i in image_filters:
-
+        os.mkdir(dirtarget + '/ISR_images/' + i)
         science_images = []
         science_image_prihdr = None
         mbias = []
@@ -84,5 +84,5 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
             n += 1
             hdu = fits.PrimaryHDU(j, header=science_image_prihdr)
             hdulist = fits.HDUList([hdu])
-            hdulist.writeto(dirtarget + '/ISR_Images/' + target + '_' + i + '_{}.fits'.format(n),
+            hdulist.writeto(dirtarget + '/ISR_Images/' i + '/' + target + '_' + i + '_{}.fits'.format(n),
                             overwrite=True)
