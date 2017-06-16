@@ -8,7 +8,8 @@ def ISR_main(dirtarget, dirdark, target):
     """Creates ISR FITS files by executing a preliminary calibration sequence.
 
     Imports and calls get_unfiltered_calibimages, get_filtered_calibimages, and
-    instrument_signature_removal. Returns science_images.
+    instrument_signature_removal. Saves ISR science images to
+    dirtarget/ISR_Images/<filter-name>.
     
     Parameters
     ----------
@@ -21,8 +22,7 @@ def ISR_main(dirtarget, dirdark, target):
 
     Returns
     -------
-    science_images : numpy.ndarray
-        3D array containing ISR science images.
+    n/a
     """
 
 
