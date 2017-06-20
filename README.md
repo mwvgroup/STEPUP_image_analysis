@@ -5,58 +5,31 @@
     dirdark = str, /home/depot/STEPUP/raw/calibration/Dark/default
     target = str, <starname>, retrieved from user input
     date = str, <MM/DD/YYYY>, retrieved user input
-    filters = list, retrieved from user input
-
-# ISR_main:
-  
-#       ISR_main:
-Overview - Imports and uses modules get_calibimages, create_mcalib, and instrument_signature_removal. Saves ISR reduced images to new directory.
-
-Parameters: dirtarget, dirdark, filters
-
-Returns: science_images
     
-  # ISR:
+# ISR_main:
 
-#       get_mcalib:
-Looks at headers of all FITS files in dirtarget and dirdark. Returns arrays of each type of calibration image. Flat images are separated by filters into their own arrays.
+#   ISR.py
 
-Paramaters: dirtarget, dirdark, target, filters
+#       get_unfiltered_calibimages:
+Creates and saves master bias and dark by searching in dirtarget for all bias frames and creates master bias by taking the median of the array of those images. It then saves the master bias todirtarget/mcalib. It then searches in dirdark for all dark frames and subtracts the mbias and time-corrects each image. It then creates the master dark by taking the median of the array of those images. It then saves the master dark to dirtarget/mcalib.
 
-Returns: biases, darks, r_flats, b_flats, v_flats, dark_exptime, exptime, bias_prihdr, dark_prihdr, r_flat_prihdr, b_flat_prihdr, v_flat_prihdr, r_filter, b_filter, v_filter 
+Paramaters: dirtarget, dirdark
 
-      # Currently working on restructuring the filter separation process by creating a filter object.
+Returns: exptime
 
-#       create_mcalib
- Module containing functions to create master bias, dark, and flat images.
-        
-        create_mbias:
-Takes median of darks along first axis of bias images. Then saves mbias.fits to dirtarget in "mcalib" folder.
- 
-Parameters: biases, bias_prihdr, dirtarget
-  
-Returns: mbias
-  
-        create_mdark:
-Subtracts mbias from and time-corrects each dark image. Then takes median along first axis of all dark images. Then saves mdark.fits to dirtarget in "mcalib" folder.
+#       get_filtered_calibimages:
+Creates and saves master flat for each filter. Creates a list of all unique filter names on flat and light images. It then loops through that list looking for all flatswith the same filter name for each iteration of the loop. It then subtracts the bias and normalizes each individual flat and averages that array. The master flat is then saved as "<filter-name>_mflat.fits" to dirtarget/mcalib.
 
-Parameters: darks, mbias, dark_prihdr, dirtarget, dark_exptime, exptime
+Parameters: dirtarget
 
-Returns: mdark
-  
-        create_mflat:
-Subtracts mbias from and normalizes each flat image. Then takes average along first axis of all flat images. Then saves <filter>_mflat.fits to dirtarget in "mcalib" folder. (This algorithm is executed for each filter of flat images.)
-
-Parameters: r_flats, b_flats, v_flats, mbias, r_flat_prihdr, b_flat_prihdr, v_flat_prihdr, r_filter, b_filter, v_filter, dirtarget
-
-Returns: r_mflat, b_mflat, v_mflat
+Returns: image_filters
 
 #       instrument_signature_removal:
-Loops through FITS file in dirtarget for 'Light Frame' image types and reduces them using mbias, mdark, and <filter>_mflat for each different filter. Then adds expected saturation to header. Saves instrument signature removed FITS files to new directory.
+Removes instrument signatures from raw science images. Retrieves all FITS files with IMAGETYP keyword, "Light Frame" and all master calibration images and puts them into arrays. It then calculates the expected saturation, which is later added to the header. It then removes the master bias, dark, and flat by filer from each image in the light frame array and saves it as a FITS file with the light frame header as dirtarget/ ISR_Images/<filter-name>/<target-name>_<filter-keyword>_*.fits
 
-Paramaters: irtarget, target, mbias, mdark, r_mflat, b_mflat, v_mflat, dark_exptime, exptime, r_filter, b_filter, v_filter
+Parameters: dirtarget, target, exptime, image_filters
 
-Returns: r_isr_scimages, b_isr_scimages, v_isr_scimages
+Returns: None
   
 # Calibration_main:
   
