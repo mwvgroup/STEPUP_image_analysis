@@ -10,6 +10,13 @@
 
 #   ISR.py
 
+#       ISR_main:
+Creates ISR FITS files by executing a preliminary calibration sequence. Imports and calls get_unfiltered_calibimages, get_filtered_calibimages, and instrument_signature_removal. Saves ISR science images to dirtarget/ISR_Images/<filter-name>.
+
+Paramaters: dirtarget, dirdark, target
+
+Returns: None
+
 #       get_unfiltered_calibimages:
 Creates and saves master bias and dark by searching in dirtarget for all bias frames and creates master bias by taking the median of the array of those images. It then saves the master bias todirtarget/mcalib. It then searches in dirdark for all dark frames and subtracts the mbias and time-corrects each image. It then creates the master dark by taking the median of the array of those images. It then saves the master dark to dirtarget/mcalib.
 
