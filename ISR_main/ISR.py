@@ -51,7 +51,8 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
 
     Returns
     -------
-    None
+    exptime : float
+        Exposure time of light frames in seconds.
     """
     # Retrieves all FITS files from dirtarget and dark frames from dirdark.
     t_files = glob.glob(os.path.join(dirtarget, '*.fit'))
@@ -125,7 +126,9 @@ def get_filtered_calibimages(dirtarget):
 
     Returns
     -------
-    None
+    image_filters : list
+        List containing a string of each filter keyword found in the header
+        of the flat field and light frame images.
     """
     image_filters = set()
     mbias = []
@@ -202,6 +205,10 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
     image_filters : list
         List containing a string of each filter keyword found in the header
         of the flat field and light frame images.
+
+    Returns
+    -------
+    None
     """
     # Makes directory for ISR FITS files and retrieves raw and master
     # calibration files.
