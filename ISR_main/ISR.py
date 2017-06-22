@@ -171,7 +171,7 @@ def get_filtered_calibimages(dirtarget):
         # Removes bias from and normalizes each flat.
         for flat in flat_array:
             flat -= mbias_array[0]
-            flat /= np.average(flat_array[630:1419,400:2672])
+            flat /= np.average(flat[700:1348, 450:3622])
 
         mflat = np.average(flat_array, 0)
 
