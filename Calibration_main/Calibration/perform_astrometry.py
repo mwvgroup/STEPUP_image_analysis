@@ -4,7 +4,7 @@ import glob
 from astropy.io import fits
 
 
-def perform_astrometry(dirtarget, target, filters):
+def perform_astrometry(target, filters):
     """Performs astrometry on dataset.
 
     Finds coordinates of stars using imstar and writes information to a
@@ -26,10 +26,7 @@ def perform_astrometry(dirtarget, target, filters):
     None
     """
     # Retrieve new-image.fits using API and save it to ISR_Images.
-
-    # Write new-image.tab file by executing imstar.
-    # Find way to automate which value should be used for -i argument.
-    # Saves to ISR_images.
+    # Find way to automate which value should be used for -i argument in imstar.
     os.chdir('/Users/helenarichie/tests/ISR_Images')
     # Creates new-images.tab file with positions of stars.
     subprocess.call(['imstar', '-vhi', '2500', '-tw', 'new-image.fits'])
@@ -69,7 +66,7 @@ def perform_astrometry(dirtarget, target, filters):
 
         # Corrects WCS information in image header using known star
         # coordinates in new-image.tab
-        for i in range(0, n):
+        for i in range(1, n):
             os.chdir("/Users/helenarichie/tests/ISR_Images/{}/WCS".format(fil))
             subprocess.call(['imwcs', '-wv', '-i', '100', '-c',
-                             'new-image.tab', 'wcs{}.fits'.format(i)])
+                                         'new-image.tab', 'wcs{}.fits'.format(i)])
