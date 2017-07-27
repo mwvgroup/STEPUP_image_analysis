@@ -1,6 +1,6 @@
 import subprocess
-import os
 import glob
+import os
 from astropy.io import fits
 
 
@@ -16,9 +16,9 @@ def perform_astrometry(target, filters):
 
     Parameters
     ----------
-    target - str
+    target : str
         String containing name of target.
-    filters - list
+    filters : list
         List of strings containing all filters used for observation.
 
     Returns
@@ -68,5 +68,5 @@ def perform_astrometry(target, filters):
         # coordinates in new-image.tab
         for i in range(1, n):
             os.chdir("/Users/helenarichie/tests/ISR_Images/{}/WCS".format(fil))
-            subprocess.call(['imwcs', '-wv', '-i', '100', '-c',
-                                         'new-image.tab', 'wcs{}.fits'.format(i)])
+            subprocess.call(['imwcs', '-wv', '-i', '100', '-c', 'new-image.tab',
+                             'wcs{}.fits'.format(i)])
