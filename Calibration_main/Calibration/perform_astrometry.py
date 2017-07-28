@@ -68,5 +68,10 @@ def perform_astrometry(target, filters):
         # coordinates in new-image.tab
         for i in range(1, n):
             os.chdir("/Users/helenarichie/tests/ISR_Images/{}/WCS".format(fil))
-            subprocess.call(['imwcs', '-wv', '-i', '100', '-c', 'new-image.tab',
-                             'wcs{}.fits'.format(i)])
+            subprocess.call(['imwcs', '-wv', '-i', '100', '-c', 'new-image.tab', 'wcs{}.fits'.format(i)])
+
+        os.mkdir('/Users/helenarichie/tests/ISR_Images/{}/WCS/accurate_WCS'.format(fil))
+        for path in os.listdir("/Users/helenarichie/tests/ISR_Images/{}/WCS/".format(fil)):
+            if path.endswith("w.fits"):
+                subprocess.call(['mv', '/Users/helenarichie/tests/ISR_Images/{}/WCS/'.format(fil) + path,
+                                 '/Users/helenarichie/tests/ISR_Images/{}/WCS/accurate_WCS'.format(fil)])
