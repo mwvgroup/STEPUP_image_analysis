@@ -4,7 +4,7 @@ import os
 from astropy.io import fits
 
 
-def perform_astrometry(target, filters):
+def perform_astrometry(dirtarget, filters):
     """Performs astrometry on dataset.
 
     Finds coordinates of stars using imstar and writes information to a
@@ -16,8 +16,6 @@ def perform_astrometry(target, filters):
 
     Parameters
     ----------
-    target : str
-        String containing name of target.
     filters : list
         List of strings containing all filters used for observation.
 
@@ -25,21 +23,24 @@ def perform_astrometry(target, filters):
     -------
     None
     """
+    dirtarget = dirtarget + '/ISR_Images'
     # Retrieve new-image.fits using API and save it to ISR_Images.
-    # Find way to automate which value should be used for -i argument in imstar.
-    os.chdir('/Users/helenarichie/tests/ISR_Images')
+    # Value for -i argument?
+    os.chdir(dirtarget)
     # Creates new-images.tab file with positions of stars.
-    subprocess.call(['imstar', '-vhi', '2500', '-tw', 'new-image.fits'])
+    subprocess.call(['imstar', '-vhi', '700', '-tw', 'new-image.fits'])
 
     # Gets header with WCS information to append to all images.
     # Shorten this line.
-    wcsim_hdu = fits.open('/Users/helenarichie/tests/ISR_Images/new-image.fits")
+    wcsim_hdu = fits.open(dirtarget + '/new-image.fits')
     wcsim_header = wcsim_hdu[0].header
 
+    # for i, fil enumerate
     for fil in filters:
-        os.mkdir('/Users/helenarichie/tests/ISR_Images/{}/WCS'.format(fil))
+        os.mkdir(dirtarget + '/{}/WCS'.format(fil))
         # Shorten this line.
-        isr_images = glob.glob(os.path.join('/Users/helenarichie/tests/ISR_Images/{}'.format(fil), '*.fits'))
+        isr_images = glob.glob(os.path.join(dirtarget + '/{}'.format(fil),
+                                            '*.fits'))
         n = 0
         for image in isr_images:
             n += 1
@@ -62,16 +63,21 @@ def perform_astrometry(target, filters):
             hdu = fits.PrimaryHDU(imagedata, header=other_header)
             hdulist = fits.HDUList([hdu])
             # Shorten this line.
-            hdulist.writeto('/Users/helenarichie/tests/ISR_Images/{}/WCS/wcs{}.fits'.format(fil, n), overwrite=True)
+            hdulist.writeto(dirtarget + '/{}/WCS/wcs{}.fits'.format(fil, n),
+                            overwrite=True)
 
         # Corrects WCS information in image header using known star
         # coordinates in new-image.tab
         for i in range(1, n):
-            os.chdir("/Users/helenarichie/tests/ISR_Images/{}/WCS".format(fil))
-            subprocess.call(['imwcs', '-wv', '-i', '100', '-c', 'new-image.tab', 'wcs{}.fits'.format(i)])
+            os.chdir(dirtarget + '/{}/WCS'.format(fil))
+            subprocess.call(['imwcs', '-wv', '-i', '100', '-c',
+                             'new-image.tab', 'wcs{}.fits'.format(i)])
 
-        os.mkdir('/Users/helenarichie/tests/ISR_Images/{}/WCS/accurate_WCS'.format(fil))
-        for path in os.listdir("/Users/helenarichie/tests/ISR_Images/{}/WCS/".format(fil)):
+        os.mkdir(dirtarget + '/{}/WCS/accurate_WCS'.format(fil))
+        subprocess.call(['mv', dirtarget + '/new-image.tab'.format(fil),
+                         dirtarget + '/{}/WCS'.format(fil)])
+        for path in os.listdir(dirtarget + "/{}/WCS/".format(fil)):
             if path.endswith("w.fits"):
-                subprocess.call(['mv', '/Users/helenarichie/tests/ISR_Images/{}/WCS/'.format(fil) + path,
-                                 '/Users/helenarichie/tests/ISR_Images/{}/WCS/accurate_WCS'.format(fil)])
+                subprocess.call(['mv', dirtarget + '/{}/WCS/'.format(fil) +
+                                 path, dirtarget + '/{}/WCS/accurate_WCS'
+                                 .format(fil)])

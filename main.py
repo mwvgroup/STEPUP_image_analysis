@@ -1,12 +1,16 @@
 import sys
-sys.path.insert(0, '')
+sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR_main')
 import ISR
-sys.path.insert(0, '')
-import Calibration_main
+sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration_main/Calibration')
+import perform_astrometry
 
-date = input('Input date of observation (MM/DD/YYYY): ')
+date = input('Input date of observation (YYYY-MM-DD): ')
 target = input('Input target name: ')
-dirtarget = '/home/depot/STEPUP/raw' + date
-dirdark = '/home/depot/STEPUP/Calibration'
+dirtarget = '/Users/helenarichie/tests'
+dirdark = dirtarget
 
-ISR.ISR_main(dirtarget, dirdark, target)
+filters = ISR.ISR_main(dirtarget, dirdark, target)
+
+print('\nInstrument signature removal completed.\nAstrometry in progress....\n')
+
+perform_astrometry.perform_astrometry(dirtarget, filters)

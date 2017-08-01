@@ -31,6 +31,8 @@ def ISR_main(dirtarget, dirdark, target):
     # Creates and saves instrument-siganture-removed light frames.
     instrument_signature_removal(dirtarget, target, exptime, image_filters)
 
+    return image_filters
+
 
 def get_unfiltered_calibimages(dirtarget, dirdark):
     """Creates and saves master bias and dark.
