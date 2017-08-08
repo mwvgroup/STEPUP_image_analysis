@@ -1,10 +1,13 @@
 import os
 import subprocess
 import glob
+from shutil import move
+import time
 from astropy.io import fits
+import progressbar
 
 
-def add_WCS_info(dirtarget, filters):
+def add_WCS_info(dirtarget, filters, verbose=False):
     """Adds accurate WCS information to all headers in dataset.
 
     Finds coordinates of stars using imstar command and WCS information
@@ -21,65 +24,96 @@ def add_WCS_info(dirtarget, filters):
         Directory containing all bias, flat, and raw science images.
     filters : list
         List of strings containing all filters used for observation.
+    verbose : boolean, optional
+        Prints information about status of program.
 
     Returns
     -------
     None
     """
-    dirtarget = dirtarget + '/ISR_Images'
-    os.chdir(dirtarget)
     # Creates new-images.tab file with positions of stars.
-    subprocess.call(['imstar', '-vhi', '700', '-tw', 'new-image.fits'])
+    os.chdir(os.path.join(dirtarget))
+    if verbose:
+        subprocess.call(['imstar', '-vhi', '700', '-tw', 'new-image.fits'])
+    else:
+        subprocess.call(['imstar', '-hi', '700', '-tw', 'new-image.fits'])
 
     # Gets header with WCS information to append to all images.
-    wcsim_hdu = fits.open(dirtarget + '/new-image.fits')
+    wcsim_hdu = fits.open(os.path.join(dirtarget, 'new-image.fits'))
     wcsim_header = wcsim_hdu[0].header
 
     # Repeats process for each filter.
     for fil in filters:
         # Reads in all ISR images.
-        os.mkdir(dirtarget + '/{}/WCS'.format(fil))
-        isr_images = glob.glob(os.path.join(dirtarget + '/{}'.format(fil),
-                                            '*.fits'))
-        n = 0
-        for image in isr_images:
-            n += 1
-            print('\niteration....\n')
-            other_hdu = fits.open(image)
-            imagedata = other_hdu[0].data
-            other_header = other_hdu[0].header
-            # Finds all uncommon header keywords.
-            diff = fits.HeaderDiff(wcsim_header, other_header).diff_keywords
-            diff = diff[0]
+        os.mkdir(os.path.join(dirtarget, fil, 'WCS'))
+        isr_images = glob.glob(os.path.join(dirtarget, fil, '*.fits'))
 
-            for i in diff:
-                # Skips unneeded header keywords.
-                if i == 'COMMENT' or i == 'HISTORY':
-                    print("skipping....")
-                else:
-                    # Adds uncommon keywords and their value to image.
-                    other_header.set(i, wcsim_header[i])
+        if verbose:
+            progress = progressbar.ProgressBar(widgets=[progressbar.Bar('=', '[', ']'),
+                                                        ' ', progressbar.Percentage(),
+                                                        ' ', progressbar.ETA()])
+            for n, image in enumerate(isr_images):
+                time.sleep(0.01)
+                progress.update(n + 1)
+                other_hdu = fits.open(image)
+                imagedata = other_hdu[0].data
+                other_header = other_hdu[0].header
+                # Finds all uncommon header keywords.
+                diff = fits.HeaderDiff(wcsim_header, other_header).diff_keywords
+                diff = diff[0]
+        
+                for i in diff:
+                    # Skips unneeded header keywords.
+                    if i in ('COMMENT', 'HISTORY'):
+                        pass
+                    else:
+                        # Adds uncommon keywords and their value to image.
+                        other_header.set(i, wcsim_header[i])
 
-            # Writes file.
-            hdu = fits.PrimaryHDU(imagedata, header=other_header)
-            hdulist = fits.HDUList([hdu])
-            hdulist.writeto(dirtarget + '/{}/WCS/wcs{}.fits'.format(fil, n),
-                            overwrite=True)
+                # Writes file.
+                hdu = fits.PrimaryHDU(imagedata, header=other_header)
+                hdulist = fits.HDUList([hdu])
+                out_path = os.path.join(dirtarget, fil, 'WCS', 'wcs{}.fits'.format(n))
+                hdulist.writeto(out_path, overwrite=True)       
+            progress.finish()
+        else:
+            for n, image in enumerate(isr_images):
+                other_hdu = fits.open(image)
+                imagedata = other_hdu[0].data
+                other_header = other_hdu[0].header
+                # Finds all uncommon header keywords.
+                diff = fits.HeaderDiff(wcsim_header, other_header).diff_keywords
+                diff = diff[0]
+        
+                for i in diff:
+                    # Skips unneeded header keywords.
+                    if i in ('COMMENT', 'HISTORY'):
+                        pass
+                    else:
+                        # Adds uncommon keywords and their value to image.
+                        other_header.set(i, wcsim_header[i])
 
+                # Writes file.
+                hdu = fits.PrimaryHDU(imagedata, header=other_header)
+                hdulist = fits.HDUList([hdu])
+                out_path = os.path.join(dirtarget, fil, 'WCS', 'wcs{}.fits'.format(n))
+                hdulist.writeto(out_path, overwrite=True)      
+        
         # Moves new-image.tab to WCS folder so that it may be used by imwcs.
-        subprocess.call(['mv', dirtarget + '/new-image.tab'.format(fil),
-                         dirtarget + '/{}/WCS'.format(fil)])
+        move('new-image.tab', os.path.join(fil, 'WCS'))
         # Corrects WCS information in image header using the imwcs command and
         # known star coordinates in new-image.tab.
-        for i in range(1, n):
-            os.chdir(dirtarget + '/{}/WCS'.format(fil))
-            subprocess.call(['imwcs', '-wv', '-i', '100', '-c',
-                             'new-image.tab', 'wcs{}.fits'.format(i)])
-
-        os.mkdir(dirtarget + '/{}/WCS/accurate_WCS'.format(fil))
-        # Moves files with accurate WCS information to separate directory.
-        for path in os.listdir(dirtarget + "/{}/WCS/".format(fil)):
-            if path.endswith("w.fits"):
-                subprocess.call(['mv', dirtarget + '/{}/WCS/'.format(fil) +
-                                 path, dirtarget + '/{}/WCS/accurate_WCS'
-                                 .format(fil)])
+        os.chdir(os.path.join(dirtarget, fil, 'WCS'))
+        isr_wcs_images = glob.glob(os.path.join(dirtarget, fil, 'WCS', '*.fits'))
+        for i, image in enumerate(isr_wcs_images):
+            if verbose:
+                subprocess.call(['imwcs', '-wv', '-i', '100', '-c', 'new-image.tab',
+                             'wcs{}.fits'.format(i)])
+            else:
+                subprocess.call(['imwcs', '-w', '-i', '100', '-c', 'new-image.tab',
+                             'wcs{}.fits'.format(i)])
+        isr_wcs_images = glob.glob(os.path.join(dirtarget, fil, 'WCS', '*w.fits'))
+        os.mkdir(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS'))
+        out_path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')
+        for image in isr_wcs_images:
+            move(image, out_path)
