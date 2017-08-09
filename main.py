@@ -1,16 +1,19 @@
 import sys
-sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR_main')
+sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR')
 import ISR
 sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration')
-import perform_astrometry
+import add_WCS_info
 
 date = input('Input date of observation (YYYY-MM-DD): ')
 target = input('Input target name: ')
-dirtarget = '/Users/helenarichie/tests'
+dirtarget = '/Users/helenarichie/tests2'
 dirdark = dirtarget
+#coords = input('Input RA and Dec of target :')
 
 filters = ISR.ISR_main(dirtarget, dirdark, target)
 
-print('\nInstrument signature removal completed.\nAstrometry in progress....\n')
+dirtarget += '/ISR_Images'
+
+print('\nInstrument signature removal completed.\nPhotometry in progress....\n')
 
 add_WCS_info.add_WCS_info(dirtarget, filters)
