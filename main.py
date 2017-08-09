@@ -8,7 +8,7 @@ date = input('Input date of observation (YYYY-MM-DD): ')
 target = input('Input target name: ')
 dirtarget = '/Users/helenarichie/tests2'
 dirdark = dirtarget
-#coords = input('Input RA and Dec of target :')
+coords = input('Input RA and Dec of target :')
 
 filters = ISR.ISR_main(dirtarget, dirdark, target)
 
