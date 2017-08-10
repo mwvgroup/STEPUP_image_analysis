@@ -22,7 +22,9 @@ def ISR_main(dirtarget, dirdark, target):
 
     Returns
     -------
-    None
+    image_filters : list
+        List containing string of each filter keyword found in header of flat 
+        field and light frame images.
     """
     # Creates and saves master bias, dark and flat by filter.
     exptime = get_unfiltered_calibimages(dirtarget, dirdark)
@@ -129,8 +131,8 @@ def get_filtered_calibimages(dirtarget):
     Returns
     -------
     image_filters : list
-        List containing a string of each filter keyword found in the header
-        of the flat field and light frame images.
+        List containing string of each filter keyword found in header of flat 
+        field and light frame images.
     """
     image_filters = set()
     mbias = []
@@ -205,8 +207,8 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
     exptime : float
         Exposure time of light frames in seconds.
     image_filters : list
-        List containing a string of each filter keyword found in the header
-        of the flat field and light frame images.
+        List containing string of each filter keyword found in header of flat 
+        field and light frame images.
 
     Returns
     -------

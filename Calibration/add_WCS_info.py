@@ -23,7 +23,8 @@ def add_WCS_info(dirtarget, filters, verbose=False):
     dirtarget : str
         Directory containing all bias, flat, and raw science images.
     filters : list
-        List of strings containing all filters used for observation.
+        List containing string of each filter keyword found in header of flat 
+        field and light frame images.
     verbose : boolean, optional
         Prints information about status of program.
 
