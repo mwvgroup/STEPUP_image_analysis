@@ -12,7 +12,7 @@ ra = input('Input RA of target (HH:MM:SS): ')
 dec = input('Input Dec of target (+/-DD:MM:SS): ')
 coords = (ra, dec)
 
-#filters = ISR.ISR_main(dirtarget, dirdark, target)
+filters = ISR.ISR_main(dirtarget, dirdark, target)
 
 dirtarget += '/ISR_Images'
 
