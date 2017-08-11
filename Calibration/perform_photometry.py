@@ -25,7 +25,7 @@ def perform_photometry(filters, dirtarget, coords, comparison_coords):
         Tuple containing strings of RA and Dec of target star ((HH:MM:SS), 
         (+/-DD:MM:SS))."
     comparison_coords : tuple 
-        Tuple containing strings of RA and Dec of one or more comparison stars 
+        Tuple containing strings of RA and Dec of comparison stars
         ((HH:MM:SS), (+/-DD:MM:SS))."
         
     Returns
@@ -41,7 +41,8 @@ def perform_photometry(filters, dirtarget, coords, comparison_coords):
     for fil in filters:
         for path in os.listdir(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')):
             if path.endswith('.fits'):
-                hdulist = fits.open(path)
+                o_file = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS', path)
+                hdulist = fits.open(o_file)
                 ra = coords[0]
                 dec = coords[1]
                 # Create SkyCoord object for target.
@@ -72,42 +73,42 @@ def perform_photometry(filters, dirtarget, coords, comparison_coords):
                 final_sum = phot_table['aperture_sum_0'] - bkg_sum
                 phot_table['residual_aperture_sum'] = final_sum
                 # Add residual aperture sum to list to be returned by function.
-                residual_aperture_sum.append(phot_table['redisual_aperture_sum'])
+                residual_aperture_sum.append(phot_table['residual_aperture_sum'][0])
                 
-        for i, comparison_coord in enumerate(comparison_coords):
-            residual_aperture_sum_c = []
-            for path in os.listdir(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')):
-                if path.endswith('*.fits'):
-                    hdulist_c = fits.open(path)
-                    ra_c = comparison_coord[0]
-                    dec_c = comparison_coord[1]
-                    radius_c = 1 * u.arcsec
-                    r_inner_c = 4 * u.arcsec
-                    r_outer_c = 6 * u.arcsec
-                    # Retrieve arcseconds per pixel in right ascension value.
-                    secpix1 = abs(hdulist[0].header['SECPIX1'])
-                    # Calculate area of aperture.
-                    aperture_area = np.pi * (secpix1**(-1))**2
-                    # Calculate area of annulus.
-                    annulus_area = np.pi * (secpix1**(1/6))**2 - np.pi * (secpix1**(1/4))**2
-                    # Create SkyCoord object for comparison star.
-                    coordinates_c = SkyCoord(ra_c, dec_c, unit = (u.hourangle, u.deg))
-                    # Create SkyCircularAperture object for comparison star.
-                    aperture_c = SkyCircularAperture(coordinates_c, radius_c)
-                    # Create SkyCircularAnnulus object for comparison star.
-                    annulus_c = SkyCircularAnnulus(coordinates_c, r_in=r_inner_c, r_out=r_outer_c)
-                    apers = (aperture_c, annulus_c)
-                    # Create photometry table including aperture sum for target
-                    # aperture and annulus sum for target annulus.
-                    phot_table_c = aperture_photometry(hdulist_c, apers)
-                    # Calculate background value.
-                    bkg_mean = phot_table_c['aperture_sum_1'] / annulus_area
-                    bkg_sum = bkg_mean * aperture_area
-                    # Remove background value from aperture sum and add residual
-                    # aperture sum to photometry table.
-                    final_sum = phot_table_c['aperture_sum_0'] - final_sum
-                    phot_table_c['residual_aperture_sum_c'] = final_sum
-                    # Add residual aperture sum to list to be returned by function.
-                    residual_aperture_sum_c.append(phot_table_c['residual_aperture_sum_c'])
+        residual_aperture_sum_c = []
+        for path in os.listdir(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')):
+            if path.endswith('.fits'):
+                o_file = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS', path)
+                hdulist_c = fits.open(o_file)
+                ra_c = comparison_coords[0]
+                dec_c = comparison_coords[1]
+                radius_c = 1 * u.arcsec
+                r_inner_c = 4 * u.arcsec
+                r_outer_c = 6 * u.arcsec
+                # Retrieve arcseconds per pixel in right ascension value.
+                secpix1 = abs(hdulist[0].header['SECPIX1'])
+                # Calculate area of aperture.
+                aperture_area = np.pi * (secpix1**(-1))**2
+                # Calculate area of annulus.
+                annulus_area = np.pi * (secpix1**(1/6))**2 - np.pi * (secpix1**(1/4))**2
+                # Create SkyCoord object for comparison star.
+                coordinates_c = SkyCoord(ra_c, dec_c, unit = (u.hourangle, u.deg))
+                # Create SkyCircularAperture object for comparison star.
+                aperture_c = SkyCircularAperture(coordinates_c, radius_c)
+                # Create SkyCircularAnnulus object for comparison star.
+                annulus_c = SkyCircularAnnulus(coordinates_c, r_in=r_inner_c, r_out=r_outer_c)
+                apers = (aperture_c, annulus_c)
+                # Create photometry table including aperture sum for target
+                # aperture and annulus sum for target annulus.
+                phot_table_c = aperture_photometry(hdulist_c, apers)
+                # Calculate background value.
+                bkg_mean = phot_table_c['aperture_sum_1'] / annulus_area
+                bkg_sum = bkg_mean * aperture_area
+                # Remove background value from aperture sum and add residual
+                # aperture sum to photometry table.
+                final_sum = phot_table_c['aperture_sum_0'] - final_sum
+                phot_table_c['residual_aperture_sum_c'] = final_sum
+                # Add residual aperture sum to list to be returned by function.
+                residual_aperture_sum_c.append(phot_table_c['residual_aperture_sum_c'][0])
                 
     return residual_aperture_sum, residual_aperture_sum_c
