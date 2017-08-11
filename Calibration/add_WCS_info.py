@@ -7,7 +7,7 @@ from astropy.io import fits
 import progressbar
 
 
-def add_WCS_info(dirtarget, filters, verbose=False):
+def add_WCS_info(target, dirtarget, filters, verbose=False):
     """Adds accurate WCS information to all headers in dataset.
 
     Finds coordinates of stars using imstar command and WCS information
@@ -20,6 +20,8 @@ def add_WCS_info(dirtarget, filters, verbose=False):
 
     Parameters
     ----------
+    target : str
+        Name of target.
     dirtarget : str
         Directory containing all bias, flat, and raw science images.
     filters : list
@@ -77,7 +79,8 @@ def add_WCS_info(dirtarget, filters, verbose=False):
             # Writes file.
             hdu = fits.PrimaryHDU(imagedata, header=other_header)
             hdulist = fits.HDUList([hdu])
-            out_path = os.path.join(dirtarget, fil, 'WCS', 'wcs{}.fits'.format(n))
+            out_path = os.path.join(dirtarget, fil, 'WCS', target + '_' +
+                                    fil + '{}.fits'.format(n))
             hdulist.writeto(out_path, overwrite=True)       
         if verbose:
             progress.finish() 
