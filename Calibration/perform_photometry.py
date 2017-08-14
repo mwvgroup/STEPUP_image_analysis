@@ -112,7 +112,3 @@ def perform_photometry(filters, dirtarget, coords, comparison_coords):
                 residual_aperture_sum_c.append(phot_table_c['residual_aperture_sum_c'][0])
                 
     return residual_aperture_sum, residual_aperture_sum_c
-
-r_a, r_a_c = perform_photometry(['R'], '/Users/helenarichie/tests3/ISR_Images', ('19:11:32, 48:30:43'), ('16:00:21', '66:49:07'))
-print(r_a)
-print(r_a_c)
