@@ -48,9 +48,9 @@ def perform_photometry(filters, dirtarget, coords, comparison_coords):
                 # Create SkyCoord object for target.
                 coordinates = SkyCoord(ra, dec, unit = (u.hourangle, u.deg))
                 # Define radius of aperture and inner/outer radius of annulus.
-                radius = 1 * u.arcsec
-                r_inner = 4 * u.arcsec
-                r_outer = 6 * u.arcsec
+                radius = 6 * u.arcsec
+                r_inner = 8 * u.arcsec
+                r_outer = 12 * u.arcsec
                 # Create SkyCircularAperture object for target.
                 aperture = SkyCircularAperture(coordinates, radius)
                 # Create SkyCircularAnnulus  object for target.
@@ -58,9 +58,9 @@ def perform_photometry(filters, dirtarget, coords, comparison_coords):
                 # Retrieve arcseconds per pixel in right ascensions value.
                 secpix1 = abs(hdulist[0].header['SECPIX1'])
                 # Calculate area of aperture.
-                aperture_area = np.pi * (secpix1**(-1))**2
+                aperture_area = np.pi * ((secpix1/6)**(-1))**2
                 # Calculate area of annulus.
-                annulus_area = np.pi * (secpix1**(1/6))**2 - np.pi * (secpix1**(1/4))**2
+                annulus_area = np.pi * ((secpix1/12)**(-1))**2 - np.pi * ((secpix1/8)**(-1))**2
                 apers = (aperture, annulus)
                 # Create photometry table including aperture sum for target
                 # aperture and annulus sum for target annulus.
@@ -82,15 +82,15 @@ def perform_photometry(filters, dirtarget, coords, comparison_coords):
                 hdulist_c = fits.open(o_file)
                 ra_c = comparison_coords[0]
                 dec_c = comparison_coords[1]
-                radius_c = 1 * u.arcsec
-                r_inner_c = 4 * u.arcsec
-                r_outer_c = 6 * u.arcsec
+                radius_c = 6 * u.arcsec
+                r_inner_c = 8 * u.arcsec
+                r_outer_c = 12 * u.arcsec
                 # Retrieve arcseconds per pixel in right ascension value.
                 secpix1 = abs(hdulist[0].header['SECPIX1'])
                 # Calculate area of aperture.
-                aperture_area = np.pi * (secpix1**(-1))**2
+                aperture_area = np.pi * ((secpix1/6)**(-1))**2
                 # Calculate area of annulus.
-                annulus_area = np.pi * (secpix1**(1/6))**2 - np.pi * (secpix1**(1/4))**2
+                annulus_area = np.pi * ((secpix1/12)**(-1))**2 - np.pi * ((secpix1/8)**(-1))**2
                 # Create SkyCoord object for comparison star.
                 coordinates_c = SkyCoord(ra_c, dec_c, unit = (u.hourangle, u.deg))
                 # Create SkyCircularAperture object for comparison star.
@@ -112,3 +112,7 @@ def perform_photometry(filters, dirtarget, coords, comparison_coords):
                 residual_aperture_sum_c.append(phot_table_c['residual_aperture_sum_c'][0])
                 
     return residual_aperture_sum, residual_aperture_sum_c
+
+r_a, r_a_c = perform_photometry(['R'], '/Users/helenarichie/tests3/ISR_Images', ('19:11:32, 48:30:43'), ('16:00:21', '66:49:07'))
+print(r_a)
+print(r_a_c)
