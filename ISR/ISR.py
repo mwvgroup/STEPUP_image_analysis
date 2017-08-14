@@ -214,82 +214,65 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
     -------
     None
     """
-    # Makes directory for ISR FITS files and retrieves raw and master
-    # calibration files.
-    os.mkdir(dirtarget + '/ISR_Images')
-    files = glob.glob(os.path.join(dirtarget, '*.fit'))
-    calib_files = glob.glob(os.path.join(dirtarget + '/mcalib/', '*.fits'))
+    mflat = []
+    mbias = []
+    mdark = []
+    dark_exptime = None
+    for fil in image_filters:
+        # Gets mbias, mdark, and mflat of correct filter from mcalib.
+        for path in os.listdir(os.path.join(dirtarget, 'mcalib')):
+            if path.endswith(".fits"):
+                o_path = os.path.join(dirtarget, 'mcalib', path)
+                calib_file = fits.open(o_path)
+                if calib_file[0].header['IMAGETYP'] == 'Bias Frame':
+                    mbias.append(calib_file[0].data)
+                if calib_file[0].header['IMAGETYP'] == 'Dark Frame':
+                    dark_exptime = calib_file[0].header['EXPTIME']
+                    mdark.append(calib_file[0].data)
+                if calib_file[0].header['IMAGETYP'] == 'Flat Field':
+                    if calib_file[0].header['FILTER'] == fil:
+                        mflat.append(calib_file[0].data)
+                calib_file.close()
+                
+        mbias_array = np.array(mbias, dtype=float)
+        mdark_array = np.array(mdark, dtype=float)
+        mflat_array = np.array(mflat, dtype=float)
 
-    # Reduces raw images by each filter in image_filters.
-    for i in image_filters:
-        os.mkdir(dirtarget + '/ISR_images/' + i)
-        science_images = []
-        science_image_prihdr = None
-        mbias = []
-        mdark = []
-        mflat = []
-        dark_exptime = None
+        mbias_array = mbias_array[0]
+        mdark_array = mdark_array[0]
+        mflat_array = mflat_array[0]
 
-        # Gets master calibration images into arrays in order to perform
-        # operations on raw images.
-        for file in calib_files:
-            hdulist = fits.open(file)
-            if hdulist[0].header['IMAGETYP'] == 'Bias Frame':
-                image = fits.getdata(file)
-                mbias.append(image)
-            if hdulist[0].header['IMAGETYP'] == 'Dark Frame':
-                dark_exptime = hdulist[0].header['EXPTIME']
-                image = fits.getdata(file)
-                mdark.append(image)
-            if hdulist[0].header['IMAGETYP'] == 'Flat Field':
-                if hdulist[0].header['FILTER'] == i:
-                    image = fits.getdata(file)
-                    mflat.append(image)
-            hdulist.close()
-
-        mbias = np.array(mbias, dtype=float)
-        mdark = np.array(mdark, dtype=float)
-        mflat = np.array(mflat, dtype=float)
-
-        # Accesses first index in array so that master calibration are of the
-        # same dimension as raw images.
-        mbias = mbias[0]
-        mdark = mdark[0]
-        mflat = mflat[0]
-
-        # Calculates expected saturation.
+        # Calculates expected saturation of image.
         saturation = 65535
-        saturation -= np.median(mbias)
-        saturation -= np.median((mdark*exptime)/dark_exptime)
-        saturation /= np.average(mflat)
+        saturation -= np.median(mbias_array)
+        saturation -= np.median((mdark_array*exptime)/dark_exptime)
+        saturation /= np.average(mflat_array)
         saturation *= 0.97
         saturation = int(saturation)
 
-        # Creates array of raw images and adds saturation to header.
-        for file in files:
-            hdulist = fits.open(file)
-            if (hdulist[0].header['IMAGETYP'] == 'Light Frame' and
-                    hdulist[0].header['FILTER'] == i):
-                hdulist[0].header['SATLEVEL'] = saturation
-                image = fits.getdata(file)
-                science_images.append(image)
-                science_image_prihdr = hdulist[0].header
-            hdulist.close()
-
-        science_image_array = np.array(science_images, dtype=float)
-
-        # Removes mbias, mdark, and mflat.
-        for file in science_image_array:
-                file -= mbias
-                file -= mdark
-                file /= mflat
-
-        # Saves instrument signature removed imags in a FITS file with correct
-        # header to dirtarget/ISR_images.
-        n = 0
-        for j in science_image_array:
-            n += 1
-            hdu = fits.PrimaryHDU(j, header=science_image_prihdr)
-            hdulist = fits.HDUList([hdu])
-            hdulist.writeto((dirtarget + '/ISR_Images/' + i + '/' + target +
-                             '_' + i + '_{}.fits'.format(n)), overwrite=True)
+        # Makes directory for each filter to write ISR files to.
+        os.mkdir(os.path.join(dirtarget, 'ISR_Images'))
+        os.mkdir(os.path.join(dirtarget, 'ISR_Images', fil))
+        # Finds all light frame images in dirtarget of correct filter.
+        for n, path in enumerate(os.listdir(dirtarget)):
+            if path.endswith(".fit"):
+                o_file = os.path.join(dirtarget, path)
+                hdulist = fits.open(o_file)
+                if hdulist[0].header['IMAGETYP'] == 'Light Frame':
+                    if hdulist[0].header['FILTER'] == fil:
+                        # Adds saturation to header.
+                        hdulist[0].header['SATLEVEL'] = saturation
+                        prihdr = hdulist[0].header
+                        image = hdulist[0].data
+                        image_array = np.array(image, dtype=float)
+                        # Removes instrument signatures.
+                        image_array -= mbias_array
+                        image_array -= mdark_array
+                        image_array /= mflat_array
+                        # Writes ISR file.
+                        hdu = fits.PrimaryHDU(image_array, header=prihdr)
+                        hdulist = fits.HDUList([hdu])
+                        out_path = os.path.join(dirtarget, 'ISR_Images', fil,
+                                                target + '_' + fil +
+                                                '_{}'.format(n) + '.fits')
+                        hdulist.writeto(out_path, overwrite=True) 
