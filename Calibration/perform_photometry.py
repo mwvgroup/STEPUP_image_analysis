@@ -106,7 +106,7 @@ def perform_photometry(filters, dirtarget, coords, comparison_coords):
                 bkg_sum = bkg_mean * aperture_area
                 # Remove background value from aperture sum and add residual
                 # aperture sum to photometry table.
-                final_sum = phot_table_c['aperture_sum_0'] - final_sum
+                final_sum = phot_table_c['aperture_sum_0'] - bkg_sum
                 phot_table_c['residual_aperture_sum_c'] = final_sum
                 # Add residual aperture sum to list to be returned by function.
                 residual_aperture_sum_c.append(phot_table_c['residual_aperture_sum_c'][0])
