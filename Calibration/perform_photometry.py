@@ -56,7 +56,6 @@ def calibration_main(target, dirtarget, filters, date, coords, comp_coords,
     -------
     None
     """
-
     add_WCS_info(target, dirtarget, filters, verbose)
 
     aper_sum, aper_sum_c, aper_error, date_obs = perform_photometry(filters,
@@ -97,7 +96,7 @@ def add_WCS_info(target, dirtarget, filters, verbose=False):
     -------
     None
     """
-    os.chdir(os.path.join(dirtarget))
+    os.chdir(dirtarget)
 
     # Creates new-images.tab file with positions of stars.
     args = '-vhi' if verbose else '-hi'
