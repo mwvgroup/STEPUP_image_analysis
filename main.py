@@ -17,7 +17,8 @@ comparison_coords = (ra_c, dec_c)
 
 filters = ISR.ISR_main(dirtarget, dirdark, target)
 
-answer = print('\nInstrument signature removal completed. Continue? (Y/N): ')
+answer = print('\nInstrument signature removal completed.',
+               'Continue to photometry? (Y/N): ')
 if answer == 'Y':
     print('\nPhotometry in progress...')
 else:
