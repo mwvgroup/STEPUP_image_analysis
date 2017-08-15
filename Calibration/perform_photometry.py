@@ -100,16 +100,14 @@ def add_WCS_info(target, dirtarget, filters, verbose=False):
     os.chdir(os.path.join(dirtarget))
 
     # Creates new-images.tab file with positions of stars.
-    if verbose:
-        subprocess.call(['imstar', '-vhi', '700', '-tw', 'new-image.fits'])
-    else:
-        subprocess.call(['imstar', '-hi', '700', '-tw', 'new-image.fits'])
+    args = '-vhi' if verbose else '-hi'
+    subprocess.call(['imstar', args, '700', '-tw', 'new-image.fits'])
 
     # Gets header with WCS information to append to all images.
     wcsim_hdu = fits.open(os.path.join(dirtarget, 'new-image.fits'))
     wcsim_header = wcsim_hdu[0].header
 
-    # Repeats process for each filter.
+    # Repeats process for images of each filter.
     for fil in filters:
         os.mkdir(os.path.join(dirtarget, fil, 'WCS'))
 
