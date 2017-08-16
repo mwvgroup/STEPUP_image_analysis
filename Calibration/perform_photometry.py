@@ -273,8 +273,8 @@ def perform_photometry(filters, dirtarget, coords, comp_coords):
 
                 hdulist_c = fits.open(o_file)
 
-                ra_c = comparison_coords[0]
-                dec_c = comparison_coords[1]
+                ra_c = comp_coords[0]
+                dec_c = comp_coords[1]
                 radius_c = 6 * u.arcsec
                 r_inner_c = 8 * u.arcsec
                 r_outer_c = 12 * u.arcsec
