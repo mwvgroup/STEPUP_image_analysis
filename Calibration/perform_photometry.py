@@ -8,15 +8,14 @@ import numpy as np
 from photutils import aperture_photometry
 from astropy.time import Time
 import matplotlib.pyplot as plt
-import numpy.polynomial.polynomial as poly
 
 
 def perform_photometry(target, dirtarget, filters, date, coords, comp_coords,
                        comp_mag, verbose=False):
-    """Peforms photometryo on dataset.
+    """Peforms photometry on dataset.
 
     Use "verbose=True" to print information about program status. Then calls
-    perform_photometry, which returns lists of aperture sums for the target and
+    photometry, which returns lists of aperture sums for the target and
     comparison stars as well as the error of the target aperture sums and the
     time that each aperture sum corresponds with. It then calls counts_to_mag,
     which returns a list of pixel values scaled to magnitude using the aperture
@@ -51,18 +50,15 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_coords,
     -------
     None
     """
-    aper_sum, aper_sum_c, aper_error, date_obs = perform_photometry(filters,
-                                                                    dirtarget,
-                                                                    coords,
-                                                                    comp_coords)
+    aper_sum, aper_sum_c, aper_error, date_obs = photometry(filters, dirtarget,
+                                                            coords, comp_coords)
 
-    target_mag, error_mag = counts_to_mag(comp_mag, aper_sum, aper_sum_c,
-                                          aper_error)
+    target_mag = counts_to_mag(comp_mag, aper_sum, aper_sum_c, aper_error)
 
-    mag_plot(target_mag, date_obs, target, date, error_mag)
+    mag_plot(target_mag, date_obs, target, date, aper_error)
 
 
-def perform_photometry(filters, dirtarget, coords, comp_coords):
+def photometry(filters, dirtarget, coords, comp_coords):
     """Perform aperture photometry on dataset.
 
     Creates aperture and annulus to measure the counts from the star and
@@ -140,8 +136,9 @@ def perform_photometry(filters, dirtarget, coords, comp_coords):
 
                 # Create photometry table including aperture sum for target
                 # aperture and annulus sum for target annulus.
-                error = 0.1 * hdulist[0].data
-                phot_table = aperture_photometry(hdulist, apers, error=error)
+                phot_table = aperture_photometry(hdulist, apers)
+                error = np.sqrt(phot_table['aperture_sum_0'][0])
+
 
                 # Calculate background value.
                 bkg_mean = phot_table['aperture_sum_1'] / annulus_area
@@ -150,66 +147,70 @@ def perform_photometry(filters, dirtarget, coords, comp_coords):
                 # aperture sum to photometry table.
                 final_sum = phot_table['aperture_sum_0'] - bkg_sum
                 phot_table['residual_aperture_sum'] = final_sum
+                bkg_error = np.sqrt(final_sum)
 
                 # Add residual aperture sum, aperture error, and observation
                 # date to lists to be returned by function.
                 aper_sum.append(phot_table['residual_aperture_sum'][0])
-                aper_error.append(phot_table['aperture_sum_err_0'][0])
+                aper_error.append((error - bkg_error)) 
                 date_obs.append(hdulist[0].header['DATE-OBS'])
 
         aper_sum_c = []
 
-        for path in os.listdir(os.path.join(dirtarget, fil, 'WCS',
-                                            'accurate_WCS')):
-            if path.endswith('.fits'):
-                o_file = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
-                                      path)
+        for coords in comp_coords:
+            aper_sum_1 = []
+            for path in os.listdir(os.path.join(dirtarget, fil, 'WCS',
+                                                'accurate_WCS')):
+                if path.endswith('.fits'):
+                    o_file = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
+                                          path)
 
-                hdulist_c = fits.open(o_file)
+                    hdulist_c = fits.open(o_file)
 
-                ra_c = comp_coords[0]
-                dec_c = comp_coords[1]
-                radius_c = 6 * u.arcsec
-                r_inner_c = 8 * u.arcsec
-                r_outer_c = 12 * u.arcsec
+                    ra_c = coords[0]
+                    dec_c = coords[1]
+                    radius_c = 6 * u.arcsec
+                    r_inner_c = 8 * u.arcsec
+                    r_outer_c = 12 * u.arcsec
 
-                # Retrieve arcseconds per pixel in right ascension value.
-                secpix1 = abs(hdulist[0].header['SECPIX1'])
+                    # Retrieve arcseconds per pixel in right ascension value.
+                    secpix1 = abs(hdulist[0].header['SECPIX1'])
 
-                # Calculate area of aperture.
-                aperture_area = np.pi * ((secpix1 / 6) ** (-1)) ** 2
-                # Calculate area of annulus.
-                outer_area = np.pi * ((secpix1 / 12) ** (-1)) ** 2
-                inner_area = np.pi * ((secpix1 / 8) ** (-1)) ** 2
-                annulus_area = outer_area - inner_area
+                    # Calculate area of aperture.
+                    aperture_area = np.pi * ((secpix1 / 6) ** (-1)) ** 2
+                    # Calculate area of annulus.
+                    outer_area = np.pi * ((secpix1 / 12) ** (-1)) ** 2
+                    inner_area = np.pi * ((secpix1 / 8) ** (-1)) ** 2
+                    annulus_area = outer_area - inner_area
 
-                # Create SkyCoord object for comparison star.
-                coordinates_c = SkyCoord(ra_c, dec_c, unit=(u.hourangle,
-                                                            u.deg))
+                    # Create SkyCoord object for comparison star.
+                    coordinates_c = SkyCoord(ra_c, dec_c, unit=(u.hourangle,
+                                                                u.deg))
 
-                # Create SkyCircularAperture object for comparison star.
-                aperture_c = SkyCircularAperture(coordinates_c, radius_c)
+                    # Create SkyCircularAperture object for comparison star.
+                    aperture_c = SkyCircularAperture(coordinates_c, radius_c)
 
-                # Create SkyCircularAnnulus object for comparison star.
-                annulus_c = SkyCircularAnnulus(coordinates_c, r_in=r_inner_c,
-                                               r_out=r_outer_c)
+                    # Create SkyCircularAnnulus object for comparison star.
+                    annulus_c = SkyCircularAnnulus(coordinates_c, r_in=r_inner_c,
+                                                   r_out=r_outer_c)
 
-                apers = (aperture_c, annulus_c)
+                    apers = (aperture_c, annulus_c)
 
-                # Create photometry table including aperture sum for target
-                # aperture and annulus sum for target annulus.
-                phot_table_c = aperture_photometry(hdulist_c, apers)
+                    # Create photometry table including aperture sum for target
+                    # aperture and annulus sum for target annulus.
+                    phot_table_c = aperture_photometry(hdulist_c, apers)
 
-                # Calculate background value.
-                bkg_mean = phot_table_c['aperture_sum_1'] / annulus_area
-                bkg_sum = bkg_mean * aperture_area
-                # Remove background value from aperture sum and add residual
-                # aperture sum to photometry table.
-                final_sum = phot_table_c['aperture_sum_0'] - bkg_sum
-                phot_table_c['residual_aperture_sum_c'] = final_sum
+                    # Calculate background value.
+                    bkg_mean = phot_table_c['aperture_sum_1'] / annulus_area
+                    bkg_sum = bkg_mean * aperture_area
+                    # Remove background value from aperture sum and add residual
+                    # aperture sum to photometry table.
+                    final_sum = phot_table_c['aperture_sum_0'] - bkg_sum
+                    phot_table_c['residual_aperture_sum_c'] = final_sum
 
-                # Add residual aperture sum to list to be returned by function.
-                aper_sum_c.append(phot_table_c['residual_aperture_sum_c'][0])
+                    # Add residual aperture sum to list to be returned by function.
+                    aper_sum_1.append(phot_table_c['residual_aperture_sum_c'][0])
+            aper_sum_c.append(aper_sum_1)
 
     return aper_sum, aper_sum_c, aper_error, date_obs
 
@@ -217,34 +218,30 @@ def perform_photometry(filters, dirtarget, coords, comp_coords):
 def counts_to_mag(comp_mag, aper_sum, aper_sum_c, aper_error):
     target_mag = []
     error_mag = []
-    for i in range(0, len(aper_sum)):
-        mag = comp_mag - 2.5 * np.log10(aper_sum[i] / aper_sum_c[i])
-        target_mag.append(mag)
-    for i in range(0, len(aper_error)):
-        mag = comp_mag - 2.5 * np.log10(aper_error[i] / aper_sum_c[i])
-        error_mag.append(mag)
-    print(error_mag)
-    return target_mag, error_mag
+    final_mag = []
+    for mag in comp_mag:
+        for comp_sum in aper_sum_c:
+            scaled_mag = []
+            for i in range(0, len(aper_sum)):
+                comp_scale = mag - 2.5 * np.log10(aper_sum[i] / comp_sum[i])
+                scaled_mag.append(comp_scale)
+            target_mag.append(scaled_mag)
+    for j in range(0, len(target_mag[0])):
+        final_mag.append(np.mean([target_mag[0][j], target_mag[1][j]]))
+                
+    return final_mag
 
 
 def mag_plot(target_mag, date_obs, target, date, error_mag):
-
     t = Time(date_obs)
     times = t.jd
-
     x = times
     y = target_mag
     plt.title('Light Curve of {}, {}'.format(target, date))
     plt.ylabel('Magnitude')
     plt.xlabel('JD')
-    # plt.errorbar(x=times, y=target_mag, xerr=None, yerr=error_mag)
-    # z = np.polyfit(times,target_mag, 4)
-    # f = np.poly1d(z)
-    # y_new = f(times)
-    coefs = poly.polyfit(times, target_mag, 4)
-    ffit = poly.polyval(times, coefs)
-    plt.plot(times, ffit)
-    plt.plot(times, target_mag, 'o')
+    # plt.errorbar(x, y, yerr=error_mag)
+    plt.plot(x, y, 'o')
     plt.gcf().autofmt_xdate()
     plt.gca().invert_yaxis()
     plt.show()
