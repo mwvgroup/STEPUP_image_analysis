@@ -1,4 +1,5 @@
 import os
+import glob
 from astropy.io import fits
 from astropy.coordinates import SkyCoord
 from astropy import units as u
@@ -86,10 +87,9 @@ def photometry(dirtarget, filters, coords, comp_coords):
         Array of time of observation in Julian Days.
     """
     for fil in filters:
-        # How can I do this so that I only have files included that end with 
-        # .fits?
         path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')
-        last_in = len(os.listdir(path))
+        # Get number of FITS files in path.
+        last_in = len(glob.glob(os.path.join(path, '*.fits')))
         # Initialize numpy array of nan vaules with size that is equal to the
         # number of images in the dataset for the aperture sums.
         aper_sum = np.empty((last_in))
@@ -105,7 +105,7 @@ def photometry(dirtarget, filters, coords, comp_coords):
         date_obs[:] = np.nan
 
         # Open all files in path that are FITS files.
-        for i, item in enumerate(os.listdir(path)):
+        for i, item in enumerate(glob.glob(os.path.join(path, '*.fits'))):
             if item.endswith('.fits'):
                 o_file = os.path.join(path, item)
                 hdulist = fits.open(o_file)
@@ -171,7 +171,7 @@ def photometry(dirtarget, filters, coords, comp_coords):
         path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')
         # Get last index number to initialize comp_aper_sum and comp_err numpy 
         # arrays.
-        last_in = len(os.listdir(path))
+        last_in = len(glob.glob(os.path.join(path, '*.fits')))
         # Get middle index number to initialize comp_aper_sum and comp_err numpy 
         # arrays.
         mid_ind = len(comp_coords)
@@ -184,7 +184,7 @@ def photometry(dirtarget, filters, coords, comp_coords):
         
         # Open all files in path that are FITS files.
         for k, coord in enumerate(comp_coords):
-            for j, item in enumerate(os.listdir(path)):
+            for j, item in enumerate(glob.glob(os.path.join(path, '*.fits'))):
                 if item.endswith('.fits'):
                     o_file = os.path.join(path, item)
                     hdulist = fits.open(o_file)
@@ -385,3 +385,10 @@ def write_file(target_mags, target_err, date_obs, target, comp_codes, vsp_code,
                     f.write(input_string + '\n')
 
         f.close()
+perform_photometry('AGDra', '/Users/helenarichie/tests2/ISR_Images', ['R'],
+                   '2017-08-09', ('16:01:41.00', '66:48:10.0'),
+                   [('16:02:54.40', '66:41:33.9'), ('16:00:56.46', '66:42:57.5'),
+                    ('16:00:24.08', '66:49:29.6'), ('16:00:08.77', '66:49:20.0'),
+                    ('16:01:08.41', '66:55:21.4')], [10.708, 11.644, 11.980,
+                                                     12.555, 12.900],
+                   'X21126DBA', (111, 120, 123, 129, 132), verbose=False)
