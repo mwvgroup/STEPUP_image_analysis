@@ -385,11 +385,3 @@ def write_file(target_mags, target_err, date_obs, target, comp_codes, vsp_code,
                     f.write(input_string + '\n')
 
         f.close()
-        
-perform_photometry('AGDra', '/Users/helenarichie/tests2/ISR_Images', ['R'],
-                   '2017-08-09', ('16:01:41.00', '66:48:10.0'),
-                   [('16:02:54.40', '66:41:33.9'), ('16:00:56.46', '66:42:57.5'),
-                    ('16:00:24.08', '66:49:29.6'), ('16:00:08.77', '66:49:20.0'),
-                    ('16:01:08.41', '66:55:21.4')], [10.708, 11.644, 11.980,
-                                                     12.555, 12.900],
-                   'X21126DBA', (111, 120, 123, 129, 132), verbose=False)
