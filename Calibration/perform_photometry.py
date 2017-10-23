@@ -85,6 +85,8 @@ def photometry(dirtarget, filters, coords, comp_coords):
         Array of count values of error of aperture sum.
     date_obs : numpy.ndarray
         Array of time of observation in Julian Days.
+    altitudes : numpy.ndarray
+        Array of altitudes of each image.
     """
     for fil in filters:
         path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')
@@ -103,6 +105,11 @@ def photometry(dirtarget, filters, coords, comp_coords):
         # taken.
         date_obs = np.empty((last_in))
         date_obs[:] = np.nan
+
+        # Initialize numpy array of nan values with size that is equal to the
+        # number of images in the dataset for the altitude of each image.
+        altitudes = np.empty((last_in))
+        altitudes[:] = np.nan
 
         # Open all files in path that are FITS files.
         for i, item in enumerate(glob.glob(os.path.join(path, '*.fits'))):
@@ -166,6 +173,9 @@ def photometry(dirtarget, filters, coords, comp_coords):
                 time = t.jd
                 # Add time to date_obs.
                 date_obs[i] = time
+
+                # Add altitude to altitudes.
+                altitudes[i] = hdulist[0].header['OBJCTALT']
                 
     for fil in filters:
         path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')
@@ -228,7 +238,7 @@ def photometry(dirtarget, filters, coords, comp_coords):
                     # How do I shorten this line.
                     comp_aper_sum[k, j] = comp_phot_table['residual_aperture_sum'][0]
 
-    return aper_sum, err, date_obs, comp_aper_sum
+    return aper_sum, err, date_obs, comp_aper_sum, altitude
 
 
 def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mag):
@@ -336,7 +346,7 @@ def mag_plot(target_mags, target_err, date_obs, target, date, filters,
 
 
 def write_file(target_mags, target_err, date_obs, target, comp_codes, vsp_code,
-               dirtarget, filters):
+               dirtarget, filters, altitudes):
     """Writes file of observational data to submit to AAVSO.
     
     Formats data to be compatible for submission for the AAVSO Extended File 
@@ -362,6 +372,8 @@ def write_file(target_mags, target_err, date_obs, target, comp_codes, vsp_code,
     filters : list
         List containing string of each filter keyword found in header of flat
         field and light frame images.
+    altitudes : numpy.ndarray
+        Array of altitudes of each image.
         
     Returns
     -------
@@ -372,10 +384,10 @@ def write_file(target_mags, target_err, date_obs, target, comp_codes, vsp_code,
                             'output.txt')
         
         with open(path, 'w+') as f:
-            f.write('#TYPE=Visual\n#OBSCODE=NTHC\n#SOFTWARE=STEPUP Image ' +
-                    'Analysis\n#DELIM=,\n#DATE=JD\n#OBSTYPE=Visual\n')
-            for mag, date in zip(target_mags, date_obs):
-                    input_list = [target, mag, date, 'na']
+            f.write('#TYPE=Extended\n#OBSCODE=NTHC\n#SOFTWARE=STEPUP Image ' +
+                    'Analysis\n#DELIM=,\n#DATE=JD\n#OBSTYPE=CCD\n')
+            for date, mag, err in zip(date_obs, target_mags, target_err):
+                    input_list = [target, date, mag, err, fil, 'NO', 'STD']
                     for code in comp_codes:
                         input_list.append(code)
                     input_list.append('na')
