@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 def perform_photometry(target, dirtarget, filters, date, coords, comp_coords,
-                       comp_mag, vsp_code, comp_codes, cname, c_coords, kname,
+                       comp_mags, vsp_code, cname, c_coords, kname,
                        k_coords, verbose=False):
     """Perform photometry on dataset and plot lightcurve.
     Parameters
@@ -31,12 +31,20 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_coords,
     comp_coords : list
         List containing tuples of string(s) of RA and Dec of comparison
         star(s) [('HH:MM:SS', '+/-DD:MM:SS')].
-    comp_mag : list
+    comp_mags : list
         List of float(s) of magnitude(s) of comparison star(s).
     vsp_code : str
         Identifier for AAVSO Variable Star Plotter chart.
-    comp_codes : tuple
-        Identifier for each comparison star within the VSP.
+    cname : str
+        AAVSO Unique Identifier (AUID) for the comparison star.
+    c_coords : tuple
+        Tuple containing strings of RA and Dec of comparison star of closest
+        location to target star ('HH:MM:SS', '+/-DD:MM:SS).
+    kname : str
+        AAVSO Unique Identifier (AUID) for the check star.
+    k_coords : tuple
+        Tuple containing strings of RA and Dec of check star
+        ('HH:MM:SS', '+/-DD:MM:SS).
     verbose : boolean, optional
         Print more information about status of program.
     Returns
@@ -45,7 +53,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_coords,
     """
     aper_sum, err, date_obs, comp_aper_sum, altitudes, cmags, kmags = photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname, k_coords)
 
-    target_mags, target_err, scaled_cmags, scaled_kmags = counts_to_mag(aper_sum, comp_aper_sum, err, comp_mag, kmags, cmags)
+    target_mags, target_err, scaled_cmags, scaled_kmags = counts_to_mag(aper_sum, comp_aper_sum, err, comp_mags, kmags, cmags)
 
     mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget)
@@ -73,12 +81,12 @@ def photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname,
         star(s) [('HH:MM:SS', '+/-DD:MM:SS')].
     cname : str
         AAVSO Unique Identifier (AUID) for the comparison star.
-    c_coord : tuple
+    c_coords : tuple
         Tuple containing strings of RA and Dec of comparison star of closest
         location to target star ('HH:MM:SS', '+/-DD:MM:SS).
     kname : str
         AAVSO Unique Identifier (AUID) for the check star.
-    k_coord : tuple
+    k_coords : tuple
         Tuple containing strings of RA and Dec of check star
         ('HH:MM:SS', '+/-DD:MM:SS). 
 
@@ -300,7 +308,7 @@ def photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname,
     return aper_sum, err, date_obs, comp_aper_sum, altitudes, cmags, kmags
 
 
-def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mag, kmags, cmags):
+def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mags, kmags, cmags):
     """Converts instrumental measurements of brightness to magnitude values.
     
     Using the aperture sums of the target star and the comparison stars
@@ -353,19 +361,19 @@ def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mag, kmags, cmags):
     # of images.
     scaled_err = np.empty(comp_aper_sum.shape)
     scaled_err[:] = np.nan
-    
-    for i, mag in enumerate(comp_mag):
+
+    for i, mag in enumerate(comp_mags):
         for j, obj in enumerate(comp_aper_sum):
             # Using magnitude value of comparison star (mag) and aperture sum 
             # of comparison star (obj), each image's target count value 
-            # (aper_sum) is determined. 
+            # (aper_sum) is determined.
             scaled_mags[i] = mag - 2.5 * np.log10(aper_sum / obj)
             
             # Using magnitude value of comparison star (mag) and aperture sum 
             # of comparison star (obj), each image's target error count value 
             # (err) is determined. 
             # Is this the right way to calculate this?
-            scaled_err[i] = mag*(err/obj)
+            scaled_err[i] = mag * (err / obj)
 
         scaled_cmags[i] = - 2.5 * np.log10(cmags)
         scaled_kmags[i] = - 2.5 * np.log10(kmags)

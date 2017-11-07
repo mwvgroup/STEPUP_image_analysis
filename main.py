@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR')
 import ISR
@@ -7,22 +8,14 @@ import perform_photometry
 
 
 def main(verbose=False):
-    date = input('Input date of observation (YYYY-MM-DD): ')
     target = input('Input target name: ')
+    date = input('Input date of observation: ')
     dirtarget = '/Users/helenarichie/tests2'
-    dirdark = dirtarget
-    ra = input('Input RA of target (HH:MM:SS): ')
-    dec = input('Input Dec of target (+/-DD:MM:SS): ')
-    coords = (ra, dec)
-    ra_c = input('Input RA of comparison star (HH:MM:SS): ')
-    dec_c = input('Inpur Dec of comparison star (+/-DD:MM:SS): ')
-    comp_coords = (ra_c, dec_c)
+    dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
 
-    filters = ISR.ISR_main(dirtarget, dirdark, target)
+    # filters = ISR.ISR_main(dirtarget, dirdark, target)
 
-    answer = print('\nInstrument signature removal completed.',
-                   'Continue to astrometry (Y/N): ')
-    answer = answer.upper()
+    answer = input('\nInstrument signature removal completed.\nContinue to astrometry (Y/N): ')
     if answer == 'Y':
         print('\nAstrometry in progress...')
     else:
@@ -30,15 +23,66 @@ def main(verbose=False):
 
     dirtarget += '/ISR_Images'
 
-    perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
+    # perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
 
-    answer = print('\nAstrometry completed.',
-                   'Continue to photometry? (Y/N): ')
-    answer = answer.upper()
+    answer = input('\nAstrometry completed.\nContinue to photometry? (Y/N): ')
+    
     if answer == 'Y':
         print('\nAstrometry in progress...')
     else:
         return None
 
-    perform_photometry.perform_photometry(target, dirtarget, filters, date, coords,
-                                          comp_coords, comp_mag, verbose=False)
+    filters = ['R']
+
+    os.chdir('/Users/helenarichie/tests2')
+
+    coords = []
+    comp_ra = []
+    comp_dec = []
+    comp_mag = []
+    vsp_code = None
+    cname = None
+    c_coords = []
+    kname = None
+    k_coords = []
+
+    with open('input-file.txt') as f:
+        for line in f:
+            if line.startswith('#RA='):
+                coords.append(line[4:].strip('\n'))
+            if line.startswith('#DEC='):
+                coords.append(line[5:].strip('\n'))
+            if line.startswith('#VSPCODE='):
+                vsp_code = line[9:].strip('\n')
+            if line.startswith('#COMPMAGS='):
+                comp_mag = line[10:].strip('\n').split(',')
+            if line.startswith('#COMPRA='):
+                comp_ra = line[8:].strip('\n').split(',')
+            if line.startswith('#COMPDEC='):
+                comp_dec = line[9:].strip('\n').split(',')
+            if line.startswith('#CLABEL='):
+                cname = line[8:].strip('\n')
+            if line.startswith('#CRA='):
+                c_coords.append(line[5:].strip('\n'))
+            if line.startswith('#CDEC='):
+                c_coords.append(line[6:].strip('\n'))
+            if line.startswith('#KLABEL='):
+                kname = line[8:].strip('\n')
+            if line.startswith('#KRA'):
+                k_coords.append(line[5:].strip('\n')) 
+            if line.startswith('#KDEC='):
+                k_coords.append(line[6:].strip('\n'))
+
+    comp_mags = []
+    for mag in comp_mag:
+        comp_mags.append(float(mag))
+
+    comp_coords = []
+    for ra, dec in zip(comp_ra, comp_dec):
+            comp_coords.append((ra, dec))
+    
+    perform_photometry.perform_photometry(target, dirtarget, filters, date, coords, comp_coords,
+                                          comp_mags, vsp_code, cname, c_coords, kname,
+                                          k_coords, verbose=False)
+
+main(verbose=False)
