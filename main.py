@@ -1,8 +1,8 @@
 import os
 import sys
-sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR')
+sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/ISR')
 import ISR
-sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration')
+sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/Calibration')
 import perform_astrometry
 import perform_photometry
 
@@ -10,10 +10,10 @@ import perform_photometry
 def main(verbose=False):
     target = input('Input target name: ')
     date = input('Input date of observation: ')
-    dirtarget = '/Users/helenarichie/tests2'
+    dirtarget = os.path.join('/home/depot/STEPUP/raw/' + target + date)
     dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
 
-    # filters = ISR.ISR_main(dirtarget, dirdark, target)
+    filters = ISR.ISR_main(dirtarget, dirdark, target)
 
     answer = input('\nInstrument signature removal completed.\nContinue to astrometry (Y/N): ')
     if answer == 'Y':
@@ -23,7 +23,7 @@ def main(verbose=False):
 
     dirtarget += '/ISR_Images'
 
-    # perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
+    perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
 
     answer = input('\nAstrometry completed.\nContinue to photometry? (Y/N): ')
     
