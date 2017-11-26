@@ -149,100 +149,100 @@ def photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname,
             if item.endswith('.fits'):
                 o_file = os.path.join(path, item)
                 hdulist = fits.open(o_file)
+                if hdulist[0].header['WCSMATCH'] >= 20:
 
-                # Create SkyCoord object at target, comparison star, and check
-                # star position.
-                coordinates = SkyCoord(coords[0], coords[1], unit=(u.hourangle, 
-                                                                   u.deg))
-                c_coord = SkyCoord(c_coords[0], c_coords[1],
-                                          unit=(u.hourangle, u.deg))
-                k_coord = SkyCoord(k_coords[0], k_coords[1],
-                                   unit=(u.hourangle, u.deg))
-                
-                
-                # Set radius of aperture.
-                radius = 6 * u.arcsec
-                # Set inner/outer radius of annulus.
-                r_in = 8 * u.arcsec
-                r_out = 12 * u.arcsec
-                
-                # Create SkyCircularAperture object at target, comp star, and
-                # check star position.
-                aperture = SkyCircularAperture(coordinates, radius)
-                c_aperture = SkyCircularAperture(c_coord, radius)
-                k_aperture = SkyCircularAperture(k_coord, radius)
-                
-                # Create SkyCircularAnnulus object at target comp star, and
-                # check star position.
-                annulus = SkyCircularAnnulus(coordinates, r_in=r_in,
-                                             r_out=r_out)
-                c_annulus = SkyCircularAnnulus(c_coord, r_in=r_in,
-                                               r_out=r_out)
-                k_annulus = SkyCircularAnnulus(k_coord, r_in=r_in,
-                                               r_out=r_out)
+                    # Create SkyCoord object at target, comparison star, and check
+                    # star position.
+                    coordinates = SkyCoord(coords[0], coords[1], unit=(u.hourangle, 
+                                                                           u.deg))
+                    c_coord = SkyCoord(c_coords[0], c_coords[1],
+                                       unit=(u.hourangle, u.deg))
+                    k_coord = SkyCoord(k_coords[0], k_coords[1],
+                                       unit=(u.hourangle, u.deg))
+                        
+                    # Set radius of aperture.
+                    radius = 6 * u.arcsec
+                    # Set inner/outer radius of annulus.
+                    r_in = 8 * u.arcsec
+                    r_out = 12 * u.arcsec
+                        
+                    # Create SkyCircularAperture object at target, comp star, and
+                    # check star position.
+                    aperture = SkyCircularAperture(coordinates, radius)
+                    c_aperture = SkyCircularAperture(c_coord, radius)
+                    k_aperture = SkyCircularAperture(k_coord, radius)
+                        
+                    # Create SkyCircularAnnulus object at target comp star, and
+                    # check star position.
+                    annulus = SkyCircularAnnulus(coordinates, r_in=r_in,
+                                                 r_out=r_out)
+                    c_annulus = SkyCircularAnnulus(c_coord, r_in=r_in,
+                                                   r_out=r_out)
+                    k_annulus = SkyCircularAnnulus(k_coord, r_in=r_in,
+                                                   r_out=r_out)
 
-                # Get value of SECPIX1 from FITS headers.
-                secpix1 = abs(hdulist[0].header['SECPIX1'])
-                # Calculate area of aperture.
-                aperture_area = np.pi * ((secpix1 / 6) ** (-1)) ** 2
-                # Calculate area of annulus.
-                outer_area = np.pi * ((secpix1 / 12) ** (-1)) ** 2
-                inner_area = np.pi * ((secpix1 / 8) ** (-1)) ** 2
-                annulus_area = outer_area - inner_area
-                
-                apers = (aperture, annulus)
-                c_apers = (c_aperture, c_annulus)
-                k_apers = (k_aperture, k_annulus)
+                    # Get value of SECPIX1 from FITS headers.
+                    secpix1 = abs(hdulist[0].header['SECPIX1'])
+                    # Calculate area of aperture.
+                    aperture_area = np.pi * ((secpix1 / 6) ** (-1)) ** 2
+                    # Calculate area of annulus.
+                    outer_area = np.pi * ((secpix1 / 12) ** (-1)) ** 2
+                    inner_area = np.pi * ((secpix1 / 8) ** (-1)) ** 2
+                    annulus_area = outer_area - inner_area
+                        
+                    apers = (aperture, annulus)
+                    c_apers = (c_aperture, c_annulus)
+                    k_apers = (k_aperture, k_annulus)
 
-                # Create photometry table for target, comp star, and check
-                # star aperture and annulus sum.
-                phot_table = aperture_photometry(hdulist, apers)
-                c_phot_table = aperture_photometry(hdulist, c_apers)
-                k_phot_table = aperture_photometry(hdulist, k_apers)
-                
-                # Calculate error value for aperture sum.
-                source_err = np.sqrt(phot_table['aperture_sum_0'][0])
-                
-                # Calculate background value for target.
-                bkg_mean = phot_table['aperture_sum_1'] / annulus_area
-                bkg_sum = bkg_mean * aperture_area
-                final_sum = phot_table['aperture_sum_0'] - bkg_sum
-                phot_table['residual_aperture_sum'] = final_sum
+                    # Create photometry table for target, comp star, and check
+                    # star aperture and annulus sum.
+                    phot_table = aperture_photometry(hdulist, apers)
+                    c_phot_table = aperture_photometry(hdulist, c_apers)
+                    k_phot_table = aperture_photometry(hdulist, k_apers)
+                        
+                    # Calculate error value for aperture sum.
+                    source_err = np.sqrt(phot_table['aperture_sum_0'][0])
+                        
+                    # Calculate background value for target.
+                    bkg_mean = phot_table['aperture_sum_1'] / annulus_area
+                    bkg_sum = bkg_mean * aperture_area
+                    final_sum = phot_table['aperture_sum_0'] - bkg_sum
+                    phot_table['residual_aperture_sum'] = final_sum
 
-                # Calculate background value for comp star.
-                c_bkg_mean = c_phot_table['aperture_sum_1'] / annulus_area
-                c_bkg_sum = c_bkg_mean * aperture_area
-                c_final_sum = c_phot_table['aperture_sum_0'] - c_bkg_sum
-                c_phot_table['residual_aperture_sum'] = c_final_sum
+                    # Calculate background value for comp star.
+                    c_bkg_mean = c_phot_table['aperture_sum_1'] / annulus_area
+                    c_bkg_sum = c_bkg_mean * aperture_area
+                    c_final_sum = c_phot_table['aperture_sum_0'] - c_bkg_sum
+                    c_phot_table['residual_aperture_sum'] = c_final_sum
 
-                # Calculate background value for check star.
-                k_bkg_mean = k_phot_table['aperture_sum_1'] / annulus_area
-                k_bkg_sum = k_bkg_mean * aperture_area
-                k_final_sum = k_phot_table['aperture_sum_0'] - k_bkg_sum
-                k_phot_table['residual_aperture_sum'] = k_final_sum
-                
-                # Calculate error value for target background level.
-                bkg_err = np.sqrt(bkg_sum)
+                    # Calculate background value for check star.
+                    k_bkg_mean = k_phot_table['aperture_sum_1'] / annulus_area
+                    k_bkg_sum = k_bkg_mean * aperture_area
+                    k_final_sum = k_phot_table['aperture_sum_0'] - k_bkg_sum
+                    k_phot_table['residual_aperture_sum'] = k_final_sum
+                    
+                    # Calculate error value for target background level.
+                    bkg_err = np.sqrt(bkg_sum)
 
-                # Add aperture sum for target, comp star, and check star to
-                # their respective arrays.
-                aper_sum[i] = phot_table['residual_aperture_sum'][0]
-                cmags[i] = c_phot_table['residual_aperture_sum'][0]
-                kmags[i] = k_phot_table['residual_aperture_sum'][0]
+                    # Add aperture sum for target, comp star, and check star to
+                    # their respective arrays.
+                    aper_sum[i] = phot_table['residual_aperture_sum'][0]
+                    cmags[i] = c_phot_table['residual_aperture_sum'][0]
+                    kmags[i] = k_phot_table['residual_aperture_sum'][0]
 
-                # Add error to err.
-                err[i] = np.sqrt((source_err)**2 + (bkg_err)**2)
-                
-                # Retrieve time that image was taken and convert value to 
-                # Julian Days.
-                date = hdulist[0].header['DATE-OBS']
-                t = Time(date)
-                time = t.jd
-                # Add time to date_obs.
-                date_obs[i] = time
+                    # Add error to err.
+                    err[i] = np.sqrt((source_err)**2 + (bkg_err)**2)
+                    
+                    # Retrieve time that image was taken and convert value to 
+                    # Julian Days.
+                    date = hdulist[0].header['DATE-OBS']
+                    t = Time(date)
+                    time = t.jd
+                    # Add time to date_obs.ß
+                    date_obs[i] = time
 
-                # Add altitude to altitudes.
-                altitudes[i] = hdulist[0].header['OBJCTALT']
+                    # Add altitude to altitudes.
+                    altitudes[i] = hdulist[0].header['OBJCTALT']
                 
     for fil in filters:
         path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')
@@ -265,45 +265,46 @@ def photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname,
                 if item.endswith('.fits'):
                     o_file = os.path.join(path, item)
                     hdulist = fits.open(o_file)
-                    
-                    # Create SkyCoords object at position of k'th comparison
-                    # star.
-                    comp_coordinates = SkyCoord(coord[0], coord[1],
-                                                unit=(u.hourangle, u.deg))
-                    
-                    # Set radius of aperture.
-                    radius = 6 * u.arcsec
-                    # Set inner/outer radius of annulus.
-                    r_in = 8 * u.arcsec
-                    r_out = 12 * u.arcsec
-                    
-                    # Create SkyCircularAperture object for comparison star.
-                    comp_aperture = SkyCircularAperture(comp_coordinates,
-                                                        radius)
-                    # Create SkyCircularAnnulus object for comparison star.
-                    comp_annulus = SkyCircularAnnulus(comp_coordinates,
-                                                      r_in=r_in, r_out=r_out)
-                    
-                    comp_apers = (comp_aperture, comp_annulus)
-                    
-                    # Create photometry table for comparison aperture and 
-                    # annulus sum.
-                    comp_phot_table = aperture_photometry(hdulist, comp_apers)
-                    
-                    # How do I shorten this line?
-                    # Calculate background value.
-                    # How do I shorten this line?
-                    comp_bkg_mean = comp_phot_table['aperture_sum_1'] / annulus_area
-                    comp_bkg_sum = comp_bkg_mean * aperture_area
-                    # How do I shorten this line?
-                    comp_final_sum = comp_phot_table['aperture_sum_0'] - comp_bkg_sum
-                    comp_phot_table['residual_aperture_sum'] = comp_final_sum
+                    if hdulist[0].header['WCSMATCH'] >= 20:
                 
+                        # Create SkyCoords object at position of k'th comparison
+                        # star.
+                        comp_coordinates = SkyCoord(coord[0], coord[1],
+                                                    unit=(u.hourangle, u.deg))
+                        
+                        # Set radius of aperture.
+                        radius = 6 * u.arcsec
+                        # Set inner/outer radius of annulus.
+                        r_in = 8 * u.arcsec
+                        r_out = 12 * u.arcsec
+                        
+                        # Create SkyCircularAperture object for comparison star.
+                        comp_aperture = SkyCircularAperture(comp_coordinates,
+                                                            radius)
+                        # Create SkyCircularAnnulus object for comparison star.
+                        comp_annulus = SkyCircularAnnulus(comp_coordinates,
+                                                          r_in=r_in, r_out=r_out)
+                        
+                        comp_apers = (comp_aperture, comp_annulus)
+                        
+                        # Create photometry table for comparison aperture and 
+                        # annulus sum.
+                        comp_phot_table = aperture_photometry(hdulist, comp_apers)
+                        
+                        # How do I shorten this line?
+                        # Calculate background value.
+                        # How do I shorten this line?
+                        comp_bkg_mean = comp_phot_table['aperture_sum_1'] / annulus_area
+                        comp_bkg_sum = comp_bkg_mean * aperture_area
+                        # How do I shorten this line?
+                        comp_final_sum = comp_phot_table['aperture_sum_0'] - comp_bkg_sum
+                        comp_phot_table['residual_aperture_sum'] = comp_final_sum
+                    
 
-                    # Add aperture sum for k'th comparison star and i'th image
-                    # to comp_aper_sum.
-                    # How do I shorten this line.
-                    comp_aper_sum[k, j] = comp_phot_table['residual_aperture_sum'][0]
+                        # Add aperture sum for k'th comparison star and i'th image
+                        # to comp_aper_sum.
+                        # How do I shorten this line.
+                        comp_aper_sum[k, j] = comp_phot_table['residual_aperture_sum'][0]
 
     return aper_sum, err, date_obs, comp_aper_sum, altitudes, cmags, kmags
 
@@ -361,27 +362,43 @@ def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mags, kmags, cmags):
     # of images.
     scaled_err = np.empty(comp_aper_sum.shape)
     scaled_err[:] = np.nan
-
-    for i, mag in enumerate(comp_mags):
-        for j, obj in enumerate(comp_aper_sum):
-            # Using magnitude value of comparison star (mag) and aperture sum 
-            # of comparison star (obj), each image's target count value 
-            # (aper_sum) is determined.
+    for i, (mag, obj) in enumerate(zip(comp_mags, comp_aper_sum)):
+        # Using magnitude value of comparison star (mag) and aperture sum 
+        # of comparison star (obj), each image's target count value 
+        # (aper_sum) is determined.
+        if np.all(obj != np.nan) and np.all(obj > 0):
             scaled_mags[i] = mag - 2.5 * np.log10(aper_sum / obj)
-            
+
             # Using magnitude value of comparison star (mag) and aperture sum 
             # of comparison star (obj), each image's target error count value 
             # (err) is determined. 
             # Is this the right way to calculate this?
             scaled_err[i] = mag * (err / obj)
+        else:
+            continue
 
         scaled_cmags[i] = - 2.5 * np.log10(cmags)
         scaled_kmags[i] = - 2.5 * np.log10(kmags)
 
     # For each image, the scaled magnitude value for each comparison star is 
     # averaged.
-    target_mags = np.average(scaled_mags, axis=0)
-    target_err = np.average(scaled_err, axis=0)
+    good_mags = []
+    for index in scaled_mags:
+        nantest = np.isnan(index)
+        if np.any(nantest):
+            continue
+        else:
+            good_mags.append(index)
+    good_err = []
+    for index in scaled_err:
+        nantest = np.isnan(index)
+        if np.any(nantest):
+            continue
+        else:
+            good_err.append(index)
+    good_mags = np.array(good_mags)
+    target_mags = np.average(good_mags, axis=0)
+    target_err = np.average(good_err, axis=0)
 
     return target_mags, target_err, scaled_cmags, scaled_kmags
 

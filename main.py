@@ -1,8 +1,10 @@
 import os
 import sys
-sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/ISR')
+# sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/ISR')
+sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR')
 import ISR
-sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/Calibration')
+# sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/Calibration')
+sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration')
 import perform_astrometry
 import perform_photometry
 
@@ -10,14 +12,19 @@ import perform_photometry
 def main(verbose=False):
     target = input('Input target name: ')
     date = input('Input date of observation: ')
-    dirtarget = os.path.join('/home/depot/STEPUP/raw/' + target + date)
-    dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
+    # dirtarget = os.path.join('/home/depot/STEPUP/raw/' + target + date)
+    dirtarget = '/Users/helenarichie/tests2'
+    # dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
+    dirdark = dirtarget
 
     filters = ISR.ISR_main(dirtarget, dirdark, target)
 
     answer = input('\nInstrument signature removal completed.\nContinue to astrometry (Y/N): ')
     if answer == 'Y':
-        print('\nAstrometry in progress...')
+        im = input('\nHave you saved a new-image.fits file to the appropriate directory? (Y/N): ')
+        if im == 'Y':
+            print('\nAstrometry in progress...')
+        
     else:
         return None
 
@@ -28,11 +35,10 @@ def main(verbose=False):
     answer = input('\nAstrometry completed.\nContinue to photometry? (Y/N): ')
     
     if answer == 'Y':
-        print('\nAstrometry in progress...')
+        if im == 'Y':
+            print('\nPhotometry in progress...')
     else:
         return None
-
-    filters = ['R']
 
     os.chdir('/Users/helenarichie/tests2')
 
@@ -85,4 +91,4 @@ def main(verbose=False):
                                           comp_mags, vsp_code, cname, c_coords, kname,
                                           k_coords, verbose=False)
 
-main(verbose=False)
+main(verbose=True)
