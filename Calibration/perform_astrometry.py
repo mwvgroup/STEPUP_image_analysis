@@ -3,7 +3,7 @@ import subprocess
 import glob
 from shutil import move
 from astropy.io import fits
-import progressbar
+# import progressbar
 
 
 def perform_astrometry(target, dirtarget, filters, verbose=False):
@@ -48,14 +48,15 @@ def perform_astrometry(target, dirtarget, filters, verbose=False):
         os.mkdir(os.path.join(dirtarget, fil, 'WCS'))
 
         # Creates progress bar object to show status to user.
-        widgets = [progressbar.Bar('=', '[', ']'), ' ',
-                   progressbar.Percentage(), ' ', progressbar.ETA()]
+        # widgets = [progressbar.Bar('=', '[', ']'), ' ',
+        #            progressbar.Percentage(), ' ', progressbar.ETA()]
 
         # Reads in all target files.
         if verbose:
-            progress = progressbar.ProgressBar(widgets=widgets)
-            images = progress(glob.glob(os.path.join(dirtarget, fil,
-                                                     '*.fits')))
+            # progress = progressbar.ProgressBar(widgets=widgets)
+            # images = progress(glob.glob(os.path.join(dirtarget, fil,
+            #                                          '*.fits')))
+            pass
         else:
             images = glob.glob(os.path.join(dirtarget, fil, '*.fits'))
 
