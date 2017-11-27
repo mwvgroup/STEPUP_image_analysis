@@ -1,8 +1,8 @@
 import os
 import sys
-sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/ISR')
+sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/ISR')
 import ISR
-sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/Calibration')
+sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/Calibration')
 import perform_astrometry
 import perform_photometry
 
