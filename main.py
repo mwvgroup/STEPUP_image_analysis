@@ -1,10 +1,8 @@
 import os
 import sys
-# sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/ISR')
-sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR')
+sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/ISR')
 import ISR
-# sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/Calibration')
-sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration')
+sys.path.insert(0, '/home/depot/STEPUP/STEPUPImageAnalysis/Calibration')
 import perform_astrometry
 import perform_photometry
 
@@ -12,10 +10,8 @@ import perform_photometry
 def main(verbose=False):
     target = input('Input target name: ')
     date = input('Input date of observation: ')
-    # dirtarget = os.path.join('/home/depot/STEPUP/raw/' + target + date)
-    dirtarget = '/Users/helenarichie/tests2'
-    # dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
-    dirdark = dirtarget
+    dirtarget = os.path.join('/home/depot/STEPUP/raw/' + target + date)
+    dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
 
     filters = ISR.ISR_main(dirtarget, dirdark, target)
 
