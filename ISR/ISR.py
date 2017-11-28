@@ -76,6 +76,8 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
         if hdulist[0].header['IMAGETYP'] == 'Bias Frame':
             biases.append(fits.getdata(o_file))
             bias_prihdr = hdulist[0].header
+        if hdulist[0].header['IMAGETYP'] == 'Light Frame':
+            exptime = hdulist[0].header['EXPTIME']
         hdulist.close()
 
     bias_array = np.array(biases, dtype=float)
@@ -94,8 +96,6 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
             darks.append(fits.getdata(o_file))
             dark_exptime = hdulist[0].header['EXPTIME']
             dark_prihdr = hdulist[0].header
-        if hdulist[0].header['IMAGETYP'] == 'Light Frame':
-            exptime = hdulist[0].header['EXPTIME']
 
     dark_array = np.array(darks, dtype=float)
 
@@ -104,7 +104,7 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
         dark /= dark_exptime
         print(dark)
         print(exptime)
-        dark = dark * exptime
+        dark = *= exptime
 
     mdark = np.median(dark_array, 0)
 
