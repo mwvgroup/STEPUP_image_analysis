@@ -27,7 +27,7 @@ def main(verbose=False):
 
     dirtarget += '/ISR_Images'
 
-    perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
+    #perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
 
     answer = input('\nAstrometry completed.\nContinue to photometry? (Y/N): ')
     
@@ -36,8 +36,6 @@ def main(verbose=False):
             print('\nPhotometry in progress...')
     else:
         return None
-
-    os.chdir('/Users/helenarichie/tests2')
 
     coords = []
     comp_ra = []
