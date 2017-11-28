@@ -201,7 +201,7 @@ def photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname,
                     k_phot_table = aperture_photometry(hdulist, k_apers)
                         
                     # Calculate error value for aperture sum.
-                    source_err = np.sqrt(phot_table['aperture_sum_0'][0])
+                    source_err = (phot_table['aperture_sum_0'][0]) ** 2
                         
                     # Calculate background value for target.
                     bkg_mean = phot_table['aperture_sum_1'] / annulus_area
@@ -222,7 +222,7 @@ def photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname,
                     k_phot_table['residual_aperture_sum'] = k_final_sum
                     
                     # Calculate error value for target background level.
-                    bkg_err = np.sqrt(bkg_sum)
+                    bkg_err = bkg_sum ** 2
 
                     # Add aperture sum for target, comp star, and check star to
                     # their respective arrays.
@@ -231,7 +231,7 @@ def photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname,
                     kmags[i] = k_phot_table['residual_aperture_sum'][0]
 
                     # Add error to err.
-                    err[i] = np.sqrt((source_err)**2 + (bkg_err)**2)
+                    err[i] = np.sqrt(source_err + bkg_err)
                     
                     # Retrieve time that image was taken and convert value to 
                     # Julian Days.
