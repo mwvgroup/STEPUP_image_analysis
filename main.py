@@ -37,7 +37,7 @@ def main(verbose=False):
     else:
         return None
 
-    os.chdir(dirtarget)
+    os.chdir(os.path.join('/home/depot/STEPUP/raw/', target, date))
 
     coords = []
     comp_ra = []
