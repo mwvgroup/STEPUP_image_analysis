@@ -37,6 +37,8 @@ def main(verbose=False):
     else:
         return None
 
+    os.chdir(dirtarget)
+
     coords = []
     comp_ra = []
     comp_dec = []
