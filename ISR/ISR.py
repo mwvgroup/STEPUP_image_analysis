@@ -104,7 +104,7 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
         dark /= dark_exptime
         print(dark)
         print(exptime)
-        dark = *= exptime
+        dark *= exptime
 
     mdark = np.median(dark_array, 0)
 
