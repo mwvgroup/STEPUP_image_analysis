@@ -13,7 +13,8 @@ def main(verbose=False):
     dirtarget = os.path.join('/home/depot/STEPUP/raw/', target, date)
     dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
 
-    filters = ISR.ISR_main(dirtarget, dirdark, target)
+    #filters = ISR.ISR_main(dirtarget, dirdark, target)
+    filters = ['B']
 
     answer = input('\nInstrument signature removal completed.\nContinue to astrometry (Y/N): ')
     if answer == 'Y':
