@@ -373,7 +373,7 @@ def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mags, kmags, cmags):
             # of comparison star (obj), each image's target error count value 
             # (err) is determined. 
             # Is this the right way to calculate this?
-            scaled_err[i] = mag * (err / obj)
+            scaled_err[i] = mag - 2.5 * np.log10(err / obj)
         else:
             continue
 
@@ -397,6 +397,7 @@ def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mags, kmags, cmags):
         else:
             good_err.append(index)
     good_mags = np.array(good_mags)
+    good_err = np.array(good_err)
     target_mags = np.average(good_mags, axis=0)
     target_err = np.average(good_err, axis=0)
 
