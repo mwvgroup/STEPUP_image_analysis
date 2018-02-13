@@ -381,11 +381,6 @@ def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mags, kmags, cmags):
         else:
             continue
 
-    print(cmags)
-    print(kmags)
-    print(scaled_cmags)
-    print(scaled_kmags)
-
     # For each image, the scaled magnitude value for each comparison star is 
     # averaged.
     good_mags = []
@@ -411,6 +406,8 @@ def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mags, kmags, cmags):
     kmags_f = np.average(scaled_cmags, axis=0)
     cmags_f = np.average(scaled_kmags, axis=0)
 
+    print(cmags_f)
+    print(kmags_f)
     return target_mags, target_err, cmags_f, kmags_f
 
 
