@@ -10,7 +10,7 @@ import perform_photometry
 def main(verbose=False):
     target = input('Input target name: ')
     date = input('Input date of observation: ')
-    dirtarget = os.path.join('/Users/helenarichie/tests2')
+    dirtarget = os.path.join('/home/depot/STEPUP/raw', target, date)
     dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
 
     #filters = ISR.ISR_main(dirtarget, dirdark, target)
