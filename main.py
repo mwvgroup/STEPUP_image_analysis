@@ -1,8 +1,8 @@
 import os
 import sys
-sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/ISR')
+sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR')
 import ISR
-sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/Calibration')
+sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration')
 import perform_astrometry
 import perform_photometry
 
@@ -10,10 +10,11 @@ import perform_photometry
 def main(verbose=False):
     target = input('Input target name: ')
     date = input('Input date of observation: ')
-    dirtarget = os.path.join('/home/depot/STEPUP/raw/', target, date)
+    dirtarget = os.path.join('/Users/helenarichie/tests2')
     dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
 
-    filters = ISR.ISR_main(dirtarget, dirdark, target)
+    #filters = ISR.ISR_main(dirtarget, dirdark, target)
+    filters = ['R']
 
     answer = input('\nInstrument signature removal completed.\nContinue to astrometry (Y/N): ')
     if answer == 'Y':
@@ -26,7 +27,7 @@ def main(verbose=False):
 
     dirtarget += '/ISR_Images'
 
-    perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
+    #perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
 
     answer = input('\nAstrometry completed.\nContinue to photometry? (Y/N): ')
     
@@ -36,7 +37,7 @@ def main(verbose=False):
     else:
         return None
 
-    os.chdir(os.path.join('/home/depot/STEPUP/raw/', target, date))
+    os.chdir(os.path.join('/home/depot/STEPUP/raw', target, date))
 
     coords = []
     comp_ra = []
@@ -82,6 +83,8 @@ def main(verbose=False):
     comp_coords = []
     for ra, dec in zip(comp_ra, comp_dec):
             comp_coords.append((ra, dec))
+
+    os.chdir(os.path.join('/Users/helenarichie/tests2/ISR_Images/R/WCS/accurate_WCS'))
     
     perform_photometry.perform_photometry(target, dirtarget, filters, date, coords, comp_coords,
                                           comp_mags, vsp_code, cname, c_coords, kname,

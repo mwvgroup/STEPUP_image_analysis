@@ -377,6 +377,9 @@ def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mags, kmags, cmags):
         else:
             continue
 
+        print(cmags)
+        print(kmags)
+
         scaled_cmags[i] = - 2.5 * np.log10(cmags)
         scaled_kmags[i] = - 2.5 * np.log10(kmags)
 
