@@ -406,8 +406,12 @@ def counts_to_mag(aper_sum, comp_aper_sum, err, comp_mags, kmags, cmags):
     good_err = np.array(good_err)
     target_mags = np.average(good_mags, axis=0)
     target_err = np.average(good_err, axis=0)
+    scaled_cmags = np.array(scaled_cmags)
+    scaled_kmags = np.array(scaled_kmags)
+    kmags_f = np.average(scaled_cmags, axis=0)
+    cmags_f = np.average(scaled_kmags, axis=0)
 
-    return target_mags, target_err, scaled_cmags, scaled_kmags
+    return target_mags, target_err, cmags_f, kmags_f
 
 
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
