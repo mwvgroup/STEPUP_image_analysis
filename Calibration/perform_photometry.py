@@ -59,7 +59,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_coords,
              dirtarget)
 
     write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget, filters,
-               altitudes, cname, cmags, kname, kmags)
+               altitudes, cname, scaled_cmags, kname, scaled_kmags)
 
 
 def photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname,
@@ -305,8 +305,6 @@ def photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname,
                         # to comp_aper_sum.
                         # How do I shorten this line.
                         comp_aper_sum[k, j] = comp_phot_table['residual_aperture_sum'][0]
-
-    print(aper_sum, comp_aper_sum, cmags, kmags)
 
     return aper_sum, err, date_obs, comp_aper_sum, altitudes, cmags, kmags
 
