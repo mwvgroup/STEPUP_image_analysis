@@ -84,7 +84,7 @@ def main(verbose=False):
     for ra, dec in zip(comp_ra, comp_dec):
             comp_coords.append((ra, dec))
 
-    os.chdir(os.path.join('/home/depot/STEPUP/raw/WDra/ISR_Images/R/WCS/accurate_WCS'))
+    os.chdir(os.path.join('/home/depot/STEPUP/raw/WDra/2018-01-30/ISR_Images/R/WCS/accurate_WCS'))
     
     perform_photometry.perform_photometry(target, dirtarget, filters, date, coords, comp_coords,
                                           comp_mags, vsp_code, cname, c_coords, kname,
