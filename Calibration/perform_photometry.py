@@ -161,10 +161,10 @@ def photometry(dirtarget, filters, coords, comp_coords, cname, c_coords, kname,
                                        unit=(u.hourangle, u.deg))
                         
                     # Set radius of aperture.
-                    radius = 6 * u.arcsec
+                    radius = 9 * u.arcsec
                     # Set inner/outer radius of annulus.
-                    r_in = 8 * u.arcsec
-                    r_out = 12 * u.arcsec
+                    r_in = 11 * u.arcsec
+                    r_out = 15 * u.arcsec
                         
                     # Create SkyCircularAperture object at target, comp star, and
                     # check star position.
@@ -450,6 +450,7 @@ def mag_plot(target_mags, target_err, date_obs, target, date, filters,
         plt.gca().invert_yaxis()
         fig1.savefig(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
                                   'lightcurve.pdf'))
+        plt.show()
 
 
 def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
