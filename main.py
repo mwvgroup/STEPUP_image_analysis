@@ -17,8 +17,8 @@ def main(verbose=False):
     # dirtarget = '/Users/helenarichie/tests2'
     # dirdark = dirtarget
 
-    filters = ISR.ISR_main(dirtarget, dirdark, target)
-    # filters = ["r'"]
+    # filters = ISR.ISR_main(dirtarget, dirdark, target)
+    # filters = ["R"]
 
     answer = input('\nInstrument signature removal completed.\nContinue to astrometry (Y/N): ')
     if answer == 'Y':
