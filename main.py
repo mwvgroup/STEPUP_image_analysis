@@ -1,8 +1,10 @@
 import os
 import sys
 sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/ISR')
+# sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR')
 import ISR
 sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/Calibration')
+# sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration')
 import perform_astrometry
 import perform_photometry
 
@@ -12,9 +14,11 @@ def main(verbose=False):
     date = input('Input date of observation: ')
     dirtarget = os.path.join('/home/depot/STEPUP/raw', target, date)
     dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
+    # dirtarget = '/Users/helenarichie/tests2'
+    # dirdark = dirtarget
 
-    #filters = ISR.ISR_main(dirtarget, dirdark, target)
-    filters = ['R']
+    filters = ISR.ISR_main(dirtarget, dirdark, target)
+    # filters = ["r'"]
 
     answer = input('\nInstrument signature removal completed.\nContinue to astrometry (Y/N): ')
     if answer == 'Y':
@@ -27,7 +31,7 @@ def main(verbose=False):
 
     dirtarget += '/ISR_Images'
 
-    #perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
+    perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
 
     answer = input('\nAstrometry completed.\nContinue to photometry? (Y/N): ')
     
@@ -38,23 +42,27 @@ def main(verbose=False):
         return None
 
     os.chdir(os.path.join('/home/depot/STEPUP/raw', target, date))
+    # os.chdir(os.path.join('/Users/helenarichie/tests2'))
 
-    coords = []
+    ra = []
+    dec = []
     comp_ra = []
     comp_dec = []
     comp_mag = []
     vsp_code = None
+    rname = None
+    ref_ra = []
+    ref_dec = []
     cname = None
-    c_coords = []
-    kname = None
-    k_coords = []
+    check_ra = []
+    check_dec = []
 
     with open('input-file.txt') as f:
         for line in f:
             if line.startswith('#RA='):
-                coords.append(line[4:].strip('\n'))
+                ra.append(line[4:].strip('\n'))
             if line.startswith('#DEC='):
-                coords.append(line[5:].strip('\n'))
+                dec.append(line[5:].strip('\n'))
             if line.startswith('#VSPCODE='):
                 vsp_code = line[9:].strip('\n')
             if line.startswith('#COMPMAGS='):
@@ -66,28 +74,31 @@ def main(verbose=False):
             if line.startswith('#CLABEL='):
                 cname = line[8:].strip('\n')
             if line.startswith('#CRA='):
-                c_coords.append(line[5:].strip('\n'))
+                ref_ra.append(line[5:].strip('\n'))
             if line.startswith('#CDEC='):
-                c_coords.append(line[6:].strip('\n'))
+                ref_dec.append(line[6:].strip('\n'))
             if line.startswith('#KLABEL='):
                 kname = line[8:].strip('\n')
             if line.startswith('#KRA'):
-                k_coords.append(line[5:].strip('\n')) 
+                check_ra.append(line[5:].strip('\n')) 
             if line.startswith('#KDEC='):
-                k_coords.append(line[6:].strip('\n'))
+                check_dec.append(line[6:].strip('\n'))
 
     comp_mags = []
     for mag in comp_mag:
         comp_mags.append(float(mag))
 
-    comp_coords = []
-    for ra, dec in zip(comp_ra, comp_dec):
-            comp_coords.append((ra, dec))
+    coords = []
+    coords.append(ra)
+    coords.append(dec)
 
     os.chdir(os.path.join('/home/depot/STEPUP/raw/WDra/2018-01-30/ISR_Images/R/WCS/accurate_WCS'))
+
+    # os.chdir(os.path.join("/Users/helenarichie/tests2/ISR_Images/r'/WCS/accurate_WCS"))
     
-    perform_photometry.perform_photometry(target, dirtarget, filters, date, coords, comp_coords,
-                                          comp_mags, vsp_code, cname, c_coords, kname,
-                                          k_coords, verbose=False)
+    perform_photometry.perform_photometry(target, dirtarget, filters, date, coords,
+                                          comp_ra, comp_dec, comp_mags, vsp_code,
+                                          rname, ref_ra, ref_dec, cname, check_ra,
+                                          check_dec, verbose=False)
 
 main(verbose=True)
