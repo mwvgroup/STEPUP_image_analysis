@@ -19,10 +19,10 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
                        cname, check_ra, check_dec, verbose=False):
     
     aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes = photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec, check_ra, check_dec)
-    target_mags, target_err, check_mags, ref_mags = counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum)
+    target_mags, target_err, check_mags, ref_mags, bad_indices = counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum)
 
     mag_plot(target_mags, target_err, date_obs, target, date, filters,
-             dirtarget, check_mags, cname)
+             dirtarget, check_mags, cname, bad_indices)
 
     write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget, filters,
                altitudes, rname, ref_mags, cname, check_mags)
@@ -55,12 +55,15 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
     check_mags[:] = np.nan
     scaled_err = np.empty(comp_aper_sums.shape)
     scaled_err[:] = np.nan
+    bad_indices = []
     for i, (mag, obj) in enumerate(zip(comp_mags, comp_aper_sums)):
         # Using magnitude value of comparison star (mag) and aperture sum 
         # of comparison star (obj), each image's target count value 
         # (aper_sum) is determined.
         if np.all(obj != np.nan) and np.all(obj > 0):
             scaled_mags[i] = mag - 2.5 * np.log10(aper_sum / obj)
+        else:
+            bad_indices.append(i)
 
             # Using magnitude value of comparison star (mag) and aperture sum 
             # of comparison star (obj), each image's target error count value 
@@ -97,13 +100,14 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
     check_mags_f = np.average(check_mags, axis=0)
     ref_mags_f = np.average(ref_mags, axis=0)
 
-    return target_mags, target_err, check_mags_f, ref_mags_f
+    return target_mags, target_err, check_mags_f, ref_mags_f, bad_indices
 
 
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
-             dirtarget, scaled_refmags, kname):
-    
-    for fil in filters:
+             dirtarget, scaled_refmags, kname, bad_indices):
+        for i in bad_indices:
+            np.delete(date_obs, i)
+            np.delete(target_err, i)
         f, axarr = plt.subplots(2, sharex=True, gridspec_kw = {'height_ratios':[3, 1]})
         axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o')
         axarr[0].set_title('Light Curve of {}, {}'.format(target,date))
