@@ -102,7 +102,6 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
 
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, scaled_refmags, kname):
-    print(target_mags)
     
     for fil in filters:
         f, axarr = plt.subplots(2, sharex=True, gridspec_kw = {'height_ratios':[3, 1]})
@@ -167,7 +166,6 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
     -------
     None
     """
-    print(target_mags)
     for fil in filters:
         path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS', 
                             'output.txt')

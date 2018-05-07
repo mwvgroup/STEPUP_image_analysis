@@ -1,10 +1,8 @@
 import os
 import sys
 sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/ISR')
-# sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR')
 import ISR
 sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/Calibration')
-# sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration')
 import perform_astrometry
 import perform_photometry
 
@@ -14,11 +12,8 @@ def main(verbose=False):
     date = input('Input date of observation: ')
     dirtarget = os.path.join('/home/depot/STEPUP/raw', target, date)
     dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
-    # dirtarget = '/Users/helenarichie/tests2'
-    # dirdark = dirtarget
 
-    # filters = ISR.ISR_main(dirtarget, dirdark, target)
-    # filters = ["R"]
+    filters = ISR.ISR_main(dirtarget, dirdark, target)
 
     answer = input('\nInstrument signature removal completed.\nContinue to astrometry (Y/N): ')
     if answer == 'Y':
@@ -40,9 +35,8 @@ def main(verbose=False):
             print('\nPhotometry in progress...')
     else:
         return None
-
+    
     os.chdir(os.path.join('/home/depot/STEPUP/raw', target, date))
-    # os.chdir(os.path.join('/Users/helenarichie/tests2'))
 
     ra = []
     dec = []
@@ -92,13 +86,13 @@ def main(verbose=False):
     coords.append(ra)
     coords.append(dec)
 
-    os.chdir(os.path.join('/home/depot/STEPUP/raw/WDra/2018-01-30/ISR_Images/R/WCS/accurate_WCS'))
+    for fil in filters:
 
-    # os.chdir(os.path.join("/Users/helenarichie/tests2/ISR_Images/r'/WCS/accurate_WCS"))
-    
-    perform_photometry.perform_photometry(target, dirtarget, filters, date, coords,
-                                          comp_ra, comp_dec, comp_mags, vsp_code,
-                                          rname, ref_ra, ref_dec, cname, check_ra,
-                                          check_dec, verbose=False)
+        os.chdir(os.path.join('home/depot/STEPUP/raw', target, date, 'ISR_Images', fil, 'WCS/accurate_WCS'))
+        
+        perform_photometry.perform_photometry(target, dirtarget, filters, date, coords,
+                                              comp_ra, comp_dec, comp_mags, vsp_code,
+                                              rname, ref_ra, ref_dec, cname, check_ra,
+                                              check_dec, verbose=False)
 
 main(verbose=True)

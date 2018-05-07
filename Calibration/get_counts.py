@@ -9,8 +9,6 @@ from photutils import aperture_photometry
 from astropy.time import Time
 
 
-#rightascension = ['18:05:34']
-#declination = ['65:57:21']
 def get_counts(dirtarget, rightascension, declination, fil):
     """Determine count values for star(s).
     """
@@ -73,6 +71,3 @@ def get_counts(dirtarget, rightascension, declination, fil):
         total_sum.append(aper_sum)
 
     return total_sum, err, date_obs, altitudes
-
-
-#get_counts('/Users/helenarichie/tests2/ISR_Images', rightascension, declination, 'R')
