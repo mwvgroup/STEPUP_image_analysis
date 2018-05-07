@@ -88,7 +88,7 @@ def main(verbose=False):
 
     for fil in filters:
 
-        os.chdir(os.path.join('home/depot/STEPUP/raw', target, date, 'ISR_Images', fil, 'WCS/accurate_WCS'))
+        os.chdir(os.path.join('/home/depot/STEPUP/raw', target, date, 'ISR_Images', fil, 'WCS/accurate_WCS'))
         
         perform_photometry.perform_photometry(target, dirtarget, filters, date, coords,
                                               comp_ra, comp_dec, comp_mags, vsp_code,
