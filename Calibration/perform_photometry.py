@@ -60,6 +60,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
         # Using magnitude value of comparison star (mag) and aperture sum 
         # of comparison star (obj), each image's target count value 
         # (aper_sum) is determined.
+        print(i)
         if np.all(obj != np.nan) and np.all(obj > 0):
             scaled_mags[i] = mag - 2.5 * np.log10(aper_sum / obj)
 
