@@ -103,14 +103,8 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
 
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, scaled_refmags, kname):
-        print(plot_date)
-        print(target_mags)
-        print(plot_err)
-        print(len(plot_date))
-        print(len(target_mags))
-        print(len(plot_err))
         f, axarr = plt.subplots(2, sharex=True, gridspec_kw = {'height_ratios':[3, 1]})
-        axarr[0].errorbar(plot_date, target_mags, yerr=plot_err, fmt='o')
+        axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o')
         axarr[0].set_title('Light Curve of {}, {}'.format(target,date))
         axarr[0].set_ylabel('Magnitude')
         axarr[0].invert_yaxis
