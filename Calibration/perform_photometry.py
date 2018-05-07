@@ -19,10 +19,10 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
                        cname, check_ra, check_dec, verbose=False):
     
     aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes = photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec, check_ra, check_dec)
-    target_mags, target_err, check_mags, ref_mags, bad_indices = counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum)
+    target_mags, target_err, check_mags, ref_mags, date_obs = counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum, date_obs)
 
     mag_plot(target_mags, target_err, date_obs, target, date, filters,
-             dirtarget, check_mags, cname, bad_indices)
+             dirtarget, check_mags, cname)
 
     write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget, filters,
                altitudes, rname, ref_mags, cname, check_mags)
@@ -46,7 +46,7 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec,
     return aper_sum, comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes
 
 
-def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum):
+def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum, date_obs):
     scaled_mags = np.empty(comp_aper_sums.shape)
     scaled_mags[:] = np.nan
     ref_mags = np.empty(comp_aper_sums.shape)
@@ -71,7 +71,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
             check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
             ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
         else:
-            bad_indices.append(i)
+            date_obs[i] = 0
             continue
     print(bad_indices)
 
@@ -100,16 +100,17 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
     check_mags_f = np.average(check_mags, axis=0)
     ref_mags_f = np.average(ref_mags, axis=0)
 
-    return target_mags, target_err, check_mags_f, ref_mags_f, bad_indices
+    return target_mags, target_err, check_mags_f, ref_mags_f, date_obs
 
 
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
-             dirtarget, scaled_refmags, kname, bad_indices):
-        for i in bad_indices:
-            np.delete(date_obs, i)
-            np.delete(target_err, i)
+             dirtarget, scaled_refmags, kname):
+        for i in date_obs:
+            if i == 0:
+                plot_date = np.delete(date_obs, i)
+                plot_err = np.delete(target_err, i)
         f, axarr = plt.subplots(2, sharex=True, gridspec_kw = {'height_ratios':[3, 1]})
-        axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o')
+        axarr[0].errorbar(plot_date, target_mags, yerr=plot_err, fmt='o')
         axarr[0].set_title('Light Curve of {}, {}'.format(target,date))
         axarr[0].set_ylabel('Magnitude')
         axarr[0].invert_yaxis
