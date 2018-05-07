@@ -109,6 +109,12 @@ def mag_plot(target_mags, target_err, date_obs, target, date, filters,
             if i == 0:
                 plot_date = np.delete(date_obs, i)
                 plot_err = np.delete(target_err, i)
+        print(plot_date)
+        print(target_mags)
+        print(plot_err)
+        print(len(plot_date))
+        print(len(target_mags))
+        print(len(plot_err))
         f, axarr = plt.subplots(2, sharex=True, gridspec_kw = {'height_ratios':[3, 1]})
         axarr[0].errorbar(plot_date, target_mags, yerr=plot_err, fmt='o')
         axarr[0].set_title('Light Curve of {}, {}'.format(target,date))
