@@ -21,6 +21,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
     altitudes = np.empty(size)
     altitudes[:] = np.nan
     total_sum = []
+    good_indices = []
     
     for ra, dec in zip(rightascension, declination):
         aper_sum = np.empty(size)
@@ -29,6 +30,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
             o_file = os.path.join(dirtarget_wcs, item)
             hdulist = fits.open(o_file)
             if hdulist[0].header['WCSMATCH'] >= 20:
+                good_indices.append(i)
                 coords = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
                 radius = 9 * u.arcsec
                 r_in = 11 * u.arcsec
@@ -70,4 +72,6 @@ def get_counts(dirtarget, rightascension, declination, fil):
 
         total_sum.append(aper_sum)
 
-    return total_sum, err, date_obs, altitudes
+        good_dates_obs = np.take(date_obs, good_indices)
+
+    return total_sum, err, good_date_obs, altitudes
