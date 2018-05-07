@@ -72,6 +72,6 @@ def get_counts(dirtarget, rightascension, declination, fil):
 
         total_sum.append(aper_sum)
 
-        good_dates_obs = np.take(date_obs, good_indices)
+        good_date_obs = np.take(date_obs, good_indices)
 
     return total_sum, err, good_date_obs, altitudes
