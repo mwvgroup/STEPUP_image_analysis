@@ -55,11 +55,11 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
     check_mags[:] = np.nan
     scaled_err = np.empty(comp_aper_sums.shape)
     scaled_err[:] = np.nan
-    bad_indices = []
     for i, (mag, obj) in enumerate(zip(comp_mags, comp_aper_sums)):
         # Using magnitude value of comparison star (mag) and aperture sum 
         # of comparison star (obj), each image's target count value 
         # (aper_sum) is determined.
+        print(obj)
         if np.all(obj != np.nan) and np.all(obj > 0):
             scaled_mags[i] = mag - 2.5 * np.log10(aper_sum / obj)
 
@@ -71,9 +71,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
             check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
             ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
         else:
-            date_obs[i] = 0
             continue
-    print(bad_indices)
 
     # For each image, the scaled magnitude value for each comparison star is 
     # averaged.
@@ -105,10 +103,6 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
 
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, scaled_refmags, kname):
-        for i in date_obs:
-            if i == 0:
-                plot_date = np.delete(date_obs, i)
-                plot_err = np.delete(target_err, i)
         print(plot_date)
         print(target_mags)
         print(plot_err)
