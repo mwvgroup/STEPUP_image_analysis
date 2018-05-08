@@ -75,5 +75,6 @@ def get_counts(dirtarget, rightascension, declination, fil):
         good_date_obs = np.take(date_obs, good_indices)
         print(date_obs, len(date_obs))
         print(good_date_obs, len(good_date_obs))
+        print(target_err, len(target_err))
 
     return total_sum, err, good_date_obs, altitudes

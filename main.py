@@ -27,7 +27,7 @@ def main(verbose=False):
 
     dirtarget += '/ISR_Images'
 
-    # perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
+    perform_astrometry.perform_astrometry(target, dirtarget, filters, verbose=False)
 
     answer = input('\nAstrometry completed.\nContinue to photometry? (Y/N): ')
     
