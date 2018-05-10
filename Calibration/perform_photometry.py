@@ -19,8 +19,9 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
                        cname, check_ra, check_dec, verbose=False):
     
     aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes = photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec, check_ra, check_dec)
+    print('Final length of date_obs: ', len(date_obs))
     target_mags, target_err, check_mags, ref_mags, date_obs = counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum, date_obs)
-
+    print('Target magnitudes: ', target_mags, 'Target error: ', target_err, 'Observation dates: ', date_obs)
     mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, check_mags, cname)
 
@@ -60,7 +61,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
         # of comparison star (obj), each image's target count value 
         # (aper_sum) is determined.
         if np.all(obj != np.nan) and np.all(obj > 0):
-            print('This object has passed the test.', obj)
+            print('This object contains only positive numbers.', obj)
             scaled_mags[i] = mag - 2.5 * np.log10(aper_sum / obj)
 
             # Using magnitude value of comparison star (mag) and aperture sum 
@@ -68,10 +69,18 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
             # (err) is determined. 
             # Is this the right way to calculate this?
             scaled_err[i] = mag * (err / obj)
-            check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
-            ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
+            if np.all(check_aper_sum != np.nan) and np.all(check_aper_sum > 0):
+                print('Check star is in the image.')
+                check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
+            else:
+                print('Check star is not in the image.')
+            if np.all(ref_aper_sum != np.nan) and np.all(ref_aper_sum > 0):
+                print('Reference star is in the image.')
+                ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
+            else:
+                print('Reference star is not in the image.')
         else:
-            print('This object has failed the test.', obj)
+            print('This object contains either nan or negative values.', obj)
             continue
 
     # For each image, the scaled magnitude value for each comparison star is 
