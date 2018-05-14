@@ -258,8 +258,7 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
             if path.endswith(".fit"):
                 o_file = os.path.join(dirtarget, path)
                 hdulist = fits.open(o_file)
-                if hdulist[0].header['IMAGETYP'] == 'Light Frame':
-                    if hdulist[0].header['FILTER'] == fil:
+                if (hdulist[0].header['IMAGETYP'] == 'Light Frame') and (hdulist[0].header['FILTER'] == fil):
                         # Adds saturation to header.
                         hdulist[0].header['SATLEVEL'] = saturation
                         prihdr = hdulist[0].header
