@@ -37,6 +37,8 @@ def main(verbose=False):
             dirtarget += '/ISR_Images'
             perform_astrometry.perform_astrometry(target, dirtarget, filters,
                                                   verbose=False)
+        else:
+            return none
         print('\nAstrometry completed.\nPhotometry in progress...')
 
         if computer == 'W':
