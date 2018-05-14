@@ -38,7 +38,7 @@ def main(verbose=False):
             perform_astrometry.perform_astrometry(target, dirtarget, filters,
                                                   verbose=False)
         else:
-            return none
+            return None
         print('\nAstrometry completed.\nPhotometry in progress...')
 
         if computer == 'W':
