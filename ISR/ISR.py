@@ -17,7 +17,7 @@ def ISR_main(dirtarget, dirdark, target):
         Directory containing all bias, flat, and raw science images.
     dirdark : str
         Directory containing all dark images.
-    traget : str
+    target : str
         Name of target.
 
     Returns
@@ -255,7 +255,7 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
         os.mkdir(os.path.join(dirtarget, 'ISR_Images', fil))
         # Finds all light frame images in dirtarget of correct filter.
         for n, path in enumerate(os.listdir(dirtarget)):
-            if path.endswith("L_{}.fit".format(fil)):
+            if path.endswith(".fit".format(fil)):
                 o_file = os.path.join(dirtarget, path)
                 hdulist = fits.open(o_file)
                 if (hdulist[0].header['IMAGETYP'] == 'Light Frame') and (hdulist[0].header['FILTER'] == fil):
