@@ -19,6 +19,7 @@ if computer == 'H':
     import perform_photometry
     import perform_astrometry
 
+
 def main(verbose=False):
     """Runs photometry routine or specified steps of routine on dataset.
 
@@ -46,7 +47,7 @@ def main(verbose=False):
     dirtarget = None
     dirdark = None
 
-    # Assigns variables according to which computer the code is being ran from.    
+    # Assigns variables according to which computer the code is being ran from.
     if computer == 'W':
         dirtarget = os.path.join('/home/depot/STEPUP/raw', target, date)
         dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
@@ -119,7 +120,7 @@ def main(verbose=False):
                 if line.startswith('#KLABEL='):
                     kname = line[8:].strip('\n')
                 if line.startswith('#KRA'):
-                    check_ra.append(line[5:].strip('\n')) 
+                    check_ra.append(line[5:].strip('\n'))
                 if line.startswith('#KDEC='):
                     check_dec.append(line[6:].strip('\n'))
 
@@ -161,8 +162,8 @@ def main(verbose=False):
             which_analysis(answer, dirtarget, dirdark, target, date, computer)
             # Determine if user has finished running STEPUP_image_analysis.
             cont_analysis = input('\nWould you still like to perform a function? (Y/N): ')
-            
-        
+
+
 def which_analysis(answer, dirtarget, dirdark, target, date, computer):
     """Run one of three functions in image analysis routine.
 
@@ -216,7 +217,7 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
             print('\nAstrometry completed.')
         else:
             return None
-        
+
     if answer == 'PHOT':
         # Determines filters using in observation.
         filters = list(input('\nEnter filters of observation: '))
@@ -271,7 +272,7 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
                 if line.startswith('#KLABEL='):
                     kname = line[8:].strip('\n')
                 if line.startswith('#KRA'):
-                    check_ra.append(line[5:].strip('\n')) 
+                    check_ra.append(line[5:].strip('\n'))
                 if line.startswith('#KDEC='):
                     check_dec.append(line[6:].strip('\n'))
 
