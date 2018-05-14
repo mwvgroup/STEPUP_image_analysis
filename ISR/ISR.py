@@ -259,19 +259,19 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
                 o_file = os.path.join(dirtarget, path)
                 hdulist = fits.open(o_file)
                 if (hdulist[0].header['IMAGETYP'] == 'Light Frame') and (hdulist[0].header['FILTER'] == fil):
-                        # Adds saturation to header.
-                        hdulist[0].header['SATLEVEL'] = saturation
-                        prihdr = hdulist[0].header
-                        image = hdulist[0].data
-                        image_array = np.array(image, dtype=float)
-                        # Removes instrument signatures.
-                        image_array -= mbias_array
-                        image_array -= mdark_array
-                        image_array /= mflat_array
-                        # Writes ISR file.
-                        hdu = fits.PrimaryHDU(image_array, header=prihdr)
-                        hdulist = fits.HDUList([hdu])
-                        out_path = os.path.join(dirtarget, 'ISR_Images', fil,
-                                                target + '_' + fil +
-                                                '_{}'.format(n) + '.fits')
-                        hdulist.writeto(out_path, overwrite=True) 
+                    # Adds saturation to header.
+                    hdulist[0].header['SATLEVEL'] = saturation
+                    prihdr = hdulist[0].header
+                    image = hdulist[0].data
+                    image_array = np.array(image, dtype=float)
+                    # Removes instrument signatures.
+                    image_array -= mbias_array
+                    image_array -= mdark_array
+                    image_array /= mflat_array
+                    # Writes ISR file.
+                    hdu = fits.PrimaryHDU(image_array, header=prihdr)
+                    hdulist = fits.HDUList([hdu])
+                    out_path = os.path.join(dirtarget, 'ISR_Images', fil,
+                                            target + '_' + fil +
+                                            '_{}'.format(n) + '.fits')
+                    hdulist.writeto(out_path, overwrite=True) 
