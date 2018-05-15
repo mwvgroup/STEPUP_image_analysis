@@ -1,9 +1,3 @@
-import sys
-if computer == 'H':
-    sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration/get_counts')
-    import get_counts
-if computer == 'W':
-    sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/Calibration/get_counts')
 import os
 import glob
 from astropy.io import fits
