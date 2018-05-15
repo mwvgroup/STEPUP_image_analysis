@@ -30,14 +30,14 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
 def photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec,
                check_ra, check_dec):
     for fil in filters:
-        aper_sum, err, date_obs, altitudes = get_counts.get_counts(dirtarget, coords[0], coords[1], fil)
+        aper_sum, err, date_obs, altitudes = get_counts(dirtarget, coords[0], coords[1], fil)
         aper_sum = np.array(aper_sum, dtype=float)
 
-        comp_apers = get_counts.get_counts(dirtarget, comp_ra, comp_dec, fil)[0]
+        comp_apers = get_counts(dirtarget, comp_ra, comp_dec, fil)[0]
         comp_apers = np.array(comp_apers, dtype=float)
 
-        check_aper_sum = (get_counts.get_counts(dirtarget, check_ra, check_dec, fil))[0]
-        ref_aper_sum = (get_counts.get_counts(dirtarget, ref_ra, ref_dec, fil))[0]
+        check_aper_sum = (get_counts(dirtarget, check_ra, check_dec, fil))[0]
+        ref_aper_sum = (get_counts(dirtarget, ref_ra, ref_dec, fil))[0]
         
         check_aper_sum = np.array(check_aper_sum, dtype=float)
         ref_aper_sum = np.array(ref_aper_sum, dtype=float)
