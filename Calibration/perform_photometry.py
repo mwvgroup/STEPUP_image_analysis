@@ -17,9 +17,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
     """Run photometry part of image analysis routine.
     """
     aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags = photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec, check_ra, check_dec, comp_mags)
-    print('Final length of date_obs: ', len(date_obs))
     target_mags, target_err, check_mags, ref_mags, date_obs = counts_to_mag(aper_sum, comp_aper_sums, err, final_comp_mags, check_aper_sum, ref_aper_sum, date_obs)
-    print('Target magnitudes: ', target_mags, 'Target error: ', target_err, 'Observation dates: ', date_obs)
     mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, check_mags, cname)
 
@@ -83,7 +81,6 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
         # Using magnitude value of comparison star (mag) and aperture sum 
         # of comparison star (obj), each image's target error count value 
         # (err) is determined. 
-        # Is this the right way to calculate this?
         scaled_err[i] = mag * (err / obj)
         check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
         ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
@@ -108,7 +105,6 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, scaled_refmags, kname):
     for fil in filters:
-        print(scaled_refmags)
         f, axarr = plt.subplots(2, sharex=True, gridspec_kw = {'height_ratios':[3, 1]})
         axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o')
         axarr[0].set_title('Light Curve of {}, {}'.format(target,date))
@@ -251,10 +247,5 @@ def get_counts(dirtarget, rightascension, declination, fil):
                 altitudes[i] = (hdulist[0].header['OBJCTALT'])
 
         total_sum.append(aper_sum)
-
-        good_date_obs = np.take(date_obs, good_indices)
-        print(date_obs, len(date_obs))
-        print(good_date_obs, len(good_date_obs))
-        print(err, len(err))
 
     return total_sum, err, good_date_obs, altitudes
