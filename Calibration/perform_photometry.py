@@ -1,4 +1,5 @@
 import sys
+computer = input("\nWork computer or Helena's computer? (W/H): ")
 if computer == 'W':
     sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/Calibration')
     import get_counts
@@ -20,7 +21,7 @@ from matplotlib import gridspec
 
 def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
                        comp_dec, comp_mags, vsp_code, rname, ref_ra, ref_dec,
-                       cname, check_ra, check_dec, computer, verbose=False):
+                       cname, check_ra, check_dec, verbose=False):
     """Run photometry part of image analysis routine.
     """
     aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes = photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec, check_ra, check_dec)
