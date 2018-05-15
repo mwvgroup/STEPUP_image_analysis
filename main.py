@@ -21,7 +21,7 @@ if computer == 'H':
 
 
 def main(verbose=False):
-    """Runs photometry routine or specified steps of routine on dataset.
+    """Runs image analysis routine or specified steps of routine on dataset.
 
     Determines what steps of STEPUP_image_analysis the user would like to run.
     If the user specifies that they would like to run the entire routine, the

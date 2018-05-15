@@ -1,6 +1,9 @@
 import sys
-sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration/get_counts')
-import get_counts
+if computer == 'H':
+    sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration/get_counts')
+    import get_counts
+if computer == 'W':
+    sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/Calibration/get_counts')
 import os
 import glob
 from astropy.io import fits
@@ -17,7 +20,8 @@ from matplotlib import gridspec
 def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
                        comp_dec, comp_mags, vsp_code, rname, ref_ra, ref_dec,
                        cname, check_ra, check_dec, verbose=False):
-    
+    """Run photometry part of image analysis routine.
+    """
     aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes = photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec, check_ra, check_dec)
     print('Final length of date_obs: ', len(date_obs))
     target_mags, target_err, check_mags, ref_mags, date_obs = counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum, date_obs)
@@ -107,6 +111,8 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
     ref_mags = np.array(ref_mags)
     check_mags_f = np.average(check_mags, axis=0)
     ref_mags_f = np.average(ref_mags, axis=0)
+
+    print(target_err)
 
     return target_mags, target_err, check_mags_f, ref_mags_f, date_obs
 
