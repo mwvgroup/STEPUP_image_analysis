@@ -16,9 +16,9 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
                        cname, check_ra, check_dec, verbose=False):
     """Run photometry part of image analysis routine.
     """
-    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes = photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec, check_ra, check_dec)
+    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags = photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec, check_ra, check_dec, comp_mags)
     print('Final length of date_obs: ', len(date_obs))
-    target_mags, target_err, check_mags, ref_mags, date_obs = counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum, date_obs)
+    target_mags, target_err, check_mags, ref_mags, date_obs = counts_to_mag(aper_sum, comp_aper_sums, err, final_comp_mags, check_aper_sum, ref_aper_sum, date_obs)
     print('Target magnitudes: ', target_mags, 'Target error: ', target_err, 'Observation dates: ', date_obs)
     mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, check_mags, cname)
@@ -28,7 +28,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
 
 
 def photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec,
-               check_ra, check_dec):
+               check_ra, check_dec, comp_mags):
     for fil in filters:
         aper_sum, err, date_obs, altitudes = get_counts(dirtarget, coords[0], coords[1], fil)
         aper_sum = np.array(aper_sum, dtype=float)
@@ -42,7 +42,27 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec,
         check_aper_sum = np.array(check_aper_sum, dtype=float)
         ref_aper_sum = np.array(ref_aper_sum, dtype=float)
 
-    return aper_sum, comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes
+        bad_index = []
+        for i, aper in enumerate(comp_apers):
+            for row in aper:
+                if np.any(np.isnan(row)):
+                    print('The {} aper contains a nan value.'.format(i))
+                    bad_index.append(i)
+
+        new_comp_apers = np.delete(comp_apers, bad_index, 0)
+        new_comp_mags = np.delete(comp_mags, bad_index)
+
+        bad_index = []
+        for i, aper in enumerate(new_comp_apers):
+            for row in aper:
+                if np.any(row <= 0):
+                    print('The {} aper contains a non-positive value.'.format(i))
+                    bad_index.append(i)
+
+        final_comp_apers = np.delete(new_comp_apers, bad_index, 0)
+        final_comp_mags = np.delete(new_comp_mags, bad_index)
+
+    return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags
 
 
 def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum, date_obs):
@@ -58,57 +78,29 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
         # Using magnitude value of comparison star (mag) and aperture sum 
         # of comparison star (obj), each image's target count value 
         # (aper_sum) is determined.
-        if np.all(obj != np.nan) and np.all(obj > 0):
-            print('This object contains only positive numbers.', obj)
-            scaled_mags[i] = mag - 2.5 * np.log10(aper_sum / obj)
+        scaled_mags[i] = mag - 2.5 * np.log10(aper_sum / obj)
 
-            # Using magnitude value of comparison star (mag) and aperture sum 
-            # of comparison star (obj), each image's target error count value 
-            # (err) is determined. 
-            # Is this the right way to calculate this?
-            scaled_err[i] = mag * (err / obj)
-            if np.all(check_aper_sum != np.nan) and np.all(check_aper_sum > 0):
-                print('Check star is in the image.')
-                check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
-            else:
-                print('Check star is not in the image.')
-            if np.all(ref_aper_sum != np.nan) and np.all(ref_aper_sum > 0):
-                print('Reference star is in the image.')
-                ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
-                print('Test 1: ', ref_mags)
-            else:
-                print('Reference star is not in the image.')
-            print('Test 2: ', ref_mags)
-        else:
-            print('This object contains either nan or negative values.', obj)
-            continue
-    print('Test 3: ', ref_mags)
+        # Using magnitude value of comparison star (mag) and aperture sum 
+        # of comparison star (obj), each image's target error count value 
+        # (err) is determined. 
+        # Is this the right way to calculate this?
+        scaled_err[i] = mag * (err / obj)
+        check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
+        ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
+
     # For each image, the scaled magnitude value for each comparison star is 
     # averaged.
-    good_mags = []
-    for index in scaled_mags:
-        nantest = np.isnan(index)
-        if np.any(nantest):
-            continue
-        else:
-            good_mags.append(index)
-    good_err = []
-    for index in scaled_err:
-        nantest = np.isnan(index)
-        if np.any(nantest):
-            continue
-        else:
-            good_err.append(index)
-    good_mags = np.array(good_mags)
-    good_err = np.array(good_err)
-    target_mags = np.average(good_mags, axis=0)
-    target_err = np.average(good_err, axis=0)
-    check_mag = np.array(check_mags)
+    target_mags = np.average(scaled_mags, axis=0)
+    target_err = np.average(scaled_err, axis=0)
+    check_mags = np.array(check_mags)
     ref_mags = np.array(ref_mags)
     check_mags_f = np.average(check_mags, axis=0)
     ref_mags_f = np.average(ref_mags, axis=0)
 
-    print(target_err)
+    print('\nTarget mags: ', target_mags)
+    print('\nTarget error: ', target_err)
+    print('\nCheck mags: ', check_mags_f)
+    print('\nRef mags: ', ref_mags_f)
 
     return target_mags, target_err, check_mags_f, ref_mags_f, date_obs
 
