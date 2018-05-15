@@ -75,12 +75,14 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
             if np.all(ref_aper_sum != np.nan) and np.all(ref_aper_sum > 0):
                 print('Reference star is in the image.')
                 ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
+                print('Test 1: ', ref_mags)
             else:
                 print('Reference star is not in the image.')
+            print('Test 2: ', ref_mags)
         else:
             print('This object contains either nan or negative values.', obj)
             continue
-
+    print('Test 3: ', ref_mags)
     # For each image, the scaled magnitude value for each comparison star is 
     # averaged.
     good_mags = []
