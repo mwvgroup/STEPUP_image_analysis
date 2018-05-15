@@ -44,7 +44,6 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec,
         for i, aper in enumerate(comp_apers):
             for row in aper:
                 if np.any(np.isnan(row)):
-                    print('The {} aper contains a nan value.'.format(i))
                     bad_index.append(i)
 
         new_comp_apers = np.delete(comp_apers, bad_index, 0)
@@ -54,7 +53,6 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec,
         for i, aper in enumerate(new_comp_apers):
             for row in aper:
                 if np.any(row <= 0):
-                    print('The {} aper contains a non-positive value.'.format(i))
                     bad_index.append(i)
 
         final_comp_apers = np.delete(new_comp_apers, bad_index, 0)
