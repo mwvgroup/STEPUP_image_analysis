@@ -113,21 +113,22 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
 
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, scaled_refmags, kname):
-        f, axarr = plt.subplots(2, sharex=True, gridspec_kw = {'height_ratios':[3, 1]})
-        axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o')
-        axarr[0].set_title('Light Curve of {}, {}'.format(target,date))
-        axarr[0].set_ylabel('Magnitude')
-        axarr[0].invert_yaxis
-        axarr[0].set_ylim(axarr[0].get_ylim()[::-1])
-        axarr[1].scatter(date_obs, scaled_refmags)
-        axarr[1].set_ylim(axarr[1].get_ylim()[::-1])
-        axarr[1].invert_yaxis
-        axarr[1].set_title('Check Star')
-        axarr[1].set_ylabel('Magnitude')
-        axarr[1].set_xlabel('Time (JD)')
-        f.savefig(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
-                               'lightcurve.pdf'))
-        plt.show()
+    for fil in filters:
+            f, axarr = plt.subplots(2, sharex=True, gridspec_kw = {'height_ratios':[3, 1]})
+            axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o')
+            axarr[0].set_title('Light Curve of {}, {}'.format(target,date))
+            axarr[0].set_ylabel('Magnitude')
+            axarr[0].invert_yaxis
+            axarr[0].set_ylim(axarr[0].get_ylim()[::-1])
+            axarr[1].scatter(date_obs, scaled_refmags)
+            axarr[1].set_ylim(axarr[1].get_ylim()[::-1])
+            axarr[1].invert_yaxis
+            axarr[1].set_title('Check Star')
+            axarr[1].set_ylabel('Magnitude')
+            axarr[1].set_xlabel('Time (JD)')
+            f.savefig(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
+                                   'lightcurve.pdf'))
+            plt.show()
 
 
 def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
