@@ -152,7 +152,7 @@ def main(verbose=False):
                                                   date, coords, comp_ra,
                                                   comp_dec, comp_mags, vsp_code,
                                                   rname, ref_ra, ref_dec, cname,
-                                                  check_ra, check_dec
+                                                  check_ra, check_dec,
                                                   verbose=False)
 
     else:
