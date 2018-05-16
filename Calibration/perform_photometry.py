@@ -206,9 +206,9 @@ def get_counts(dirtarget, rightascension, declination, fil):
             if hdulist[0].header['WCSMATCH'] >= 20:
                 good_indices.append(i)
                 coords = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
-                radius = 90 * u.arcsec
-                r_in = 110 * u.arcsec
-                r_out = 150 * u.arcsec
+                radius = 9 * u.arcsec
+                r_in = 11 * u.arcsec
+                r_out = 15 * u.arcsec
 
                 aperture = SkyCircularAperture(coords, radius)
                 annulus = SkyCircularAnnulus(coords, r_in=r_in,
