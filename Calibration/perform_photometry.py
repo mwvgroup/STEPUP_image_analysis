@@ -39,45 +39,45 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_de
         check_aper_sum = np.array(check_aper_sum, dtype=float)
         ref_aper_sum = np.array(ref_aper_sum, dtype=float)
 
-        bad_index = set()
+        bad_index = []
         for i, aper in enumerate(comp_apers):
             for row in aper:
                 if np.any(np.isnan(row)):
-                    bad_index.add(i)
+                    bad_index.append(i)
 
         new_comp_apers = np.delete(comp_apers, bad_index, 0)
         new_comp_mags = np.delete(comp_mags, bad_index)
 
-        bad_index = set()
+        bad_index = []
         for i, aper in enumerate(new_comp_apers):
             for row in aper:
                 if np.any(row <= 0):
-                    bad_index.add(i)
+                    bad_index.append(i)
 
         final_comp_apers = np.delete(new_comp_apers, bad_index, 0)
         final_comp_mags = np.delete(new_comp_mags, bad_index)
 
-        bad_index = set()
+        bad_index = []
         for i, row in enumerate(check_aper_sum):
             if np.any(np.isnan(row)):
-                bad_index.add(i)
+                bad_index.append(i)
 
         for i, row in enumerate(check_aper_sum):
             if np.any(row <= 0):
-                bad_index.add(i)
+                bad_index.append(i)
 
         if len(bad_index) != 0:
             print('Check star either contains nan or non-positive values.')
             check_aper_sum = None
 
-        bad_index = set()
+        bad_index = []
         for i, row in enumerate(ref_aper_sum):
             if np.any(np.isnan(row)):
-                bad_index.add(i)
+                bad_index.append(i)
 
         for i, row in enumerate(ref_aper_sum):
             if np.any(row <= 0):
-                bad_index.add(i)
+                bad_index.append(i)
 
         if len(bad_index) != 0:
             print('Reference star either contains nan or non-positive values.')
