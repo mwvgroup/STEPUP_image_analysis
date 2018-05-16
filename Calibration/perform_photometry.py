@@ -73,7 +73,7 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_de
         bad_index = set()
         for i, row in enumerate(ref_aper_sum):
             if np.any(np.isnan(row)):
-                bad_index.addi)
+                bad_index.add(i)
 
         for i, row in enumerate(ref_aper_sum):
             if np.any(row <= 0):
