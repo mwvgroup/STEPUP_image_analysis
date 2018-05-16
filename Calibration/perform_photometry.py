@@ -217,7 +217,7 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                 zenith = np.deg2rad(90 - alt)
                 airmass = 1 / np.cos(zenith)
                 input_list = [target, date, mag, err, fil, 'NO', 'STD', cname,
-                              cmag, kname, kmag, airmass, 'na', vsp_code, 'na']
+                              cmag, rname, rmag, airmass, 'na', vsp_code, 'na']
                 input_string = ",".join(map(str, input_list))
                 f.write(input_string + '\n')
 
