@@ -286,4 +286,6 @@ def get_counts(dirtarget, rightascension, declination, fil):
 
         total_sum.append(aper_sum)
 
+        print(total_sum)
+
     return total_sum, err, date_obs, altitudes
