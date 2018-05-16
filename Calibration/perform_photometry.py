@@ -40,23 +40,51 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec,
         check_aper_sum = np.array(check_aper_sum, dtype=float)
         ref_aper_sum = np.array(ref_aper_sum, dtype=float)
 
-        bad_index = []
+        bad_index = set()
         for i, aper in enumerate(comp_apers):
             for row in aper:
                 if np.any(np.isnan(row)):
-                    bad_index.append(i)
+                    bad_index.add(i)
 
         new_comp_apers = np.delete(comp_apers, bad_index, 0)
         new_comp_mags = np.delete(comp_mags, bad_index)
 
-        bad_index = []
+        bad_index = set()
         for i, aper in enumerate(new_comp_apers):
             for row in aper:
                 if np.any(row <= 0):
-                    bad_index.append(i)
+                    bad_index.add(i)
 
         final_comp_apers = np.delete(new_comp_apers, bad_index, 0)
         final_comp_mags = np.delete(new_comp_mags, bad_index)
+
+        bad_index = set()
+        for i, row in enumerate(check_aper_sum):
+            if np.any(np.isnan(row)):
+                bad_index.add(i)
+
+        for i, row in enumerate(check_aper_sum):
+            if np.any(row <= 0):
+                bad_index.add(i)
+
+        if len(bad_index) != 0:
+            print('Check star either contains nan or non-positive values.')
+            check_aper_sum = None
+
+        bad_index = set()
+        for i, row in enumerate(ref_aper_sum):
+            if np.any(np.isnan(row)):
+                bad_index.addi)
+
+        for i, row in enumerate(ref_aper_sum):
+            if np.any(row <= 0):
+                bad_index.add(i)
+
+        if len(bad_index) != 0:
+            print('Reference star either contains nan or non-positive values.')
+            ref_aper_sum = None
+
+        print(check_aper_sum, ref_aper_sum)
 
     return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags
 
@@ -80,17 +108,29 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
         # of comparison star (obj), each image's target error count value 
         # (err) is determined. 
         scaled_err[i] = mag * (err / obj)
-        check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
-        ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
+        if check_aper_sum != None:
+            check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
+        if ref_aper_sum != None:
+            ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
 
     # For each image, the scaled magnitude value for each comparison star is 
     # averaged.
     target_mags = np.average(scaled_mags, axis=0)
     target_err = np.average(scaled_err, axis=0)
-    check_mags = np.array(check_mags)
-    ref_mags = np.array(ref_mags)
-    check_mags_f = np.average(check_mags, axis=0)
-    ref_mags_f = np.average(ref_mags, axis=0)
+
+    check_mags_f = None
+    if check_aper_sum != None:
+        check_mags = np.array(check_mags)
+        check_mags_f = np.average(check_mags, axis=0)
+    else:
+        check_mags_f = 0
+
+    ref_mags_f = None
+    if ref_aper_sum != None:
+        ref_mags = np.array(ref_mags)
+        ref_mags_f = np.average(ref_mags, axis=0)
+    else:
+        ref_mags_f = 0
 
     print('\nTarget mags: ', target_mags)
     print('\nTarget error: ', target_err)
