@@ -16,7 +16,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
                        rname, ref_ra, ref_dec, verbose=False):
     """Run photometry part of image analysis routine.
     """
-    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags = photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec, check_ra, check_dec, comp_mags)
+    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags = photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec, ref_ra, ref_dec, comp_mags)
     target_mags, target_err, check_mags, ref_mags, date_obs = counts_to_mag(aper_sum, comp_aper_sums, err, final_comp_mags, check_aper_sum, ref_aper_sum, date_obs)
     mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, check_mags)
