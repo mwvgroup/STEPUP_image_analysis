@@ -108,9 +108,9 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
         # of comparison star (obj), each image's target error count value 
         # (err) is determined. 
         scaled_err[i] = mag * (err / obj)
-        if np.any(check_aper_sum != None):
+        if np.all(check_aper_sum != None):
             check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
-        if np.any(ref_aper_sum != None):
+        if np.all(ref_aper_sum != None):
             ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
 
     # For each image, the scaled magnitude value for each comparison star is 
@@ -119,14 +119,14 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
     target_err = np.average(scaled_err, axis=0)
 
     check_mags_f = None
-    if np.any(check_aper_sum != None):
+    if np.all(check_aper_sum != None):
         check_mags = np.array(check_mags)
         check_mags_f = np.average(check_mags, axis=0)
     else:
         check_mags_f = 0
 
     ref_mags_f = None
-    if np.any(ref_aper_sum != None):
+    if np.all(ref_aper_sum != None):
         ref_mags = np.array(ref_mags)
         ref_mags_f = np.average(ref_mags, axis=0)
     else:
