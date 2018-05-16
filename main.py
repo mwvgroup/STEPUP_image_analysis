@@ -117,11 +117,11 @@ def main(verbose=False):
                     ref_ra.append(line[5:].strip('\n'))
                 if line.startswith('#CDEC='):
                     ref_dec.append(line[6:].strip('\n'))
-                if line.startswith('#KLABEL='):
-                    kname = line[8:].strip('\n')
-                if line.startswith('#KRA'):
+                if line.startswith('#RLABEL='):
+                    rname = line[8:].strip('\n')
+                if line.startswith('#RRA'):
                     check_ra.append(line[5:].strip('\n'))
-                if line.startswith('#KDEC='):
+                if line.startswith('#RDEC='):
                     check_dec.append(line[6:].strip('\n'))
 
         # Ensure that all magntidue values are floats.
@@ -240,12 +240,12 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
         comp_dec = []
         comp_mag = []
         vsp_code = None
-        rname = None
-        ref_ra = []
-        ref_dec = []
         cname = None
         check_ra = []
         check_dec = []
+        rname = None
+        ref_ra = []
+        ref_dec = []
 
         # Read in information from input-file.txt and append/assign it to
         # corresponding list/variable.
@@ -269,11 +269,11 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
                     ref_ra.append(line[5:].strip('\n'))
                 if line.startswith('#CDEC='):
                     ref_dec.append(line[6:].strip('\n'))
-                if line.startswith('#KLABEL='):
-                    kname = line[8:].strip('\n')
-                if line.startswith('#KRA'):
+                if line.startswith('#RLABEL='):
+                    rname = line[8:].strip('\n')
+                if line.startswith('#RRA'):
                     check_ra.append(line[5:].strip('\n'))
-                if line.startswith('#KDEC='):
+                if line.startswith('#RDEC='):
                     check_dec.append(line[6:].strip('\n'))
 
         # Ensure that all magntidue values are floats.
@@ -307,8 +307,8 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
                                                   filters, date, coords,
                                                   comp_ra, comp_dec,
                                                   comp_mags, vsp_code,
-                                                  rname, ref_ra, ref_dec,
-                                                  cname, check_ra,
-                                                  check_dec, verbose=False)
+                                                  cname, check_ra, check_dec,
+                                                  rname, ref_ra,
+                                                  ref_dec, verbose=False)
 
 main(verbose=False)

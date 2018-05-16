@@ -12,21 +12,20 @@ from matplotlib import gridspec
 
 
 def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
-                       comp_dec, comp_mags, vsp_code, rname, ref_ra, ref_dec,
-                       cname, check_ra, check_dec, verbose=False):
+                       comp_dec, comp_mags, vsp_code, cname, check_ra, check_dec,
+                       rname, ref_ra, ref_dec, verbose=False):
     """Run photometry part of image analysis routine.
     """
     aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags = photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec, check_ra, check_dec, comp_mags)
     target_mags, target_err, check_mags, ref_mags, date_obs = counts_to_mag(aper_sum, comp_aper_sums, err, final_comp_mags, check_aper_sum, ref_aper_sum, date_obs)
     mag_plot(target_mags, target_err, date_obs, target, date, filters,
-             dirtarget, check_mags, cname)
+             dirtarget, check_mags)
+    write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
+               filters, altitudes, cname, check_mags, rname, ref_mags)
 
-    write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget, filters,
-               altitudes, rname, ref_mags, cname, check_mags)
 
-
-def photometry(dirtarget, filters, coords, comp_ra, comp_dec, ref_ra, ref_dec,
-               check_ra, check_dec, comp_mags):
+def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec,
+               ref_ra, ref_dec, comp_mags):
     for fil in filters:
         aper_sum, err, date_obs, altitudes = get_counts(dirtarget, coords[0], coords[1], fil)
         aper_sum = np.array(aper_sum, dtype=float)
@@ -141,7 +140,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
 
 
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
-             dirtarget, scaled_refmags, kname):
+             dirtarget, check_mags):
     for fil in filters:
         f, axarr = plt.subplots(2, sharex=True, gridspec_kw = {'height_ratios':[3, 1]})
         axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o')
@@ -149,7 +148,7 @@ def mag_plot(target_mags, target_err, date_obs, target, date, filters,
         axarr[0].set_ylabel('Magnitude')
         axarr[0].invert_yaxis
         axarr[0].set_ylim(axarr[0].get_ylim()[::-1])
-        axarr[1].scatter(date_obs, scaled_refmags)
+        axarr[1].scatter(date_obs, check_mags)
         axarr[1].set_ylim(axarr[1].get_ylim()[::-1])
         axarr[1].invert_yaxis
         axarr[1].set_title('Check Star')
@@ -161,7 +160,7 @@ def mag_plot(target_mags, target_err, date_obs, target, date, filters,
 
 
 def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
-               filters, altitudes, cname, cmags, kname, kmags):
+               filters, altitudes, cname, cmags, rname, rmags):
     """Writes file of observational data to submit to AAVSO.
     
     Formats data to be compatible for submission for the AAVSO Extended File 
@@ -210,7 +209,7 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                             'output.txt')
         
         with open(path, 'w+') as f:
-            f.write('#TYPE=Extended\n#OBSCODE=NTHC\n#SOFTWARE=STEPUP ' +
+            f.write('#TYPE=jExtended\n#OBSCODE=NTHC\n#SOFTWARE=STEPUP ' +
                     'Image Analysis\n#DELIM=,\n#DATE=JD\n#OBSTYPE=CCD\n')
             for date, mag, err, cmag, kmag, alt in zip(date_obs, target_mags,
                                                        target_err, cmags, kmags,
