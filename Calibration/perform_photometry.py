@@ -211,7 +211,7 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
         with open(path, 'w+') as f:
             f.write('#TYPE=jExtended\n#OBSCODE=NTHC\n#SOFTWARE=STEPUP ' +
                     'Image Analysis\n#DELIM=,\n#DATE=JD\n#OBSTYPE=CCD\n')
-            for date, mag, err, cmag, kmag, alt in zip(date_obs, target_mags,
+            for date, mag, err, cmag, rmag, alt in zip(date_obs, target_mags,
                                                        target_err, cmags, rmags,
                                                        altitudes):
                 zenith = np.deg2rad(90 - alt)
