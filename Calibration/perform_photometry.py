@@ -70,6 +70,7 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_de
             print('Check star either contains nan or non-positive values.')
             check_aper_sum = None
 
+        print(ref_aper_sum)
         bad_index = []
         for i, row in enumerate(ref_aper_sum):
             if np.any(np.isnan(row)):
@@ -209,7 +210,7 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                             'output.txt')
         
         with open(path, 'w+') as f:
-            f.write('#TYPE=jExtended\n#OBSCODE=NTHC\n#SOFTWARE=STEPUP ' +
+            f.write('#TYPE=Extended\n#OBSCODE=NTHC\n#SOFTWARE=STEPUP ' +
                     'Image Analysis\n#DELIM=,\n#DATE=JD\n#OBSTYPE=CCD\n')
             for date, mag, err, cmag, rmag, alt in zip(date_obs, target_mags,
                                                        target_err, cmags, rmags,
