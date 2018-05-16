@@ -212,7 +212,7 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
             f.write('#TYPE=jExtended\n#OBSCODE=NTHC\n#SOFTWARE=STEPUP ' +
                     'Image Analysis\n#DELIM=,\n#DATE=JD\n#OBSTYPE=CCD\n')
             for date, mag, err, cmag, kmag, alt in zip(date_obs, target_mags,
-                                                       target_err, cmags, kmags,
+                                                       target_err, cmags, rmags,
                                                        altitudes):
                 zenith = np.deg2rad(90 - alt)
                 airmass = 1 / np.cos(zenith)
