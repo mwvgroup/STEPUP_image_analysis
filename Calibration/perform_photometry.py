@@ -236,7 +236,6 @@ def get_counts(dirtarget, rightascension, declination, fil):
     altitudes = np.empty(size)
     altitudes[:] = np.nan
     total_sum = []
-    good_indices = []
     
     for ra, dec in zip(rightascension, declination):
         aper_sum = np.empty(size)
