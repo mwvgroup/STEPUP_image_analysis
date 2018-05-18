@@ -8,7 +8,7 @@ Determines whether the user would like to run the whole image analysis routine o
 
 Parameters: verbose
 
-returns None
+Returns: None
 
 #      which_analysis
 
@@ -16,7 +16,7 @@ Calls whichever function (ISR, perform_astrometry, or perform_photometry) the us
 
 Parameters: answer, dirtarget, dirdark, target, date, computer
 
-returns None
+Returns: None
     
 # ISR:
 
