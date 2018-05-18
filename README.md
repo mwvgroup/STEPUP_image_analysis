@@ -1,7 +1,7 @@
 # STEPUP New Code:
 
 # main.py
-Determines which computer code is being ran from and imports functions from corresponding repositories. Then calls main.
+Determines which computer code is being ran from and imports functions from corresponding directories. Then calls main.
 
 #      main
 Determines whether the user would like to run the whole image analysis routine or a specific function. If the user would like to run the whole routine, then ISR, perform_astrometry, and perform_photometry are subsequentially called. If the user would like to perform a specific function, which_analysis is called.
