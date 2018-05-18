@@ -89,7 +89,7 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_de
     return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags
 
 
-def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum, date_obs):
+def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum):
     scaled_mags = np.empty(comp_aper_sums.shape)
     scaled_mags[:] = np.nan
     ref_mags = np.empty(comp_aper_sums.shape)
@@ -137,7 +137,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_
     print('\nCheck mags: ', check_mags_f)
     print('\nRef mags: ', ref_mags_f)
 
-    return target_mags, target_err, check_mags_f, ref_mags_f, date_obs
+    return target_mags, target_err, check_mags_f, ref_mags_f
 
 
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
