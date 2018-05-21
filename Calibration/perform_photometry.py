@@ -244,7 +244,6 @@ def get_counts(dirtarget, rightascension, declination, fil):
             o_file = os.path.join(dirtarget_wcs, item)
             hdulist = fits.open(o_file)
             if hdulist[0].header['WCSMATCH'] >= 20:
-                good_indices.append(i)
                 coords = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
                 radius = 9 * u.arcsec
                 r_in = 11 * u.arcsec
