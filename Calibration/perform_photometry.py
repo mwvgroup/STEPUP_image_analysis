@@ -241,7 +241,6 @@ def get_counts(dirtarget, rightascension, declination, fil):
         aper_sum = np.empty(size)
         aper_sum[:] = np.nan
         for i, item in enumerate(glob.glob(os.path.join(dirtarget_wcs, '*.fits'))):
-            print(item)
             o_file = os.path.join(dirtarget_wcs, item)
             hdulist = fits.open(o_file)
             if hdulist[0].header['WCSMATCH'] >= 20:
@@ -285,7 +284,5 @@ def get_counts(dirtarget, rightascension, declination, fil):
                 altitudes[i] = (hdulist[0].header['OBJCTALT'])
 
         total_sum.append(aper_sum)
-
-        print(total_sum)
 
     return total_sum, err, date_obs, altitudes
