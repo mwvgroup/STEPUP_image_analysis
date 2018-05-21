@@ -114,15 +114,15 @@ def main(verbose=False):
                 if line.startswith('#CLABEL='):
                     cname = line[8:].strip('\n')
                 if line.startswith('#CRA='):
-                    ref_ra.append(line[5:].strip('\n'))
+                    check_ra.append(line[5:].strip('\n'))
                 if line.startswith('#CDEC='):
-                    ref_dec.append(line[6:].strip('\n'))
+                    check_dec.append(line[6:].strip('\n'))
                 if line.startswith('#RLABEL='):
                     rname = line[8:].strip('\n')
                 if line.startswith('#RRA'):
-                    check_ra.append(line[5:].strip('\n'))
+                    ref_ra.append(line[5:].strip('\n'))
                 if line.startswith('#RDEC='):
-                    check_dec.append(line[6:].strip('\n'))
+                    ref_dec.append(line[6:].strip('\n'))
 
         # Ensure that all magntidue values are floats.
         comp_mags = []
@@ -149,8 +149,8 @@ def main(verbose=False):
             perform_photometry.perform_photometry(target, dirtarget, filters,
                                                   date, coords, comp_ra,
                                                   comp_dec, comp_mags, vsp_code,
-                                                  rname, ref_ra, ref_dec, cname,
-                                                  check_ra, check_dec,
+                                                  cname, check_ra, check_dec,
+                                                  rname, ref_ra, ref_dec,
                                                   verbose=False)
 
     else:
@@ -266,15 +266,15 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
                 if line.startswith('#CLABEL='):
                     cname = line[8:].strip('\n')
                 if line.startswith('#CRA='):
-                    ref_ra.append(line[5:].strip('\n'))
+                    check_ra.append(line[5:].strip('\n'))
                 if line.startswith('#CDEC='):
-                    ref_dec.append(line[6:].strip('\n'))
+                    check_dec.append(line[6:].strip('\n'))
                 if line.startswith('#RLABEL='):
                     rname = line[8:].strip('\n')
                 if line.startswith('#RRA'):
-                    check_ra.append(line[5:].strip('\n'))
+                    ref_ra.append(line[5:].strip('\n'))
                 if line.startswith('#RDEC='):
-                    check_dec.append(line[6:].strip('\n'))
+                    ref_dec.append(line[6:].strip('\n'))
 
         # Ensure that all magntidue values are floats.
         comp_mags = []
