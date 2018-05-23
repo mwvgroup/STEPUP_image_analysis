@@ -12,20 +12,118 @@ from matplotlib import gridspec
 
 
 def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
-                       comp_dec, comp_mags, vsp_code, cname, check_ra, check_dec,
-                       rname, ref_ra, ref_dec, verbose=False):
+                       comp_dec, comp_mags, vsp_code, cname, check_ra,
+                       check_dec, rname, ref_ra, ref_dec, verbose=False):
     """Run photometry part of image analysis routine.
+
+    Call photometry, which calls get_counts to get the aperture sums for the
+    target, comparison stars, check star, and ref star as well as the error on
+    the target aperture sum. get_counts also returns a list of all of the times
+    and altitudes for each image. Then these aperture sums are converted in
+    counts_to_mag from count values to magnitude values using the aperture sums
+    of the comparison stars and their mangitudes. This process is repeated for
+    the target, check, and reference aperture sums as well as the target error.
+    Then, mag_plot is called, which plots the target magnitudes with error over
+    time and check magnitudes over time. This figure is written to /home/depot/
+    STEPUP/raw/<name-of-target>/<date-of-observation>/ISR_Images/<filter-name>/
+    WCS/accurate_WCS. Then write_file is called to write an output file to the
+    same directory in the AAVSO extended file format to be submitted to AAVSO
+    using WebObs.
+
+    Parameters
+    ----------
+    target : str
+        Name of target.
+    dirtarget : str
+        Directory containing all bias, flat, and raw science images.
+    filters : list
+        List containing string of each filter keyword found in header of flat 
+        field and light frame images. 
+    date : str
+        Date of observation.
+    coords : list
+        List of list of string of target right ascension and declination.
+    comp_ra : list
+        List of strings of comparison stars' right ascension.
+    comp_dec : list
+        List of strings of comparison stars' right ascension.
+    comp_mags : list
+        List of floats representing the magnitudes of the comparison stars.
+    vsp_code : str
+        Code to indentify AAVSO photometry table used for analysis.
+    cname : str
+        Label of check star corresponding to vsp_code.
+    check_ra : list
+        List of string of right ascension of check star.
+    check_dec : list
+        List of string of delination of check star.
+    rname : str
+        Label of reference star corresponding to vsp_code.
+    ref_ra : list
+        List of string of right ascension of reference star.
+    ref_dec : str
+        List of string of declination of reference star.
+    verbose : Boolean
+        Specifies whether or not user would like to print more information
+        about the status of the code.
+
+    Returns
+    -------
+    None
     """
     aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags = photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec, ref_ra, ref_dec, comp_mags)
+
     target_mags, target_err, check_mags, ref_mags = counts_to_mag(aper_sum, comp_aper_sums, err, final_comp_mags, check_aper_sum, ref_aper_sum)
+
     mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, check_mags)
+
     write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                filters, altitudes, cname, check_mags, rname, ref_mags)
 
 
-def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec,
-               ref_ra, ref_dec, comp_mags):
+def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
+               check_dec, ref_ra, ref_dec, comp_mags):
+    """Get aperture sums for target, comparison, check, and reference stars.
+
+    Parameters
+    ----------
+    dirtarget : str
+        Directory containing all bias, flat, and raw science images.
+    filters : list
+        List containing string of each filter keyword found in header of flat 
+        field and light frame images.
+    coords : list
+        List of list of string of target right ascension and declination.
+    comp_ra : list
+        List of strings of comparison stars' right ascension.
+    comp_dec : list
+        List of strings of comparison stars' right ascension.
+    check_ra : list
+        List of string of right ascension of check star.
+    check_dec : list
+        List of string of delination of check star.
+    ref_ra : list
+        List of string of right ascension of reference star.
+    ref_dec : str
+        List of string of declination of reference star.
+    comp_mags : list
+        List of floats representing the magnitudes of the comparison stars.
+    
+    Returns
+    -------
+    aper_sum : numpy.ndarray
+        Array of aperture sums for target star.
+    final_comp_apers : numpy.ndarray
+        Filtered array of aperture sums for comparison stars.
+    check_aper_sum : numpy.ndarray
+        
+    ref_aper_sum : numpy.ndarray
+    err : numpy.ndarray
+    date_obs : np.ndarray
+    altitudes : np.ndarray
+    final_comp_mags : numpy.ndarray
+    """
     for fil in filters:
         aper_sum, err, date_obs, altitudes = get_counts(dirtarget, coords[0], coords[1], fil)
         aper_sum = np.array(aper_sum, dtype=float)
@@ -70,7 +168,6 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_de
             print('Check star either contains nan or non-positive values.')
             check_aper_sum = None
 
-        print(ref_aper_sum)
         bad_index = []
         for i, row in enumerate(ref_aper_sum):
             if np.any(np.isnan(row)):

@@ -32,7 +32,7 @@ def main(verbose=False):
 
     Parameters
     ----------
-    verbose : boolean
+    verbose : Boolean
         Specifies whether or not user would like to print more information
         about the status of the code.
 
