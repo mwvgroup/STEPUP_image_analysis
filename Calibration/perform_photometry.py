@@ -86,6 +86,16 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
                check_dec, ref_ra, ref_dec, comp_mags):
     """Get aperture sums for target, comparison, check, and reference stars.
 
+    Calls get_counts for the list of right ascension(s) and declination(s) for
+    the target star, each comparison star, the check star, and the reference
+    star. The err, date_obs, and altitudes are defined when get_counts is called
+    for the target star. Then, if any of the comparison stars are not in the
+    image (i.e. they have either nan or negative values in their aper_sum
+    arrays), then they are removed from the comp_aper_sum array and the
+    corresponding magnitude is removed from comp_mags. The same process is
+    repreated for the check and reference star, except there is no
+    corresponding magnitude to delete.
+    
     Parameters
     ----------
     dirtarget : str
