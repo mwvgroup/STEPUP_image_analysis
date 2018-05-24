@@ -88,10 +88,10 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
 
     Calls get_counts for the list of right ascension(s) and declination(s) for
     the target star, each comparison star, the check star, and the reference
-    star. The err, date_obs, and altitudes are defined when get_counts is called
-    for the target star. Then, if any of the comparison stars are not in the
+    star. The err, date_obs, and altitudes are defined when get_counts is
+    called for the target star. Then, if any of the comparison stars are not
     image (i.e. they have either nan or negative values in their aper_sum
-    arrays), then they are removed from the comp_aper_sum array and the
+    in the arrays), then they are removed from the comp_aper_sum array and the
     corresponding magnitude is removed from comp_mags. The same process is
     repreated for the check and reference star, except there is no
     corresponding magnitude to delete.
@@ -123,48 +123,69 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
     Returns
     -------
     aper_sum : numpy.ndarray
-        Array of aperture sums for target star.
+        Array of aperture sums for target star in counts.
     final_comp_apers : numpy.ndarray
-        Filtered array of aperture sums for comparison stars.
+        Filtered array of aperture sums for comparison star in counts.
     check_aper_sum : numpy.ndarray
-        
+        Filtered array of aperture sum for check star in counts.
     ref_aper_sum : numpy.ndarray
+        Filtered array of aperture sum for reference star in counts.
     err : numpy.ndarray
+        Array of error values for each aperture sum of the target star in
+        counts.
     date_obs : np.ndarray
+        Array of times each image was taken in Julian Days.
     altitudes : np.ndarray
+        Array of object altitudes for each image.
     final_comp_mags : numpy.ndarray
+        Filtered array of comparison star magnitudes.
     """
     for fil in filters:
-        aper_sum, err, date_obs, altitudes = get_counts(dirtarget, coords[0], coords[1], fil)
+        # Get aperture sum, error of aperture sum, times of data collection,
+        # and altitudes for target.
+        aper_sum, err, date_obs, altitudes = get_counts(dirtarget, coords[0],
+                                                        coords[1], fil)
         aper_sum = np.array(aper_sum, dtype=float)
 
+        # Get aperture sums for each somparison star.
         comp_apers = get_counts(dirtarget, comp_ra, comp_dec, fil)[0]
         comp_apers = np.array(comp_apers, dtype=float)
 
+        # Get aperture sum of the check and reference stars.
         check_aper_sum = (get_counts(dirtarget, check_ra, check_dec, fil))[0]
         ref_aper_sum = (get_counts(dirtarget, ref_ra, ref_dec, fil))[0]
-        
         check_aper_sum = np.array(check_aper_sum, dtype=float)
         ref_aper_sum = np.array(ref_aper_sum, dtype=float)
 
+        # Determine if any comparison stars are not in the image by checking
+        # for the presence of nan values.
         bad_index = []
         for i, aper in enumerate(comp_apers):
             for row in aper:
                 if np.any(np.isnan(row)):
                     bad_index.append(i)
 
+        # Remove aperture sum(s) of comparison star(s) that are not in the
+        # image.
         new_comp_apers = np.delete(comp_apers, bad_index, 0)
         new_comp_mags = np.delete(comp_mags, bad_index)
 
+
+        # Determine if any comparison stars are not in the image by checking
+        # for the presence of negative values.
         bad_index = []
         for i, aper in enumerate(new_comp_apers):
             for row in aper:
                 if np.any(row <= 0):
                     bad_index.append(i)
 
+        # Remove aperture sum(s) and magntidues of comparison star(s) that are
+        # not in the image.
         final_comp_apers = np.delete(new_comp_apers, bad_index, 0)
         final_comp_mags = np.delete(new_comp_mags, bad_index)
 
+        # Determine if the check star is not in the image by checking for the
+        # presence of nan or negative values.
         bad_index = []
         for i, row in enumerate(check_aper_sum):
             if np.any(np.isnan(row)):
@@ -174,10 +195,13 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
             if np.any(row <= 0):
                 bad_index.append(i)
 
+        # If check star is not in image, let check_aper_sum = None.
         if len(bad_index) != 0:
             print('Check star either contains nan or non-positive values.')
             check_aper_sum = None
 
+        # Determine if the reference star is not in the image by checking for
+        # the presence of nan or negative values.
         bad_index = []
         for i, row in enumerate(ref_aper_sum):
             if np.any(np.isnan(row)):
@@ -187,16 +211,47 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
             if np.any(row <= 0):
                 bad_index.append(i)
 
+        # If check star is not in image, let ref_aper_sum = None.
         if len(bad_index) != 0:
             print('Reference star either contains nan or non-positive values.')
             ref_aper_sum = None
 
-        print(check_aper_sum, ref_aper_sum)
-
     return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags
 
 
-def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum, ref_aper_sum):
+def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
+                  ref_aper_sum):
+    """Scales the aperture sums from counts to magnitudes.
+
+    Initializes arrays for target
+
+    Parameters
+    ----------
+    aper_sum : numpy.ndarray
+        Array of aperture sums for target star in counts.
+    comp_aper_sums : numpy.ndarray
+        Filtered array of comparison star magnitudes.
+    err : numpy.ndarray
+        Array of error values for each aperture sum of the target star in
+        counts.
+    comp_mags : list
+        List of floats representing the magnitudes of the comparison stars.
+    check_aper_sum : numpy.ndarray
+        Filtered array of aperture sum for check star in counts.
+    ref_aper_sum : numpy.ndarray
+        Filtered array of aperture sum for reference star in counts.
+
+    Returns
+    -------
+    target_mags : numpy.ndarray
+        Array of magnitude values for the target.
+    target_err : numpy.ndarray
+        Array of error values for target magnitudes.
+    check_mags_f : numpy.ndarray
+        Array of magnitude values for the check star.
+    ref_mags_f : numpy.ndarray
+        Array of magnitude values for the reference star.
+    """
     scaled_mags = np.empty(comp_aper_sums.shape)
     scaled_mags[:] = np.nan
     ref_mags = np.empty(comp_aper_sums.shape)
@@ -333,6 +388,45 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
 
 def get_counts(dirtarget, rightascension, declination, fil):
     """Determine count values for star(s).
+
+    Reads in all files from dirtarget and initializes arrays for error,
+    observation times, and altitudes corresponding to the number of images
+    that will be processed as well as a list for the arrays of aperture sums
+    that will be generated for each object get_counts has been called for.
+    Then, for each object corresponding to each ra and dec pair in
+    rightascension and declination, if WCS Tools has matches at least 20 stars
+    in the image, a SkyCoord and SkyCircularAnnulus object are craeted, both
+    centered at the object's location. The area of the aperture and annulus
+    are calculated and phot_table is called in order to get an aperture and
+    annulus sum for the object. The source error and background error are
+    calculated in order to determine to aperture sum error and the aperture sum
+    and its error are added to their corresponding arrays, as well as the time
+    and altitude. The aperture is appended to total_sum and this process is
+    repeated for each object that get_counts has been called for.
+
+    Parameters
+    ----------
+    dirtarget : str
+        Directory containing all bias, flat, and raw science images.
+    rightascension : list
+        List of string(s) of right ascension(s) of object(s) to be processed.
+    declination : list
+        List of string(s) of declination(s) of object(s) to be processed.
+    fil : str
+        Name of filter used for images which are currently being processed.
+
+    Returns
+    -------
+    total_sum : list
+        List of numpy arrays containing aperture sum of each RA and dec in
+        rightascension and declination
+    err : numpy.ndarray
+        Array of error values for each aperture sum for the last RA and dec
+        in rightascension and declination.
+    date_obs : numpy.ndarray
+        Array of times each image was taken in Julian Days.
+    altitudes : numpy.ndarray
+        Array of object altitudes for each image.
     """
     dirtarget_wcs = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')
     size = len(glob.glob(os.path.join(dirtarget_wcs, '*.fits')))
