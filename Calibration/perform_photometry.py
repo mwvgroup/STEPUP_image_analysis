@@ -24,10 +24,8 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
     of the comparison stars and their mangitudes. This process is repeated for
     the target, check, and reference aperture sums as well as the target error.
     Then, mag_plot is called, which plots the target magnitudes with error over
-    time and check magnitudes over time. This figure is written to /home/depot/
-    STEPUP/raw/<name-of-target>/<date-of-observation>/ISR_Images/<filter-name>/
-    WCS/accurate_WCS. Then write_file is called to write an output file to the
-    same directory in the AAVSO extended file format to be submitted to AAVSO
+    time and check magnitudes over time. Then write_file is called to write an
+    output file in the AAVSO extended file format to be submitted to AAVSO
     using WebObs.
 
     Parameters
@@ -252,14 +250,17 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
     ref_mags_f : numpy.ndarray
         Array of magnitude values for the reference star.
     """
+    # Initialize arrays for target magnitudes, check magnitudes, reference
+    # magnitudes, and errors in target magnitudes.
     scaled_mags = np.empty(comp_aper_sums.shape)
     scaled_mags[:] = np.nan
-    ref_mags = np.empty(comp_aper_sums.shape)
-    ref_mags[:] = np.nan
     check_mags = np.empty(comp_aper_sums.shape)
     check_mags[:] = np.nan
+    ref_mags = np.empty(comp_aper_sums.shape)
+    ref_mags[:] = np.nan
     scaled_err = np.empty(comp_aper_sums.shape)
     scaled_err[:] = np.nan
+
     for i, (mag, obj) in enumerate(zip(comp_mags, comp_aper_sums)):
         # Using magnitude value of comparison star (mag) and aperture sum 
         # of comparison star (obj), each image's target count value 
@@ -270,6 +271,9 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
         # of comparison star (obj), each image's target error count value 
         # (err) is determined. 
         scaled_err[i] = mag * (err / obj)
+
+        # If the check star and reference star is in the image, the magnitudes
+        # of each star are determined for each image.
         if np.all(check_aper_sum != None):
             check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
         if np.all(ref_aper_sum != None):
@@ -280,6 +284,8 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
     target_mags = np.average(scaled_mags, axis=0)
     target_err = np.average(scaled_err, axis=0)
 
+    # If the check star is in the image, the calculated magnitudes are averaged
+    # for each image.
     check_mags_f = None
     if np.all(check_aper_sum != None):
         check_mags = np.array(check_mags)
@@ -287,6 +293,8 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
     else:
         check_mags_f = 0
 
+    # If the reference star is in the image, the calculated magnitudes are
+    # averaged for each image.
     ref_mags_f = None
     if np.all(ref_aper_sum != None):
         ref_mags = np.array(ref_mags)
@@ -304,9 +312,43 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
 
 def mag_plot(target_mags, target_err, date_obs, target, date, filters,
              dirtarget, check_mags):
+    """Plot magnitudes of target star with error and check star over time.
+
+    Creates a subplot with the target magntidues and their error over time in
+    Julian Days on top and the check star magnitudes on the bottom with the
+    same x-axis as the target star. A PDF of the lightcurve is written to
+    /home/depot/STEPUP/raw/<name-of-target>/<date-of-observation>/ISR_Images/
+    <filter-name>/WCS/accurate_WCS.
+
+    Parameters
+    ----------
+    target_mags : numpy.ndarray
+        Array of magnitude values for the target.
+    target_err : numpy.ndarray
+        Array of error values for target magnitudes.
+    date_obs : numpy.ndarray
+        Array of times each image was taken in Julian Days.
+    target : numpy.ndarray
+        Name of target.
+    date_obs : numpy.ndarray
+        Array of times each image was taken in Julian Days.
+    date : str
+        Date of observation.
+    filters : list
+        List containing string of each filter keyword found in header of flat 
+        field and light frame images.
+    dirtarget : str
+        Directory containing all bias, flat, and raw science images.
+    check_mags : numpy.ndarray
+        Array of magnitude values for the check star.
+
+    Returns
+    -------
+    None
+    """
     for fil in filters:
-        print(target_mags)
-        f, axarr = plt.subplots(2, sharex=True, gridspec_kw = {'height_ratios':[3, 1]})
+        f, axarr = plt.subplots(2, sharex=True,
+                                gridspec_kw = {'height_ratios':[3, 1]})
         axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o')
         axarr[0].set_title('Light Curve of {}, {}'.format(target,date))
         axarr[0].set_ylabel('Magnitude')
