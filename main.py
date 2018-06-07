@@ -61,7 +61,7 @@ def main(verbose=False):
         print('\nInstrument signature removal in progress...')
         # Removes instrument signatures from dataset.
         filters = ISR.ISR_main(dirtarget, dirdark, target)
-        print('I\nnstrument signature removal completed.')
+        print('\nInstrument signature removal completed.')
         # Determines if user has saved new-image.fits WCS calibration file to
         # ISR_Images directory that was created in ISR function.
         answer = input('\nHave you saved a new-image.fits file to the appropriate directory? (Y/N): ')
@@ -208,7 +208,7 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
         # ISR_Images directory that was created in ISR function.
         if im == 'Y':
             # Determines filters using in observation.
-            filters = list(input('\nEnter filters of observation: '))
+            filters = input('\nEnter filters of observation: ').split(",")
             print('\nAstrometry in progress...')
             dirtarget += '/ISR_Images'
             # Calculates WCS information for dataset.
@@ -220,7 +220,7 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
 
     if answer == 'PHOT':
         # Determines filters using in observation.
-        filters = list(input('\nEnter filters of observation: '))
+        filters = input('\nEnter filters of observation: ').split(",")
         print('\nPhotometry in progress...')
         dirtarget += '/ISR_Images'
         # Initialize variable for and determine path based on which computer
