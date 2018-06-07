@@ -272,7 +272,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
         # (err) is determined. 
         scaled_mags_plus_err[i] = mag - 2.5 * np.log10((aper_sum + err) / obj)
 
-        scaled_err = scaled_mags_plus_err - scaled_mags
+        scaled_err = scaled_mags - scaled_mags_plus_err 
 
         # If the check star and reference star is in the image, the magnitudes
         # of each star are determined for each image.
