@@ -101,7 +101,7 @@ def perform_astrometry(target, dirtarget, filters, verbose=False):
         # Corrects WCS information in image header using the imwcs command and
         # known star coordinates in new-image.tab.
         os.chdir(os.path.join(dirtarget, fil, 'WCS'))
-        isr_wcs_images = sort(glob.glob(os.path.join(dirtarget, fil, 'WCS',
+        isr_wcs_images = sorted(glob.glob(os.path.join(dirtarget, fil, 'WCS',
                                                      '*.fits')))
         for i, image in enumerate(isr_wcs_images):
             if verbose:
