@@ -43,6 +43,21 @@ def perform_astrometry(target, dirtarget, filters, verbose=False):
     wcsim_hdu = fits.open(os.path.join(dirtarget, 'new-image.fits'))
     wcsim_header = wcsim_hdu[0].header
 
+    # Generate list of strings of three-digit numbers from 0 to 999
+    # used to name files that are written.
+    numbers1 = list(range(0,999,1))
+    numbers2 = []
+    for i in numbers1:
+        numbers2.append(str(i))
+    numbers = []
+    for i in numbers2:
+        if len(i) == 1:
+            numbers.append('00{}'.format(i))
+        if len(i) == 2:
+            numbers.append('0{}'.format(i))
+        if len(i) == 3:
+            numbers.append(i)
+
     # Repeats process for images of each filter.
     for fil in filters:
         os.mkdir(os.path.join(dirtarget, fil, 'WCS'))
@@ -58,7 +73,7 @@ def perform_astrometry(target, dirtarget, filters, verbose=False):
             #                                          '*.fits')))
             pass
         else:
-            images = glob.glob(os.path.join(dirtarget, fil, '*.fits'))
+            images = sort(glob.glob(os.path.join(dirtarget, fil, '*.fits')))
 
         for n, image in enumerate(images):
             other_hdu = fits.open(image)
@@ -78,7 +93,7 @@ def perform_astrometry(target, dirtarget, filters, verbose=False):
             hdu = fits.PrimaryHDU(imagedata, header=other_header)
             hdulist = fits.HDUList([hdu])
             out_path = os.path.join(dirtarget, fil, 'WCS', target + '_' +
-                                    fil + '_{}.fits'.format(n))
+                                    fil + '_{}.fits'.format(numbers[n+1]))
             hdulist.writeto(out_path, overwrite=True)
 
         # Moves new-image.tab to WCS folder so that it may be used by imwcs.
@@ -86,20 +101,20 @@ def perform_astrometry(target, dirtarget, filters, verbose=False):
         # Corrects WCS information in image header using the imwcs command and
         # known star coordinates in new-image.tab.
         os.chdir(os.path.join(dirtarget, fil, 'WCS'))
-        isr_wcs_images = glob.glob(os.path.join(dirtarget, fil, 'WCS',
-                                                '*.fits'))
+        isr_wcs_images = sort(glob.glob(os.path.join(dirtarget, fil, 'WCS',
+                                                     '*.fits')))
         for i, image in enumerate(isr_wcs_images):
             if verbose:
                 subprocess.call(['imwcs', '-wv', '-i', '100', '-c',
                                  'new-image.tab', target + '_' + fil +
-                                 '_{}.fits'.format(i)])
+                                 '_{}.fits'.format(numbers[i+1])])
             else:
                 subprocess.call(['imwcs', '-w', '-i', '100', '-c',
                                  'new-image.tab', target + '_' + fil +
-                                 '_{}.fits'.format(i)])
+                                 '_{}.fits'.format(numbers[i+1])])
         # Moves corrected images to separate directory.
-        isr_wcs_images = glob.glob(os.path.join(dirtarget, fil, 'WCS',
-                                                '*w.fits'))
+        isr_wcs_images = sort(glob.glob(os.path.join(dirtarget, fil, 'WCS',
+                                                     '*w.fits')))
         os.mkdir(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS'))
         out_path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')
         for image in isr_wcs_images:

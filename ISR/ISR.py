@@ -59,8 +59,8 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
         Exposure time of light frames in seconds.
     """
     # Retrieves all FITS files from dirtarget and dark frames from dirdark.
-    t_files = glob.glob(os.path.join(dirtarget, '*.fit'))
-    d_files = glob.glob(os.path.join(dirdark, '*.fit'))
+    t_files = sort(glob.glob(os.path.join(dirtarget, '*.fit')))
+    d_files = sort(glob.glob(os.path.join(dirdark, '*.fit')))
     os.mkdir(dirtarget + '/mcalib')
 
     biases = []
@@ -138,7 +138,7 @@ def get_filtered_calibimages(dirtarget):
     mbias = []
 
     # Retrive all FITS files from dataset and master calibration files.
-    files = glob.glob(os.path.join(dirtarget, '*.fit'))
+    files = sort(glob.glob(os.path.join(dirtarget, '*.fit')))
     calib_files = glob.glob(os.path.join(dirtarget + '/mcalib/', '*.fits'))
 
     # Retrieve master bias.
@@ -220,7 +220,7 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
     dark_exptime = None
     for fil in image_filters:
         # Gets mbias, mdark, and mflat of correct filter from mcalib.
-        for path in os.listdir(os.path.join(dirtarget, 'mcalib')):
+        for path in sort(os.listdir(os.path.join(dirtarget, 'mcalib'))):
             if path.endswith(".fits"):
                 o_path = os.path.join(dirtarget, 'mcalib', path)
                 calib_file = fits.open(o_path)
@@ -253,8 +253,24 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
         # Makes directory for each filter to write ISR files to.
         os.mkdir(os.path.join(dirtarget, 'ISR_Images'))
         os.mkdir(os.path.join(dirtarget, 'ISR_Images', fil))
+
+        # Generate list of strings of three-digit numbers from 0 to 999 used
+        # to name files that are written.
+        numbers1 = list(range(0,999,1))
+        numbers2 = []
+        for i in numbers1:
+            numbers2.append(str(i))
+        numbers = []
+        for i in numbers2:
+            if len(i) == 1:
+                numbers.append('00{}'.format(i))
+            if len(i) == 2:
+                numbers.append('0{}'.format(i))
+            if len(i) == 3:
+                numbers.append(i)
+                
         # Finds all light frame images in dirtarget of correct filter.
-        for n, path in enumerate(os.listdir(dirtarget)):
+        for n, path in enumerate(sort(os.listdir(dirtarget))):
             if path.endswith(".fit".format(fil)):
                 o_file = os.path.join(dirtarget, path)
                 hdulist = fits.open(o_file)
@@ -273,5 +289,5 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
                     hdulist = fits.HDUList([hdu])
                     out_path = os.path.join(dirtarget, 'ISR_Images', fil,
                                             target + '_' + fil +
-                                            '_{}'.format(n) + '.fits')
+                                            '_{}'.format(numbers[n+1]) + '.fits')
                     hdulist.writeto(out_path, overwrite=True) 
