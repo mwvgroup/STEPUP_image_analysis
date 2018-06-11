@@ -59,8 +59,8 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
         Exposure time of light frames in seconds.
     """
     # Retrieves all FITS files from dirtarget and dark frames from dirdark.
-    t_files = sort(glob.glob(os.path.join(dirtarget, '*.fit')))
-    d_files = sort(glob.glob(os.path.join(dirdark, '*.fit')))
+    t_files = sorted(glob.glob(os.path.join(dirtarget, '*.fit')))
+    d_files = sorted(glob.glob(os.path.join(dirdark, '*.fit')))
     os.mkdir(dirtarget + '/mcalib')
 
     biases = []
@@ -138,7 +138,7 @@ def get_filtered_calibimages(dirtarget):
     mbias = []
 
     # Retrive all FITS files from dataset and master calibration files.
-    files = sort(glob.glob(os.path.join(dirtarget, '*.fit')))
+    files = sorted(glob.glob(os.path.join(dirtarget, '*.fit')))
     calib_files = glob.glob(os.path.join(dirtarget + '/mcalib/', '*.fits'))
 
     # Retrieve master bias.
@@ -220,7 +220,7 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
     dark_exptime = None
     for fil in image_filters:
         # Gets mbias, mdark, and mflat of correct filter from mcalib.
-        for path in sort(os.listdir(os.path.join(dirtarget, 'mcalib'))):
+        for path in sorted(os.listdir(os.path.join(dirtarget, 'mcalib'))):
             if path.endswith(".fits"):
                 o_path = os.path.join(dirtarget, 'mcalib', path)
                 calib_file = fits.open(o_path)
@@ -270,7 +270,7 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
                 numbers.append(i)
                 
         # Finds all light frame images in dirtarget of correct filter.
-        for n, path in enumerate(sort(os.listdir(dirtarget))):
+        for n, path in enumerate(sorted(os.listdir(dirtarget))):
             if path.endswith(".fit".format(fil)):
                 o_file = os.path.join(dirtarget, path)
                 hdulist = fits.open(o_file)

@@ -73,7 +73,7 @@ def perform_astrometry(target, dirtarget, filters, verbose=False):
             #                                          '*.fits')))
             pass
         else:
-            images = sort(glob.glob(os.path.join(dirtarget, fil, '*.fits')))
+            images = sorted(glob.glob(os.path.join(dirtarget, fil, '*.fits')))
 
         for n, image in enumerate(images):
             other_hdu = fits.open(image)
@@ -113,8 +113,8 @@ def perform_astrometry(target, dirtarget, filters, verbose=False):
                                  'new-image.tab', target + '_' + fil +
                                  '_{}.fits'.format(numbers[i+1])])
         # Moves corrected images to separate directory.
-        isr_wcs_images = sort(glob.glob(os.path.join(dirtarget, fil, 'WCS',
-                                                     '*w.fits')))
+        isr_wcs_images = sorted(glob.glob(os.path.join(dirtarget, fil, 'WCS',
+                                                       '*w.fits')))
         os.mkdir(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS'))
         out_path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS')
         for image in isr_wcs_images:

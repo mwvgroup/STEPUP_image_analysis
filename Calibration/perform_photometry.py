@@ -485,8 +485,8 @@ def get_counts(dirtarget, rightascension, declination, fil):
     for ra, dec in zip(rightascension, declination):
         aper_sum = np.empty(size)
         aper_sum[:] = np.nan
-        for i, item in enumerate(sort(glob.glob(os.path.join(dirtarget_wcs,
-                                                             '*.fits')))):
+        for i, item in enumerate(sorted(glob.glob(os.path.join(dirtarget_wcs,
+                                                               '*.fits')))):
             o_file = os.path.join(dirtarget_wcs, item)
             hdulist = fits.open(o_file)
             if hdulist[0].header['WCSMATCH'] >= 20:
