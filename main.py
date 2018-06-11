@@ -208,7 +208,7 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
         # ISR_Images directory that was created in ISR function.
         if im == 'Y':
             # Determines filters using in observation.
-            filters = input('\nEnter filters of observation: ').split(",")
+            filters = input('\nEnter filters of observation (comma-delimited): ').split(",")
             print('\nAstrometry in progress...')
             dirtarget += '/ISR_Images'
             # Calculates WCS information for dataset.
@@ -220,7 +220,7 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
 
     if answer == 'PHOT':
         # Determines filters using in observation.
-        filters = input('\nEnter filters of observation: ').split(",")
+        filters = input('\nEnter filters of observation (comma-delimited): ').split(",")
         print('\nPhotometry in progress...')
         dirtarget += '/ISR_Images'
         # Initialize variable for and determine path based on which computer
