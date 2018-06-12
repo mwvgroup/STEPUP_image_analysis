@@ -142,8 +142,8 @@ def main(verbose=False):
                 os.chdir(os.path.join('/home/depot/STEPUP/raw', target, date,
                                       'ISR_Images', fil, 'WCS/accurate_WCS'))
             if computer == 'H':
-                os.chdir('/Users/helenarichie/tests2/ISR_Images/', fil,
-                         '/WCS/accurate_WCS')
+                os.chdir(os.path.join('/Users/helenarichie/tests2/ISR_Images/',
+                                      fil, '/WCS/accurate_WCS'))
 
             # Perform absolute relative photometry on, create light curve from,
             # and generate output file of dataset.

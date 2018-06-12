@@ -270,9 +270,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
         # Using magnitude value of comparison star (mag) and aperture sum 
         # of comparison star (obj), each image's target error count value 
         # (err) is determined. 
-        scaled_mags_plus_err[i] = mag - 2.5 * np.log10((aper_sum + err) / obj)
-
-        scaled_err = scaled_mags - scaled_mags_plus_err 
+        scaled_mags_plus_err[i] = mag - 2.5 * np.log10((aper_sum + err) / obj) 
 
         # If the check star and reference star is in the image, the magnitudes
         # of each star are determined for each image.
@@ -284,7 +282,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
     # For each image, the scaled magnitude value for each comparison star is 
     # averaged.
     target_mags = np.average(scaled_mags, axis=0)
-    target_err = np.average(scaled_err, axis=0)
+    target_err = scaled_mags - np.average(scaled_mags_plus_err, axis=0)
 
     # If the check star is in the image, the calculated magnitudes are averaged
     # for each image.
