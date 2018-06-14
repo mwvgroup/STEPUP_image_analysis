@@ -258,19 +258,12 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
     check_mags[:] = np.nan
     ref_mags = np.empty(comp_aper_sums.shape)
     ref_mags[:] = np.nan
-    scaled_mags_plus_err = np.empty(comp_aper_sums.shape)
-    scaled_mags_plus_err[:] = np.nan
 
     for i, (mag, obj) in enumerate(zip(comp_mags, comp_aper_sums)):
         # Using magnitude value of comparison star (mag) and aperture sum 
         # of comparison star (obj), each image's target count value 
         # (aper_sum) is determined.
         scaled_mags[i] = mag - 2.5 * np.log10(aper_sum / obj)
-
-        # Using magnitude value of comparison star (mag) and aperture sum 
-        # of comparison star (obj), each image's target error count value 
-        # (err) is determined. 
-        scaled_mags_plus_err[i] = mag - 2.5 * np.log10((aper_sum + err) / obj) 
 
         # If the check star and reference star is in the image, the magnitudes
         # of each star are determined for each image.
@@ -279,10 +272,13 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
         if np.all(ref_aper_sum != None):
             ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
 
+    print(aper_sum)
+    print(err)
+    target_err = (2.5 * np.log10((aper_sum + err) / aper_sum))[0]
+
     # For each image, the scaled magnitude value for each comparison star is 
     # averaged.
     target_mags = np.average(scaled_mags, axis=0)
-    target_err = scaled_mags - np.average(scaled_mags_plus_err, axis=0)
 
     # If the check star is in the image, the calculated magnitudes are averaged
     # for each image.
@@ -487,45 +483,46 @@ def get_counts(dirtarget, rightascension, declination, fil):
                                                                '*.fits')))):
             o_file = os.path.join(dirtarget_wcs, item)
             hdulist = fits.open(o_file)
-            if hdulist[0].header['WCSMATCH'] >= 20:
-                coords = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
-                radius = 9 * u.arcsec
-                r_in = 11 * u.arcsec
-                r_out = 15 * u.arcsec
+            if hdulist[0].header['WCSMATCH'] < 20:
+                continue
+            coords = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
+            radius = 9 * u.arcsec
+            r_in = 11 * u.arcsec
+            r_out = 15 * u.arcsec
 
-                aperture = SkyCircularAperture(coords, radius)
-                annulus = SkyCircularAnnulus(coords, r_in=r_in,
-                                             r_out=r_out)
+            aperture = SkyCircularAperture(coords, radius)
+            annulus = SkyCircularAnnulus(coords, r_in=r_in,
+                                         r_out=r_out)
 
-                secpix1 = abs(hdulist[0].header['SECPIX1'])
+            secpix1 = abs(hdulist[0].header['SECPIX1'])
 
-                aper_area = np.pi * (radius / secpix1) **2
-                area_out = np.pi * (r_out / secpix1) ** 2
-                area_in = np.pi * (r_in /secpix1) ** 2
-                annulus_area = area_out - area_in
+            aper_area = np.pi * (radius / secpix1) **2
+            area_out = np.pi * (r_out / secpix1) ** 2
+            area_in = np.pi * (r_in /secpix1) ** 2
+            annulus_area = area_out - area_in
 
-                apers = (aperture, annulus)
+            apers = (aperture, annulus)
 
-                phot_table = aperture_photometry(hdulist, apers)
+            phot_table = aperture_photometry(hdulist, apers)
 
-                source_err = np.sqrt(phot_table['aperture_sum_0'])
+            source_err = np.sqrt(phot_table['aperture_sum_0'])
 
-                bkg_mean = phot_table['aperture_sum_1'] / annulus_area
-                bkg_sum = bkg_mean * aper_area
-                final_sum = phot_table['aperture_sum_0'] - bkg_sum
-                phot_table['residual_aperture_sum'] = final_sum
+            bkg_mean = phot_table['aperture_sum_1'] / annulus_area
+            bkg_sum = bkg_mean * aper_area
+            final_sum = phot_table['aperture_sum_0'] - bkg_sum
+            phot_table['residual_aperture_sum'] = final_sum
 
-                bkg_err = np.sqrt(bkg_sum)
+            bkg_err = np.sqrt(bkg_sum)
 
-                aper_sum[i] = (phot_table['residual_aperture_sum'][0])
-                err[i] = (np.sqrt(source_err + bkg_err))
+            aper_sum[i] = phot_table['residual_aperture_sum'][0]
+            err[i] = np.sqrt(source_err ** 2  + bkg_err ** 2)
 
-                date = hdulist[0].header['DATE-OBS']
-                t = Time(date)
-                time = t.jd
+            date = hdulist[0].header['DATE-OBS']
+            t = Time(date)
+            time = t.jd
                 
-                date_obs[i] = (time)
-                altitudes[i] = (hdulist[0].header['OBJCTALT'])
+            date_obs[i] = (time)
+            altitudes[i] = (hdulist[0].header['OBJCTALT'])
 
         total_sum.append(aper_sum)
 
