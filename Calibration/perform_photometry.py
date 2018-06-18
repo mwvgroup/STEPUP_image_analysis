@@ -505,12 +505,12 @@ def get_counts(dirtarget, rightascension, declination, fil):
 
             phot_table = aperture_photometry(hdulist, apers)
 
-            source_err = np.sqrt(phot_table['aperture_sum_0'])
-
             bkg_mean = phot_table['aperture_sum_1'] / annulus_area
             bkg_sum = bkg_mean * aper_area
             final_sum = phot_table['aperture_sum_0'] - bkg_sum
             phot_table['residual_aperture_sum'] = final_sum
+
+            source_err = np.sqrt(phot_table['residual_aperture_sum'])
 
             bkg_err = np.sqrt(bkg_sum)
 
