@@ -280,6 +280,14 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
                     prihdr = hdulist[0].header
                     image = hdulist[0].data
                     image_array = np.array(image, dtype=float)
+                    # flag = False
+                    # for row in image_array:
+                    #     for i in row:
+                    #        if i == 65535:
+                    #             print('damn ;(')
+                    #              flag = True
+                    # if flag:
+                    #     continue
                     # Removes instrument signatures.
                     image_array -= mbias_array
                     image_array -= mdark_array
