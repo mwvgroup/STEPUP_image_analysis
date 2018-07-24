@@ -70,7 +70,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
     -------
     None
     """
-    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags = photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec, ref_ra, ref_dec, comp_mags)
+    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, bad_paths = photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec, ref_ra, ref_dec, comp_mags)
 
     target_mags, target_err, check_mags, ref_mags = counts_to_mag(aper_sum, comp_aper_sums, err, final_comp_mags, check_aper_sum, ref_aper_sum)
 
@@ -79,6 +79,8 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
 
     write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                filters, altitudes, cname, check_mags, rname, ref_mags)
+
+    print(bad_paths)
 
 
 def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
@@ -142,8 +144,8 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
     for fil in filters:
         # Get aperture sum, error of aperture sum, times of data collection,
         # and altitudes for target.
-        aper_sum, err, date_obs, altitudes = get_counts(dirtarget, coords[0],
-                                                        coords[1], fil)
+        aper_sum, err, date_obs, altitudes, bad_paths = get_counts(dirtarget, coords[0],
+                                                                   coords[1], fil)
         aper_sum = np.array(aper_sum, dtype=float)
 
         # Get aperture sums for each somparison star.
@@ -215,7 +217,7 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
             print('Reference star either contains nan or non-positive values.')
             ref_aper_sum = None
 
-    return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags
+    return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, bad_paths
 
 
 def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
@@ -476,6 +478,8 @@ def get_counts(dirtarget, rightascension, declination, fil):
     altitudes = np.empty(size)
     altitudes[:] = np.nan
     total_sum = []
+    bad_paths = []
+    
     
     for ra, dec in zip(rightascension, declination):
         aper_sum = np.empty(size)
@@ -497,7 +501,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
             star = np.array(star)
             for j in star.flatten():
                 if j == 65535:
-                    print('hello')
+                    bad_paths.append(item)
                     continue
             radius = 9 * u.arcsec
             r_in = 11 * u.arcsec
@@ -539,4 +543,4 @@ def get_counts(dirtarget, rightascension, declination, fil):
 
         total_sum.append(aper_sum)
 
-    return total_sum, err, date_obs, altitudes
+    return total_sum, err, date_obs, altitudes, bad_paths
