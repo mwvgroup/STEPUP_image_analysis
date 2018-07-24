@@ -2,6 +2,7 @@ import os
 import glob
 from astropy.io import fits
 from astropy.coordinates import SkyCoord
+from astropy.wcs import WCS
 from astropy import units as u
 from photutils import SkyCircularAperture, SkyCircularAnnulus
 import numpy as np
@@ -485,7 +486,19 @@ def get_counts(dirtarget, rightascension, declination, fil):
             hdulist = fits.open(o_file)
             if hdulist[0].header['WCSMATCH'] < 20:
                 continue
+            header = fits.getheader(o_file)
+            w = WCS(header)
             coords = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
+            px, py = w.wcs_world2pix(coords.ra.deg, coords.dec.deg, 1)
+            px_int = int(px)
+            py_int = int(py)
+            image_array = fits.getdata(o_file)
+            star = image_array[(px_int - 15):(py_int - 15), (px_int + 15):(py_int + 15)]
+            star = np.array(star)
+            for j in star.flatten():
+                if j == 65535:
+                    print('hello')
+                    continue
             radius = 9 * u.arcsec
             r_in = 11 * u.arcsec
             r_out = 15 * u.arcsec
