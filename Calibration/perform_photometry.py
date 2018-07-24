@@ -70,7 +70,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
     -------
     None
     """
-    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, bad_paths = photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec, ref_ra, ref_dec, comp_mags)
+    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, = photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec, ref_ra, ref_dec, comp_mags)
 
     target_mags, target_err, check_mags, ref_mags = counts_to_mag(aper_sum, comp_aper_sums, err, final_comp_mags, check_aper_sum, ref_aper_sum)
 
@@ -79,8 +79,6 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
 
     write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                filters, altitudes, cname, check_mags, rname, ref_mags)
-
-    print(bad_paths)
 
 
 def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
@@ -144,7 +142,7 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
     for fil in filters:
         # Get aperture sum, error of aperture sum, times of data collection,
         # and altitudes for target.
-        aper_sum, err, date_obs, altitudes, bad_paths = get_counts(dirtarget, coords[0],
+        aper_sum, err, date_obs, altitudes = get_counts(dirtarget, coords[0],
                                                                    coords[1], fil)
         aper_sum = np.array(aper_sum, dtype=float)
 
@@ -217,7 +215,7 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
             print('Reference star either contains nan or non-positive values.')
             ref_aper_sum = None
 
-    return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, bad_paths
+    return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags
 
 
 def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
@@ -275,8 +273,6 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
         if np.all(ref_aper_sum != None):
             ref_mags[i] = mag - 2.5 * np.log10(ref_aper_sum / obj)
 
-    print(aper_sum)
-    print(err)
     target_err = (2.5 * np.log10((aper_sum + err) / aper_sum))[0]
 
     # For each image, the scaled magnitude value for each comparison star is 
@@ -425,7 +421,26 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                               cmag, rname, rmag, airmass, 'na', vsp_code, 'na']
                 input_string = ",".join(map(str, input_list))
                 f.write(input_string + '\n')
-
+        f = open(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
+                              'output.txt'), "r")
+        lines = f.readlines()
+        print(lines)
+        f.close()                         
+        f = open(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
+                              'output.txt'), "w")
+        f.write(lines[0])
+        f.write(lines[1])
+        f.write(lines[2])
+        f.write(lines[3])
+        f.write(lines[4])
+        f.write(lines[5])
+        for line in lines:
+            print(line)
+            if line.startswith(target):
+                line_list = line.split(",")
+                if line_list[1] != "nan":
+                    f.write(line)
+        f.close()
 
 def get_counts(dirtarget, rightascension, declination, fil):
     """Determine count values for star(s).
@@ -478,8 +493,6 @@ def get_counts(dirtarget, rightascension, declination, fil):
     altitudes = np.empty(size)
     altitudes[:] = np.nan
     total_sum = []
-    bad_paths = []
-    
     
     for ra, dec in zip(rightascension, declination):
         aper_sum = np.empty(size)
@@ -496,13 +509,13 @@ def get_counts(dirtarget, rightascension, declination, fil):
             px, py = w.wcs_world2pix(coords.ra.deg, coords.dec.deg, 1)
             px_int = int(px)
             py_int = int(py)
+            print('x: {}, y: {}'.format(px_int, py_int))
             image_array = fits.getdata(o_file)
-            star = image_array[(px_int - 15):(py_int - 15), (px_int + 15):(py_int + 15)]
-            star = np.array(star)
-            for j in star.flatten():
-                if j == 65535:
-                    bad_paths.append(item)
-                    continue
+            star = image_array[(py_int - 14):(py_int + 16), (px_int - 14):(px_int + 16)]
+            print('star: {}'.format(star))
+            if np.any(np.array(star) >= 60000):
+                print('hey there, {} is bad.'.format(item))
+                continue
             radius = 9 * u.arcsec
             r_in = 11 * u.arcsec
             r_out = 15 * u.arcsec
@@ -543,4 +556,4 @@ def get_counts(dirtarget, rightascension, declination, fil):
 
         total_sum.append(aper_sum)
 
-    return total_sum, err, date_obs, altitudes, bad_paths
+    return total_sum, err, date_obs, altitudes
