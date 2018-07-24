@@ -424,7 +424,6 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
         f = open(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
                               'output.txt'), "r")
         lines = f.readlines()
-        print(lines)
         f.close()                         
         f = open(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
                               'output.txt'), "w")
@@ -435,7 +434,6 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
         f.write(lines[4])
         f.write(lines[5])
         for line in lines:
-            print(line)
             if line.startswith(target):
                 line_list = line.split(",")
                 if line_list[1] != "nan":
@@ -509,12 +507,9 @@ def get_counts(dirtarget, rightascension, declination, fil):
             px, py = w.wcs_world2pix(coords.ra.deg, coords.dec.deg, 1)
             px_int = int(px)
             py_int = int(py)
-            print('x: {}, y: {}'.format(px_int, py_int))
             image_array = fits.getdata(o_file)
             star = image_array[(py_int - 14):(py_int + 16), (px_int - 14):(px_int + 16)]
-            print('star: {}'.format(star))
             if np.any(np.array(star) >= 60000):
-                print('hey there, {} is bad.'.format(item))
                 continue
             radius = 9 * u.arcsec
             r_in = 11 * u.arcsec
