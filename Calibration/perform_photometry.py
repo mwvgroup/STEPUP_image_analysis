@@ -491,6 +491,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
     altitudes = np.empty(size)
     altitudes[:] = np.nan
     total_sum = []
+    saturated_dudes = []
     
     for ra, dec in zip(rightascension, declination):
         aper_sum = np.empty(size)
@@ -509,7 +510,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
             py_int = int(py)
             image_array = fits.getdata(o_file)
             star = image_array[(py_int - 14):(py_int + 16), (px_int - 14):(px_int + 16)]
-            if np.any(np.array(star) >= 60000):
+            if np.any(np.array(star) >= 64000):
                 continue
             radius = 9 * u.arcsec
             r_in = 11 * u.arcsec
