@@ -70,7 +70,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
     -------
     None
     """
-    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, = photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec, ref_ra, ref_dec, comp_mags)
+    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, saturated_dudes, exposure_times = photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec, ref_ra, ref_dec, comp_mags)
 
     target_mags, target_err, check_mags, ref_mags = counts_to_mag(aper_sum, comp_aper_sums, err, final_comp_mags, check_aper_sum, ref_aper_sum)
 
@@ -79,6 +79,9 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
 
     write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                filters, altitudes, cname, check_mags, rname, ref_mags)
+
+    print('Saturated dudes: {}'.format(saturated_dudes))
+    print('Exposure times: {}'.format(exposure_times))
 
 
 def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
@@ -142,8 +145,8 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
     for fil in filters:
         # Get aperture sum, error of aperture sum, times of data collection,
         # and altitudes for target.
-        aper_sum, err, date_obs, altitudes = get_counts(dirtarget, coords[0],
-                                                                   coords[1], fil)
+        aper_sum, err, date_obs, altitudes, saturated_dudes, exposure_times = get_counts(dirtarget, coords[0],
+                                                                                         coords[1], fil)
         aper_sum = np.array(aper_sum, dtype=float)
 
         # Get aperture sums for each somparison star.
@@ -215,7 +218,7 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
             print('Reference star either contains nan or non-positive values.')
             ref_aper_sum = None
 
-    return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags
+    return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, saturated_dudes, exposure_times
 
 
 def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
@@ -492,6 +495,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
     altitudes[:] = np.nan
     total_sum = []
     saturated_dudes = []
+    exposure_times = []
     
     for ra, dec in zip(rightascension, declination):
         aper_sum = np.empty(size)
@@ -502,6 +506,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
             hdulist = fits.open(o_file)
             if hdulist[0].header['WCSMATCH'] < 20:
                 continue
+            exposure_times.append(hdulist[0].header['EXPTIME'])
             header = fits.getheader(o_file)
             w = WCS(header)
             coords = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
@@ -511,6 +516,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
             image_array = fits.getdata(o_file)
             star = image_array[(py_int - 14):(py_int + 16), (px_int - 14):(px_int + 16)]
             if np.any(np.array(star) >= 64000):
+                saturated_dudes.append(item)
                 continue
             radius = 9 * u.arcsec
             r_in = 11 * u.arcsec
@@ -552,4 +558,4 @@ def get_counts(dirtarget, rightascension, declination, fil):
 
         total_sum.append(aper_sum)
 
-    return total_sum, err, date_obs, altitudes
+    return total_sum, err, date_obs, altitudes, saturated_dudes, exposure_times
