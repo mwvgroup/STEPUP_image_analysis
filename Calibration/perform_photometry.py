@@ -70,7 +70,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
     -------
     None
     """
-    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, saturated_dudes, exposure_times = photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec, ref_ra, ref_dec, comp_mags)
+    aper_sum, comp_aper_sums, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, saturated, exposure_times = photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra, check_dec, ref_ra, ref_dec, comp_mags)
 
     target_mags, target_err, check_mags, ref_mags = counts_to_mag(aper_sum, comp_aper_sums, err, final_comp_mags, check_aper_sum, ref_aper_sum)
 
@@ -80,7 +80,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
     write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                filters, altitudes, cname, check_mags, rname, ref_mags)
 
-    print('Saturated dudes: {}'.format(saturated_dudes))
+    print('Saturated images: {}'.format(saturated))
     print('Exposure times: {}'.format(exposure_times))
 
 
@@ -494,7 +494,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
     altitudes = np.empty(size)
     altitudes[:] = np.nan
     total_sum = []
-    saturated_dudes = []
+    saturated = []
     exposure_times = []
     
     for ra, dec in zip(rightascension, declination):
@@ -506,28 +506,59 @@ def get_counts(dirtarget, rightascension, declination, fil):
             hdulist = fits.open(o_file)
             if hdulist[0].header['WCSMATCH'] < 20:
                 continue
+            # Determine the exposure time for item.
             exposure_times.append(hdulist[0].header['EXPTIME'])
+
+            # Determine what physical position corresponds to the right
+            # ascension and declination that are defined as SkyCoord objects
+            # with units of hourangles and degrees.
             header = fits.getheader(o_file)
             w = WCS(header)
             coords = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
             px, py = w.wcs_world2pix(coords.ra.deg, coords.dec.deg, 1)
             px_int = int(px)
             py_int = int(py)
+
+            # Get the image array.
             image_array = fits.getdata(o_file)
-            star = image_array[(py_int - 14):(py_int + 16), (px_int - 14):(px_int + 16)]
-            if np.any(np.array(star) >= 64000):
-                saturated_dudes.append(item)
+
+            # Read in a 30 x 30 square centered at the star for which the
+            # counts are being summed.
+            star = image_array[(py_int - 14):(py_int + 16),
+                               (px_int - 14):(px_int + 16)]
+
+            # Ensure that the square is entirely on the image.
+            if ((py_int - 14) < 0) or ((py_int + 16) > 2084):
                 continue
+            if ((px_int - 14) < 0) or ((px_int + 16) > 3072):
+                continue
+
+            # Flatten the array so that it is one-dimensional.
+            star_flat = star.reshape(1, 900)
+
+            # Determine if the image is saturated at the star's position using
+            # the expected saturation level. If saturated, the loop will move
+            # on to the next image.
+            if np.amax(star_flat) >= hdulist[0].header['SATLEVEL']:
+                saturated.append(item)
+                continue
+
+            # Define aperture and annulus radii.
             radius = 9 * u.arcsec
             r_in = 11 * u.arcsec
             r_out = 15 * u.arcsec
 
+            # Create SkyCircularAperture and SkyCircularAnnulus objects
+            # centered at the position of the star whose counts are being
+            # summed.
             aperture = SkyCircularAperture(coords, radius)
             annulus = SkyCircularAnnulus(coords, r_in=r_in,
                                          r_out=r_out)
 
             secpix1 = abs(hdulist[0].header['SECPIX1'])
 
+            # Determine the area of the aperture and annulus using the
+            # arcseconds per pixel in the horizontal dimension header keyword.
             aper_area = np.pi * (radius / secpix1) **2
             area_out = np.pi * (r_out / secpix1) ** 2
             area_in = np.pi * (r_in /secpix1) ** 2
@@ -535,13 +566,17 @@ def get_counts(dirtarget, rightascension, declination, fil):
 
             apers = (aperture, annulus)
 
+            # Call aperture_photometry function in order to sum all of the
+            # counts in both the aperture and annulus for item.
             phot_table = aperture_photometry(hdulist, apers)
 
+            # Remove the background level from the aperture sum.
             bkg_mean = phot_table['aperture_sum_1'] / annulus_area
             bkg_sum = bkg_mean * aper_area
             final_sum = phot_table['aperture_sum_0'] - bkg_sum
             phot_table['residual_aperture_sum'] = final_sum
 
+            # Determine the error in the aperture sum and background level.
             source_err = np.sqrt(phot_table['residual_aperture_sum'])
 
             bkg_err = np.sqrt(bkg_sum)
@@ -549,13 +584,15 @@ def get_counts(dirtarget, rightascension, declination, fil):
             aper_sum[i] = phot_table['residual_aperture_sum'][0]
             err[i] = np.sqrt(source_err ** 2  + bkg_err ** 2)
 
+            # Determine the time at which the image was taken in Julian Days
+            # and the altitude and write them to an array.
             date = hdulist[0].header['DATE-OBS']
             t = Time(date)
             time = t.jd
-                
+
             date_obs[i] = (time)
             altitudes[i] = (hdulist[0].header['OBJCTALT'])
 
         total_sum.append(aper_sum)
 
-    return total_sum, err, date_obs, altitudes, saturated_dudes, exposure_times
+    return total_sum, err, date_obs, altitudes, saturated, exposure_times

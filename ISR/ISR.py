@@ -246,7 +246,7 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
         saturation = 65535
         saturation -= np.median(mbias_array)
         saturation -= np.median((mdark_array*exptime)/dark_exptime)
-        saturation /= np.average(mflat_array)
+        saturation /= np.average(mflat_array[700:1348, 450:3622])
         saturation *= 0.97
         saturation = int(saturation)
 
@@ -280,14 +280,7 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
                     prihdr = hdulist[0].header
                     image = hdulist[0].data
                     image_array = np.array(image, dtype=float)
-                    # flag = False
-                    # for row in image_array:
-                    #     for i in row:
-                    #        if i == 65535:
-                    #             print('damn ;(')
-                    #              flag = True
-                    # if flag:
-                    #     continue
+
                     # Removes instrument signatures.
                     image_array -= mbias_array
                     image_array -= mdark_array
