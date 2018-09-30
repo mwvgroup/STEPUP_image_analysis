@@ -425,7 +425,7 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                 input_string = ",".join(map(str, input_list))
                 f.write(input_string + '\n')
         f = open(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
-                              'output._{}.txt'.format(date)), "r")
+                              'output_{}.txt'.format(date)), "r")
         lines = f.readlines()
         f.close()                         
         f = open(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
