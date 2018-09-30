@@ -78,7 +78,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
              dirtarget, check_mags)
 
     write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
-               filters, altitudes, cname, check_mags, rname, ref_mags)
+               filters, altitudes, cname, check_mags, rname, ref_mags, date)
 
     print('Saturated images: {}'.format(saturated))
     print('Exposure times: {}'.format(exposure_times))
@@ -348,7 +348,7 @@ def mag_plot(target_mags, target_err, date_obs, target, date, filters,
         f, axarr = plt.subplots(2, sharex=True,
                                 gridspec_kw = {'height_ratios':[3, 1]})
         axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o')
-        axarr[0].set_title('Light Curve of {}, {}'.format(target,date))
+        axarr[0].set_title('Light Curve of {}, {}'.format(target, date))
         axarr[0].set_ylabel('Magnitude')
         axarr[0].invert_yaxis
         axarr[0].set_ylim(axarr[0].get_ylim()[::-1])
@@ -359,12 +359,12 @@ def mag_plot(target_mags, target_err, date_obs, target, date, filters,
         axarr[1].set_ylabel('Magnitude')
         axarr[1].set_xlabel('Time (JD)')
         f.savefig(os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS',
-                               'lightcurve.pdf'))
+                               'lightcurve_{}.pdf'.format(date)))
         plt.show()
 
 
 def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
-               filters, altitudes, cname, cmags, rname, rmags):
+               filters, altitudes, cname, cmags, rname, rmags, date):
     """Writes file of observational data to submit to AAVSO.
     
     Formats data to be compatible for submission for the AAVSO Extended File 
@@ -410,7 +410,7 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
     """
     for fil in filters:
         path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS', 
-                            'output.txt')
+                            'output_{}.txt'.format(date))
         
         with open(path, 'w+') as f:
             f.write('#TYPE=Extended\n#OBSCODE=PIT01\n#SOFTWARE=STEPUP ' +
