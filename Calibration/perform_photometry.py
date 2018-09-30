@@ -415,12 +415,12 @@ def write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
         with open(path, 'w+') as f:
             f.write('#TYPE=Extended\n#OBSCODE=PIT01\n#SOFTWARE=STEPUP ' +
                     'Image Analysis\n#DELIM=,\n#DATE=JD\n#OBSTYPE=CCD\n')
-            for date, mag, err, cmag, rmag, alt in zip(date_obs, target_mags,
+            for date_i, mag, err, cmag, rmag, alt in zip(date_obs, target_mags,
                                                        target_err, cmags, rmags,
                                                        altitudes):
                 zenith = np.deg2rad(90 - alt)
                 airmass = 1 / np.cos(zenith)
-                input_list = [target, date, mag, err, fil, 'NO', 'STD', cname,
+                input_list = [target, date_i, mag, err, fil, 'NO', 'STD', cname,
                               cmag, rname, rmag, airmass, 'na', vsp_code, 'na']
                 input_string = ",".join(map(str, input_list))
                 f.write(input_string + '\n')
