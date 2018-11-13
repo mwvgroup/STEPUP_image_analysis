@@ -246,7 +246,7 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
             path = os.path.join('/home/depot/STEPUP/raw', target, date)
         if computer == 'H':
             path = '/Users/helenarichie/tests2'
-        if computer == 'M:
+        if computer == 'M':
             path = '/Users/maurashap/STEPUP/Raw'
         # Change current working directory to specified path.
         os.chdir(path)
