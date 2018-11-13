@@ -158,7 +158,8 @@ def main(verbose=False):
                 os.chdir(os.path.join('/Users/helenarichie/tests2/ISR_Images/',
                                       fil, '/WCS/accurate_WCS/'))
             if computer == 'M':
-                os.chdir('/Users/maurashap/STEPUP/Raw')
+                path = os.path.join('/Users/maurashap/STEPUP/raw/ISR_Images',
+                                    fil, 'WCS/accurate_WCS')
 
             # Perform absolute relative photometry on, create light curve from,
             # and generate output file of dataset.
@@ -316,7 +317,8 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
                 path = os.path.join('/Users/helenarichie/tests2/ISR_Images',
                                     fil, 'WCS/accurate_WCS')
             if computer == 'M':
-                path = '/Users/maurashap/STEPUP/Raw'
+                path = os.path.join('/Users/maurashap/STEPUP/raw/ISR_Images',
+                                    fil, 'WCS/accurate_WCS')
 
             # Change current working directory to specified path.
             os.chdir(path)
