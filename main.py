@@ -18,7 +18,7 @@ if computer == 'H':
     sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration')
     import perform_photometry
     import perform_astrometry
-if computer == 'M":
+if computer == 'M':
     sys.path.insert(0, '/Users/maurashap/STEPUP/STEPUP_image_analysis/ISR')
     import ISR
     sys.path.insert(0, '/Users/maurashap/STEPUP/STEPUP_image_analysis/Calibration')
