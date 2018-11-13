@@ -18,6 +18,13 @@ if computer == 'H':
     sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration')
     import perform_photometry
     import perform_astrometry
+if computer == 'M":
+    sys.path.insert(0, '/Users/maurashap/STEPUP/STEPUP_image_analysis/ISR')
+    import ISR
+    sys.path.insert(0, '/Users/maurashap/STEPUP/STEPUP_image_analysis/Calibration')
+    import perform_photometry
+    import perform_astrometry
+
 
 
 def main(verbose=False):
@@ -54,6 +61,9 @@ def main(verbose=False):
     if computer == 'H':
         dirtarget = '/Users/helenarichie/tests2'
         dirdark = dirtarget
+    if computer == 'M':
+        dirtarget = '/Users/maurashap/STEPUP/Raw'
+        dirdark = dirtarget
 
     # Determines if user would like to run entire image analysis routine.
     analysis = input('\nWould you like to run the whole image analyis routine? (Y/N): ')
@@ -80,6 +90,9 @@ def main(verbose=False):
             os.chdir(os.path.join('/home/depot/STEPUP/raw', target, date))
         if computer == 'H':
             os.chdir('/Users/helenarichie/tests2')
+        if computer == 'M':
+            dirtarget = '/Users/maurashap/STEPUP/Raw'
+            dirdark = dirtarget
 
         # Initialize variables to obtain information from input-file.txt file.
         ra = []
@@ -144,6 +157,8 @@ def main(verbose=False):
             if computer == 'H':
                 os.chdir(os.path.join('/Users/helenarichie/tests2/ISR_Images/',
                                       fil, '/WCS/accurate_WCS/'))
+            if computer == 'M':
+                os.chdir('/Users/maurashap/STEPUP/Raw')
 
             # Perform absolute relative photometry on, create light curve from,
             # and generate output file of dataset.
@@ -231,6 +246,8 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
             path = os.path.join('/home/depot/STEPUP/raw', target, date)
         if computer == 'H':
             path = '/Users/helenarichie/tests2'
+        if computer == 'M:
+            path = '/Users/maurashap/STEPUP/Raw'
         # Change current working directory to specified path.
         os.chdir(path)
 
@@ -298,6 +315,8 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
             if computer == 'H':
                 path = os.path.join('/Users/helenarichie/tests2/ISR_Images',
                                     fil, 'WCS/accurate_WCS')
+            if computer == 'M':
+                path = '/Users/maurashap/STEPUP/Raw'
 
             # Change current working directory to specified path.
             os.chdir(path)
