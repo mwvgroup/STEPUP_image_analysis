@@ -559,7 +559,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
 
             # Determine the area of the aperture and annulus using the
             # arcseconds per pixel in the horizontal dimension header keyword.
-            aper_area = np.pi * (radius / secpix1) **2
+            aper_area = np.pi * (radius / secpix1) ** 2
             area_out = np.pi * (r_out / secpix1) ** 2
             area_in = np.pi * (r_in /secpix1) ** 2
             annulus_area = area_out - area_in
