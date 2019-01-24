@@ -79,6 +79,8 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
 
     write_file(target_mags, target_err, date_obs, target, vsp_code, dirtarget,
                filters, altitudes, cname, check_mags, rname, ref_mags, date)
+               
+    write_net_counts(dirtarget, filters, date, comp_aper_sums, aper_sum, check_aper_sum, ref_aper_sum, err)
 
     print('Saturated images: {}'.format(saturated))
     print('Exposure times: {}'.format(exposure_times))
@@ -219,6 +221,32 @@ def photometry(dirtarget, filters, coords, comp_ra, comp_dec, check_ra,
             ref_aper_sum = None
 
     return aper_sum, final_comp_apers, check_aper_sum, ref_aper_sum, err, date_obs, altitudes, final_comp_mags, saturated_dudes, exposure_times
+
+    
+def write_net_counts(dirtarget, filters, date, final_comp_apers, aper_sum, check_aper_sum, ref_aper_sum, err):
+
+    for fil in filters:
+        path = os.path.join(dirtarget, fil, 'WCS', 'accurate_WCS', 'net_counts_{}.txt'.format(date))
+    
+        list_of_sums = []
+        comp_n = len(final_comp_apers)
+        for i in range(0, len(final_comp_apers)):
+            list_of_sums.append(final_comp_apers[:,i].tolist())
+    
+        new_list = []
+        for i, sums in enumerate(list_of_sums):
+            new_list.append([aper_sum[0][i]] + sums + [check_aper_sum[0][i]] + [ref_aper_sum[0][i]] + [err[i]])
+        print(new_list)
+
+        with open(path, 'w+') as f:
+            f.write(f'#TARGET,{{C1,C2,...,C{comp_n}}},CHECK,REF,ERR\n')
+            for n in range(len(new_list)):
+                print(line for line in new_list[n])
+                row_str = ','.join(map(str, new_list[n]))
+                new_str = row_str + "\n"
+                f.write(new_str)
+            
+    f.close()
 
 
 def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
@@ -544,9 +572,9 @@ def get_counts(dirtarget, rightascension, declination, fil):
                 continue
 
             # Define aperture and annulus radii.
-            radius = 6.8892 * u.arcsec
-            r_in = 12.17092 * u.arcsec
-            r_out = 16.0748 * u.arcsec
+            radius = 9 * u.arcsec
+            r_in = 11 * u.arcsec
+            r_out = 15 * u.arcsec
 
             # Create SkyCircularAperture and SkyCircularAnnulus objects
             # centered at the position of the star whose counts are being
@@ -559,7 +587,7 @@ def get_counts(dirtarget, rightascension, declination, fil):
 
             # Determine the area of the aperture and annulus using the
             # arcseconds per pixel in the horizontal dimension header keyword.
-            aper_area = np.pi * (radius / secpix1) ** 2
+            aper_area = np.pi * (radius / secpix1) **2
             area_out = np.pi * (r_out / secpix1) ** 2
             area_in = np.pi * (r_in /secpix1) ** 2
             annulus_area = area_out - area_in
