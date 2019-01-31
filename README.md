@@ -1,4 +1,4 @@
-# STEPUP New Code:
+# STEPUP Image Analysis:
 
 # main.py
 Determines which computer code is being ran from and imports functions from corresponding directories. Then calls main.
