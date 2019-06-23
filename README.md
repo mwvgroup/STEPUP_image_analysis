@@ -1,4 +1,6 @@
-# STEPUP Image Analysis:
+# STEPUP Image Analysis
+
+<img src="https://github.com/helenarichie/helenarichie/blob/master/images/STEPUP_logo.png" alt="logo" width="200"/>
 
 # main.py
 Determines which computer code is being ran from and imports functions from corresponding directories. Then calls main.
