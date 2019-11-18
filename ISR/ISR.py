@@ -23,15 +23,15 @@ def ISR_main(dirtarget, dirdark, target):
     Returns
     -------
     image_filters : list
-        List containing string of each filter keyword found in header of flat 
+        List containing string of each filter keyword found in header of flat
         field and light frame images.
     """
     # Creates and saves master bias, dark and flat by filter.
-    exptime = get_unfiltered_calibimages(dirtarget, dirdark)
+    get_unfiltered_calibimages(dirtarget, dirdark)
     image_filters = get_filtered_calibimages(dirtarget)
 
     # Creates and saves instrument-siganture-removed light frames.
-    instrument_signature_removal(dirtarget, target, exptime, image_filters)
+    instrument_signature_removal(dirtarget, target, image_filters)
 
     return image_filters
 
@@ -55,20 +55,18 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
 
     Returns
     -------
-    exptime : float
-        Exposure time of light frames in seconds.
     """
     # Retrieves all FITS files from dirtarget and dark frames from dirdark.
     t_files = sorted(glob.glob(os.path.join(dirtarget, '*.fit')))
     d_files = sorted(glob.glob(os.path.join(dirdark, '*.fit')))
     os.mkdir(dirtarget + '/mcalib')
+    os.mkdir(dirtarget + '/ISR_Images')
 
     biases = []
     bias_prihdr = None
     darks = []
     dark_prihdr = None
     dark_exptime = None
-    exptime = None
 
     # Retrieves all bias frames and creates master bias.
     for o_file in t_files:
@@ -76,8 +74,6 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
         if hdulist[0].header['IMAGETYP'] == 'Bias Frame':
             biases.append(fits.getdata(o_file))
             bias_prihdr = hdulist[0].header
-        if hdulist[0].header['IMAGETYP'] == 'Light Frame':
-            exptime = hdulist[0].header['EXPTIME']
         hdulist.close()
 
     bias_array = np.array(biases, dtype=float)
@@ -102,7 +98,6 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
     for dark in dark_array:
         dark -= mbias_array
         dark /= dark_exptime
-        dark *= exptime
 
     mdark = np.median(dark_array, 0)
 
@@ -110,8 +105,6 @@ def get_unfiltered_calibimages(dirtarget, dirdark):
     hdu = fits.PrimaryHDU(mdark, header=dark_prihdr)
     hdulist = fits.HDUList([hdu])
     hdulist.writeto(dirtarget + '/mcalib/mdark.fits', overwrite=True)
-
-    return exptime
 
 
 def get_filtered_calibimages(dirtarget):
@@ -131,7 +124,7 @@ def get_filtered_calibimages(dirtarget):
     Returns
     -------
     image_filters : list
-        List containing string of each filter keyword found in header of flat 
+        List containing string of each filter keyword found in header of flat
         field and light frame images.
     """
     image_filters = set()
@@ -188,7 +181,7 @@ def get_filtered_calibimages(dirtarget):
     return image_filters
 
 
-def instrument_signature_removal(dirtarget, target, exptime, image_filters):
+def instrument_signature_removal(dirtarget, target, image_filters):
     """Removes instrument signatures from raw science images.
 
     Retrieves all FITS files with IMAGETYP keyword, "Light Frame" and all
@@ -204,59 +197,61 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
         Directory containing all bias, flat, and raw science images.
     target : str
         Name of target.
-    exptime : float
-        Exposure time of light frames in seconds.
+    exptime : dict
+        Dictionary containing the image exposure time for each filter used in
+        observation in seconds.
     image_filters : list
-        List containing string of each filter keyword found in header of flat 
+        List containing string of each filter keyword found in header of flat
         field and light frame images.
 
     Returns
     -------
     None
     """
-    mflat = []
-    mbias = []
-    mdark = []
-    dark_exptime = None
     for fil in image_filters:
+        mflat = []
+        mbias = []
+        mdark = []
+        exptime = None
         # Gets mbias, mdark, and mflat of correct filter from mcalib.
         for path in sorted(os.listdir(os.path.join(dirtarget, 'mcalib'))):
-            if path.endswith(".fits"):
+            if path.endswith('.fits'):
                 o_path = os.path.join(dirtarget, 'mcalib', path)
                 calib_file = fits.open(o_path)
                 if calib_file[0].header['IMAGETYP'] == 'Bias Frame':
                     mbias.append(calib_file[0].data)
                 if calib_file[0].header['IMAGETYP'] == 'Dark Frame':
-                    dark_exptime = calib_file[0].header['EXPTIME']
                     mdark.append(calib_file[0].data)
                 if calib_file[0].header['IMAGETYP'] == 'Flat Field':
                     if calib_file[0].header['FILTER'] == fil:
                         mflat.append(calib_file[0].data)
                 calib_file.close()
-                
-        mbias_array = np.array(mbias, dtype=float)
-        mdark_array = np.array(mdark, dtype=float)
-        mflat_array = np.array(mflat, dtype=float)
 
-        mbias_array = mbias_array[0]
-        mdark_array = mdark_array[0]
-        mflat_array = mflat_array[0]
+        for path in sorted(os.listdir(dirtarget)):
+            if path.endswith('.fit'):
+                o_file = fits.open(os.path.join(dirtarget, path))
+                if o_file[0].header['IMAGETYP'] == 'Light Frame':
+                    if o_file[0].header['FILTER'] == fil:
+                        exptime = float(o_file[0].header['EXPTIME'])
+
+        mbias_array = np.array(mbias, dtype=float)[0]
+        mdark_array = np.array(mdark, dtype=float)[0]
+        mflat_array = np.array(mflat, dtype=float)[0]
 
         # Calculates expected saturation of image.
         saturation = 65535
         saturation -= np.median(mbias_array)
-        saturation -= np.median((mdark_array*exptime)/dark_exptime)
+        saturation -= np.median(mdark_array*exptime)
         saturation /= np.average(mflat_array[700:1348, 450:3622])
         saturation *= 0.97
         saturation = int(saturation)
 
         # Makes directory for each filter to write ISR files to.
-        os.mkdir(os.path.join(dirtarget, 'ISR_Images'))
         os.mkdir(os.path.join(dirtarget, 'ISR_Images', fil))
 
         # Generate list of strings of three-digit numbers from 0 to 999 used
         # to name files that are written.
-        numbers1 = list(range(0,999,1))
+        numbers1 = list(range(0, 999, 1))
         numbers2 = []
         for i in numbers1:
             numbers2.append(str(i))
@@ -268,10 +263,10 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
                 numbers.append('0{}'.format(i))
             if len(i) == 3:
                 numbers.append(i)
-                
+
         # Finds all light frame images in dirtarget of correct filter.
         for n, path in enumerate(sorted(os.listdir(dirtarget))):
-            if path.endswith(".fit".format(fil)):
+            if path.endswith(".fit"):
                 o_file = os.path.join(dirtarget, path)
                 hdulist = fits.open(o_file)
                 if (hdulist[0].header['IMAGETYP'] == 'Light Frame') and (hdulist[0].header['FILTER'] == fil):
@@ -283,7 +278,7 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
 
                     # Removes instrument signatures.
                     image_array -= mbias_array
-                    image_array -= mdark_array
+                    image_array -= (mdark_array*exptime)
                     image_array /= mflat_array
                     # Writes ISR file.
                     hdu = fits.PrimaryHDU(image_array, header=prihdr)
@@ -291,4 +286,4 @@ def instrument_signature_removal(dirtarget, target, exptime, image_filters):
                     out_path = os.path.join(dirtarget, 'ISR_Images', fil,
                                             target + '_' + fil +
                                             '_{}'.format(numbers[n+1]) + '.fits')
-                    hdulist.writeto(out_path, overwrite=True) 
+                    hdulist.writeto(out_path, overwrite=True)

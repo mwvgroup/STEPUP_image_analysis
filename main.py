@@ -1,190 +1,144 @@
 import os
 import sys
+sys.path.insert(0, 'ISR')
+import ISR
+sys.path.insert(0, 'Calibration')
+import perform_astrometry
+import perform_photometry
+from shutil import copyfile
 
 
-# Determine if code is being ran from Helena's personal computer or a computer
-# in the Astro Lab and import functions ISR, perform_astrometry, and perform_
-# photometry to the corresponding directories.
-computer = input("\nWork computer or Helena's computer? (W/H): ")
-if computer == 'W':
-    sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/ISR')
-    import ISR
-    sys.path.insert(0, '/home/depot/STEPUP/STEPUP_image_analysis/Calibration')
-    import perform_astrometry
-    import perform_photometry
-if computer == 'H':
-    sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/ISR')
-    import ISR
-    sys.path.insert(0, '/Users/helenarichie/GitHub/STEPUP_image_analysis/Calibration')
-    import perform_photometry
-    import perform_astrometry
-if computer == 'M':
-    sys.path.insert(0, '/Users/maurashap/STEPUP/STEPUP_image_analysis/ISR')
-    import ISR
-    sys.path.insert(0, '/Users/maurashap/STEPUP/STEPUP_image_analysis/Calibration')
-    import perform_photometry
-    import perform_astrometry
+def main():
+    """Execute specified functions of STEPUP Image Analysis.
 
-
-
-def main(verbose=False):
-    """Runs image analysis routine or specified steps of routine on dataset.
-
-    Determines what steps of STEPUP_image_analysis the user would like to run.
-    If the user specifies that they would like to run the entire routine, the
-    code runs without pausing, except for to check that a "new-image.fits" file
-    has been saved to ISR_Images. Otherwise, the user can run individual parts
-    of the routine as many times as they would like (as long as the individual
-    functions allow to be repeatdely ran).
+    Based on whether the use would like to run SIA interactively, the user is
+    either prompted for which functions they would like to perform. If the user
+    is not running SIA interactively, the functions to be ran are executed in
+    the order that they are specified in the input-file.txt file, without
+    pausing. If the user is running SIA interactively, they will enter one of
+    the three function names, which then runs until completion. Once the
+    funcion has completed, the user will be prompted to run another function if
+    they wish, and if not SIA will finish running.
 
     Parameters
     ----------
-    verbose : Boolean
-        Specifies whether or not user would like to print more information
-        about the status of the code.
+    None
 
     Returns
     -------
     None
     """
-    # Retrieves target name and date of observation from user input and
-    # initializes dirtarget and dirdark variables.
-    target = input('\nInput target name: ')
-    date = input('\nInput date of observation: ')
-    dirtarget = None
-    dirdark = None
+    # Initialize variables for assignment based on the contents of the
+    # input-file.txt file.
+    set_rad = False
+    functions = None
 
-    # Assigns variables according to which computer the code is being ran from.
-    if computer == 'W':
-        dirtarget = os.path.join('/home/depot/STEPUP/raw', target, date)
-        dirdark = '/home/depot/STEPUP/raw/Calibration/Dark/Default'
-    if computer == 'H':
-        dirtarget = '/Users/helenarichie/tests2'
-        dirdark = dirtarget
-    if computer == 'M':
-        dirtarget = '/Users/maurashap/STEPUP/Raw'
-        dirdark = dirtarget
-
-    # Determines if user would like to run entire image analysis routine.
-    analysis = input('\nWould you like to run the whole image analyis routine? (Y/N): ')
-    if analysis == 'Y':
-        print('\nInstrument signature removal in progress...')
-        # Removes instrument signatures from dataset.
-        filters = ISR.ISR_main(dirtarget, dirdark, target)
-        print('\nInstrument signature removal completed.')
-        # Determines if user has saved new-image.fits WCS calibration file to
-        # ISR_Images directory that was created in ISR function.
-        answer = input('\nHave you saved a new-image.fits file to the appropriate directory? (Y/N): ')
-        if answer == 'Y':
-            print('\nAstrometry in progress...')
-            dirtarget += '/ISR_Images'
-            # Calculates WCS information for dataset.
-            perform_astrometry.perform_astrometry(target, dirtarget, filters,
-                                                  verbose=False)
-        else:
+    # Determine directory containing input-file.txt, target data, and some or
+    # all calibration data as well as if user would like specify functions at
+    # command line.
+    dirtarget = input('\nInput target directory: ')
+    while not os.path.exists((os.path.join(dirtarget, 'input-file.txt'))):
+        dirtarget = input('\nThis directory does not contain an input file. Check to ensure that the file exists and is saved in your data directory.\n\nInput target directory or enter "Q" to quit: ')
+        if dirtarget.lower() == 'q':
             return None
-        print('\nAstrometry completed.\nPhotometry in progress...')
-        # Changes current working directory according to which computer the
-        # code is being ran from.
-        if computer == 'W':
-            os.chdir(os.path.join('/home/depot/STEPUP/raw', target, date))
-        if computer == 'H':
-            os.chdir('/Users/helenarichie/tests2')
-        if computer == 'M':
-            dirtarget = '/Users/maurashap/STEPUP/Raw'
-            dirdark = dirtarget
+    interactive = input('\nWould you like to run SIA interatively? (Y/N): ').lower().strip(' ')
 
-        # Initialize variables to obtain information from input-file.txt file.
-        ra = []
-        dec = []
-        comp_ra = []
-        comp_dec = []
-        comp_mag = []
-        vsp_code = None
-        rname = None
-        ref_ra = []
-        ref_dec = []
-        cname = None
-        check_ra = []
-        check_dec = []
+    # Specify keywords SIA should search for in input-file.txt.
+    str_keywords = ['#TARGET=', '#DATE=', '#DIRDARK=', '#CLABEL=', '#APERRAD=',
+                    '#ANNINRAD=', '#ANNOUTRAD=']
+    list_keywords = ['#FILTERS=', '#RA=', '#DEC=', '#COMPMAGS=', '#COMPRA=',
+                     '#COMPDEC=', '#CRA=', '#CDEC=']
 
-        # Read in information from input-file.txt and append/assign it to
-        # corresponding list/variable.
-        with open('input-file.txt') as f:
-            for line in f:
-                if line.startswith('#RA='):
-                    ra.append(line[4:].strip('\n'))
-                if line.startswith('#DEC='):
-                    dec.append(line[5:].strip('\n'))
-                if line.startswith('#VSPCODE='):
-                    vsp_code = line[9:].strip('\n')
-                if line.startswith('#COMPMAGS='):
-                    comp_mag = line[10:].strip('\n').split(',')
-                if line.startswith('#COMPRA='):
-                    comp_ra = line[8:].strip('\n').split(',')
-                if line.startswith('#COMPDEC='):
-                    comp_dec = line[9:].strip('\n').split(',')
-                if line.startswith('#CLABEL='):
-                    cname = line[8:].strip('\n')
-                if line.startswith('#CRA='):
-                    check_ra.append(line[5:].strip('\n'))
-                if line.startswith('#CDEC='):
-                    check_dec.append(line[6:].strip('\n'))
-                if line.startswith('#RLABEL='):
-                    rname = line[8:].strip('\n')
-                if line.startswith('#RRA'):
-                    ref_ra.append(line[5:].strip('\n'))
-                if line.startswith('#RDEC='):
-                    ref_dec.append(line[6:].strip('\n'))
+    # Read in information from input-file.txt and assign it to corresponding
+    # variable.
+    str_input_values = []
+    list_input_values = []
+    with open(os.path.join(dirtarget, 'input-file.txt')) as f:
+        for line in f:
+            # Look for string variables.
+            for keyword in str_keywords:
+                if line.startswith(keyword):
+                    str_input_values.append(line[len(keyword):].strip('\n'))
 
-        # Ensure that all magntidue values are floats.
-        comp_mags = []
-        for mag in comp_mag:
-            comp_mags.append(float(mag))
+            for keyword in list_keywords:
+                # Look for list variables.
+                if line.startswith(keyword):
+                    list_input_values.append(line[len(keyword):].strip('\n').split(','))
 
-        # Create list of two different lists of either right ascensions or
-        # declinations.
-        coords = []
-        coords.append(ra)
-        coords.append(dec)
+            if line.startswith('#APERRAD='):
+                if len(line.strip(' ').strip('\n')) == 9:
+                    pass
+                else:
+                    set_rad = True
+            if line.startswith('#FUNCTIONS='):
+                if interactive == 'n':
+                    functions = line[11:].strip('\n').split(',')
 
-        for fil in filters:
-            # Change current working directory according to which computer the
-            # code is being ran from.
-            if computer == 'W':
-                os.chdir(os.path.join('/home/depot/STEPUP/raw', target, date,
-                                      'ISR_Images', fil, 'WCS/accurate_WCS'))
-            if computer == 'H':
-                os.chdir(os.path.join('/Users/helenarichie/tests2/ISR_Images/',
-                                      fil, '/WCS/accurate_WCS/'))
-            if computer == 'M':
-                os.chdir('/Users/maurashap/STEPUP/Raw')
+    target = str_input_values[0]
+    date = str_input_values[1]
+    dirdark = str_input_values[2]
+    clabel = str_input_values[3]
+    aper_rad = str_input_values[4]
+    ann_in_rad = str_input_values[5]
+    ann_out_rad = str_input_values[6]
+    filters = list_input_values[0]
+    ra = list_input_values[1]
+    dec = list_input_values[2]
+    comp_mag = list_input_values[3]
+    comp_ra = list_input_values[4]
+    comp_dec = list_input_values[5]
+    cra = list_input_values[6]
+    cdec = list_input_values[7]
 
-            # Perform absolute relative photometry on, create light curve from,
-            # and generate output file of dataset.
-            perform_photometry.perform_photometry(target, dirtarget, filters,
-                                                  date, coords, comp_ra,
-                                                  comp_dec, comp_mags, vsp_code,
-                                                  cname, check_ra, check_dec,
-                                                  rname, ref_ra, ref_dec,
-                                                  verbose=False)
+    # If dark files are stored in same directory as input-file.txt, target
+    # data, and other calibration files, dirdark is assigned to same string as
+    # dirtarget.
+    if dirdark == '':
+        dirdark = dirtarget
+
+    # Ensure that all magntidue values are floats.
+    comp_mags = []
+    for mag in comp_mag:
+        comp_mags.append(float(mag))
+
+    # Create list of two different lists of either right ascensions or
+    # declinations.
+    coords = []
+    coords.append(ra)
+    coords.append(dec)
+
+    if interactive == 'y':
+        # Allows user to specify functions to be ran at command line.
+        cont_analysis = interactive
+        while cont_analysis == 'y':
+            answer = input('\nWhich function would you like to run? (ISR, ASTROM, PHOT): ').lower().strip(' ')
+            # Run function specified by "answer" variable.
+            which_analysis(interactive, answer, target, date, filters, coords,
+                           dirtarget, dirdark, comp_mags, comp_ra, comp_dec,
+                           clabel, cra, cdec, set_rad,
+                           aper_rad, ann_in_rad, ann_out_rad)
+            # Determine if user has finished running STEPUP Image Analysis.
+            cont_analysis = input('\nWould you still like to perform a function? (Y/N): ').lower().strip(' ')
+        print('\nGoodbye.')
 
     else:
-        # Determine if user would like to run a certain function from routine.
-        cont_analysis = input('\nWould you still like to perform a function? (Y/N): ')
-        while cont_analysis == 'Y':
-            answer = input('\nWhich would you like to run? (ISR, ASTROM, PHOT): ')
-            # Run function specified by "answer" variable.
-            which_analysis(answer, dirtarget, dirdark, target, date, computer)
-            # Determine if user has finished running STEPUP_image_analysis.
-            cont_analysis = input('\nWould you still like to perform a function? (Y/N): ')
+        # Runs which_analysis for function in order of specification in the
+        # input-file.txt file if user is not running SIA interactively.
+        for function in functions:
+            answer = function
+            which_analysis(interactive, answer, target, date, filters, coords,
+                           dirtarget, dirdark, comp_mags, comp_ra, comp_dec,
+                           clabel, cra, cdec, set_rad, aper_rad, ann_in_rad,
+                           ann_out_rad)
 
 
-def which_analysis(answer, dirtarget, dirdark, target, date, computer):
+def which_analysis(interactive, answer, target, date, filters, coords,
+                   dirtarget, dirdark, comp_mags, comp_ra, comp_dec, clabel,
+                   cra, cdec, set_rad, aper_rad, ann_in_rad, ann_out_rad):
     """Run one of three functions in image analysis routine.
 
     Based on user input, "answer" variable specifies which function from
-    STEPUP_image_analysis that the user would like to run. Once the function
+    STEPUP Image Analysis that the user would like to run. Once the function
     finishes running, the user may run another function, but note that ISR and
     perform_astrometry create new directories and thus will cause an error if
     the user attempts to run them twice in a row without removing the created
@@ -193,143 +147,85 @@ def which_analysis(answer, dirtarget, dirdark, target, date, computer):
 
     Parameters
     ----------
+    interactive : str
+        User input specifying whether they would like to run SIA interactively.
     answer : str
         Specifies whether user would like to perform instrument signature
         removal, astrometry, or photometry.
-    dirtarget : str
-        Directory containing all bias, flat, and raw science images.
-    dirdark : str
-        Directory containing all dark images.
     target : str
         Name of target.
     date : str
         Date of observation.
-    computer : str
-        Either "W" or "H" depending on whether code is being ran from Helena's
-        computer or Astro Lab computer.
+    filters : list
+        List containing string of each filter keyword found in header of flat
+        field and light frame images.
+    coords : list
+        List of list of string of target right ascension and declination.
+    dirtarget : str
+        Directory containing all bias, flat, and raw science images.
+    dirdark : str
+        Directory containing all dark images.
+    comp_mags : list
+        List of floats representing the magnitudes of the comparison stars.
+    comp_ra : list
+        List of strings of comparison stars' right ascension.
+    comp_dec : list
+        List of strings of comparison stars' declination.
+    clabel : str
+        Name of check star.
+    cra : list
+        List of string of right ascension of check star.
+    cdec : list
+        List of string of delination of check star.
+    set_rad : Boolean
+        Determine whether user would like to use default aperture/annulus radii
+        or specify their own.
+    aper_rad : float
+        User-specified aperture radius in arcseconds.
+    ann_in_rad : float
+        User-specified annulus inner radius in arcseconds.
+    ann_out_rad : float
+        User-specified annulus outer radius in arcseconds.
 
     Returns
     -------
     None
     """
-    if answer == 'ISR':
+    if answer == 'isr':
         print('\nInstrument signature removal in progress...')
         # Removes instrument signatures from dataset.
         filters = ISR.ISR_main(dirtarget, dirdark, target)
         print('\nInstrument signature removal completed.')
 
-    if answer == 'ASTROM':
-        im = input('\nHave you saved a new-image.fits file to the appropriate directory? (Y/N): ')
+    if answer == 'astrom':
+        im = None
+        try:
+            copyfile(os.path.join(dirtarget, 'new-image.fits'),
+                         os.path.join(dirtarget, 'ISR_Images/new-image.fits'))
+            im = 'y'
+        except FileNotFoundError:
+            print('\nnew-image.fits not found in raw data directory. Goodbye.')
+
         # Determines if user has saved new-image.fits WCS calibration file to
         # ISR_Images directory that was created in ISR function.
-        if im == 'Y':
-            # Determines filters using in observation.
-            filters = input('\nEnter filters of observation (comma-delimited): ').split(",")
+        if im == 'y':
             print('\nAstrometry in progress...')
-            dirtarget += '/ISR_Images'
             # Calculates WCS information for dataset.
-            perform_astrometry.perform_astrometry(target, dirtarget,
-                                                  filters, verbose=False)
+            perform_astrometry.perform_astrometry(target, dirtarget, filters,
+                                                  verbose=False)
             print('\nAstrometry completed.')
         else:
             return None
 
-    if answer == 'PHOT':
-        # Determines filters using in observation.
-        filters = input('\nEnter filters of observation (comma-delimited): ').split(",")
+    if answer == 'phot':
         print('\nPhotometry in progress...')
-        dirtarget += '/ISR_Images'
-        # Initialize variable for and determine path based on which computer
-        # code is being ran from.
-        path = None
-        if computer == 'W':
-            path = os.path.join('/home/depot/STEPUP/raw', target, date)
-        if computer == 'H':
-            path = '/Users/helenarichie/tests2'
-        if computer == 'M':
-            path = '/Users/maurashap/STEPUP/Raw'
-        # Change current working directory to specified path.
-        os.chdir(path)
+        # Perform absolute differential photometry on, create light curve(s)
+        # from, and generate output file of dataset.
+        perform_photometry.perform_photometry(target, dirtarget, filters, date,
+                                              coords, comp_ra, comp_dec,
+                                              comp_mags, clabel, cra, cdec, set_rad,
+                                              aper_rad, ann_in_rad, ann_out_rad)
+        print('\nPhotometry completed.')
 
-        # Initialize variables to obtain information from input-file.txt file.
-        ra = []
-        dec = []
-        comp_ra = []
-        comp_dec = []
-        comp_mag = []
-        vsp_code = None
-        cname = None
-        check_ra = []
-        check_dec = []
-        rname = None
-        ref_ra = []
-        ref_dec = []
 
-        # Read in information from input-file.txt and append/assign it to
-        # corresponding list/variable.
-        with open('input-file.txt') as f:
-            for line in f:
-                if line.startswith('#RA='):
-                    ra.append(line[4:].strip('\n'))
-                if line.startswith('#DEC='):
-                    dec.append(line[5:].strip('\n'))
-                if line.startswith('#VSPCODE='):
-                    vsp_code = line[9:].strip('\n')
-                if line.startswith('#COMPMAGS='):
-                    comp_mag = line[10:].strip('\n').split(',')
-                if line.startswith('#COMPRA='):
-                    comp_ra = line[8:].strip('\n').split(',')
-                if line.startswith('#COMPDEC='):
-                    comp_dec = line[9:].strip('\n').split(',')
-                if line.startswith('#CLABEL='):
-                    cname = line[8:].strip('\n')
-                if line.startswith('#CRA='):
-                    check_ra.append(line[5:].strip('\n'))
-                if line.startswith('#CDEC='):
-                    check_dec.append(line[6:].strip('\n'))
-                if line.startswith('#RLABEL='):
-                    rname = line[8:].strip('\n')
-                if line.startswith('#RRA'):
-                    ref_ra.append(line[5:].strip('\n'))
-                if line.startswith('#RDEC='):
-                    ref_dec.append(line[6:].strip('\n'))
-
-        # Ensure that all magntidue values are floats.
-        comp_mags = []
-        for mag in comp_mag:
-            comp_mags.append(float(mag))
-
-        # Create list of two different lists of either right ascensions or
-        # declinations.
-        coords = []
-        coords.append(ra)
-        coords.append(dec)
-
-        for fil in filters:
-            # Initialize variable for and determine path based on which computer
-            # code is being ran from.
-            path = None
-            if computer == 'W':
-                path = os.path.join('/home/depot/STEPUP/raw', target, date,
-                                    'ISR_Images', fil, 'WCS/accurate_WCS')
-            if computer == 'H':
-                path = os.path.join('/Users/helenarichie/tests2/ISR_Images',
-                                    fil, 'WCS/accurate_WCS')
-            if computer == 'M':
-                path = '/Users/maurashap/STEPUP/Raw'
-
-            # Change current working directory to specified path.
-            os.chdir(path)
-
-            # Perform absolute relative photometry on, create light curve from,
-            # and generate output file of dataset.
-            perform_photometry.perform_photometry(target, dirtarget,
-                                                  filters, date, coords,
-                                                  comp_ra, comp_dec,
-                                                  comp_mags, vsp_code,
-                                                  cname, check_ra, check_dec,
-                                                  rname, ref_ra,
-                                                  ref_dec, verbose=False)
-           
-
-main(verbose=False)
+main()
