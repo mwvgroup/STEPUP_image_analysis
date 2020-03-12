@@ -125,7 +125,7 @@ def main():
         # Runs which_analysis for function in order of specification in the
         # input-file.txt file if user is not running SIA interactively.
         for function in functions:
-            answer = function
+            answer = function.lower()
             which_analysis(interactive, answer, target, date, filters, coords,
                            dirtarget, dirdark, comp_mags, comp_ra, comp_dec,
                            clabel, cra, cdec, set_rad, aper_rad, ann_in_rad,
@@ -204,7 +204,7 @@ def which_analysis(interactive, answer, target, date, filters, coords,
                          os.path.join(dirtarget, 'ISR_Images/new-image.fits'))
             im = 'y'
         except FileNotFoundError:
-            print('\nnew-image.fits not found in raw data directory. Goodbye.')
+            print('\nnew-image.fits not found in raw data directory. Try again.')
 
         # Determines if user has saved new-image.fits WCS calibration file to
         # ISR_Images directory that was created in ISR function.

@@ -1,0 +1,330 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  7 FEB 2020 17:02
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**STEPUPImageAnalysisUserGuide.tex
+(./STEPUPImageAnalysisUserGuide.tex
+LaTeX2e <2017-04-15>
+Babel <3.10> and hyphenation patterns for 84 language(s) loaded.
+(/usr/local/texlive/2017/texmf-dist/tex/latex/base/report.cls
+Document Class: report 2014/09/29 v1.4h Standard LaTeX document class
+(/usr/local/texlive/2017/texmf-dist/tex/latex/base/size11.clo
+File: size11.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@chapter=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+(/usr/local/texlive/2017/texmf-dist/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
+
+(/usr/local/texlive/2017/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+
+(/usr/local/texlive/2017/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2017/01/12 v0.06k Graphics/color for pdfTeX
+
+(/usr/local/texlive/2017/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
+)
+(/usr/local/texlive/2017/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
+)
+\Gread@gobject=\count88
+)
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1348.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1352.
+Package xcolor Info: Model `RGB' extended on input line 1364.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1366.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1367.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
+)
+(/usr/local/texlive/2017/texmf-dist/tex/latex/was/gensymb.sty
+Package: gensymb 2003/07/02 v1.0 (WaS)
+)
+(/usr/local/texlive/2017/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2014/10/28 v1.0g Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2017/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(/usr/local/texlive/2017/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2017/04/14 v1.1b Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2017/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+(/usr/local/texlive/2017/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 99.
+)
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+)
+(./STEPUPImageAnalysisUserGuide.aux)
+\openout1 = `STEPUPImageAnalysisUserGuide.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+
+(/usr/local/texlive/2017/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count89
+\scratchdimen=\dimen105
+\scratchbox=\box26
+\nofMPsegments=\count90
+\nofMParguments=\count91
+\everyMPshowfont=\toks15
+\MPscratchCnt=\count92
+\MPscratchDim=\dimen106
+\MPnumerator=\count93
+\makeMPintoPDFobject=\count94
+\everyMPtoPDFconversion=\toks16
+) (/usr/local/texlive/2017/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+Package: pdftexcmds 2017/03/19 v0.25 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+(/usr/local/texlive/2017/texmf-dist/tex/generic/oberdiek/ifluatex.sty
+Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+(/usr/local/texlive/2017/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2017/03/15 v3.2 Provides the ifpdf switch
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+(/usr/local/texlive/2017/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
+
+(/usr/local/texlive/2017/texmf-dist/tex/latex/oberdiek/grfext.sty
+Package: grfext 2016/05/16 v1.2 Manage graphics extensions (HO)
+
+(/usr/local/texlive/2017/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
+Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
+))
+(/usr/local/texlive/2017/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
+
+(/usr/local/texlive/2017/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
+
+(/usr/local/texlive/2017/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)))
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+38.
+Package grfext Info: Graphics extension search list:
+(grfext)             [.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 456.
+
+(/usr/local/texlive/2017/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+LaTeX Info: Redefining \celsius on input line 17.
+Package gensymb Info: Faking symbols for \degree and \celsius on input line 17.
+
+
+
+Package gensymb Warning: Not defining \perthousand.
+
+LaTeX Info: Redefining \ohm on input line 17.
+Package gensymb Info: Using \Omega for \ohm on input line 17.
+
+Package gensymb Warning: Not defining \micro.
+
+<Title.jpg, id=1, 2055.68pt x 1371.1225pt>
+File: Title.jpg Graphic file (type jpg)
+ <use Title.jpg>
+Package pdftex.def Info: Title.jpg used on input line 27.
+(pdftex.def)             Requested size: 487.57037pt x 325.215pt.
+
+Overfull \hbox (17.81538pt too wide) in paragraph at lines 27--28
+ [] 
+ []
+
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 41.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 41.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 41.
+[1
+
+{/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./Title
+.jpg>] (./STEPUPImageAnalysisUserGuide.toc)
+\tf@toc=\write3
+\openout3 = `STEPUPImageAnalysisUserGuide.toc'.
+
+ [1
+
+]
+Chapter 1.
+
+Underfull \hbox (badness 10000) in paragraph at lines 58--59
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 60--61
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 62--63
+
+ []
+
+[2
+
+]
+Chapter 2.
+<example.png, id=20, 800.9925pt x 489.83pt>
+File: example.png Graphic file (type png)
+ <use example.png>
+Package pdftex.def Info: example.png used on input line 73.
+(pdftex.def)             Requested size: 319.08356pt x 195.13098pt.
+ [3
+
+ <./example.png>] [4] [5]
+Underfull \hbox (badness 10000) in paragraph at lines 131--132
+
+ []
+
+[6] [7] [8]
+Chapter 3.
+
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./SIA_flow_chart.pdf): PDF i
+nclusion: found PDF version <1.7>, but at most version <1.5> allowed
+<SIA_flow_chart.pdf, id=44, 1228.59pt x 794.97pt>
+File: SIA_flow_chart.pdf Graphic file (type pdf)
+ <use SIA_flow_chart.pdf>
+Package pdftex.def Info: SIA_flow_chart.pdf used on input line 180.
+(pdftex.def)             Requested size: 516.73335pt x 334.3582pt.
+
+Overfull \hbox (46.97836pt too wide) in paragraph at lines 180--181
+ [] 
+ []
+
+[9
+
+ <./SIA_flow_chart.pdf>] [10]
+Chapter 4.
+[11
+
+]
+Chapter 5.
+<wasplightcurve.pdf, id=78, 722.7pt x 578.16pt>
+File: wasplightcurve.pdf Graphic file (type pdf)
+ <use wasplightcurve.pdf>
+Package pdftex.def Info: wasplightcurve.pdf used on input line 252.
+(pdftex.def)             Requested size: 243.90623pt x 195.13098pt.
+
+<comp1r.pdf, id=79, 722.7pt x 578.16pt>
+File: comp1r.pdf Graphic file (type pdf)
+ <use comp1r.pdf>
+Package pdftex.def Info: comp1r.pdf used on input line 259.
+(pdftex.def)             Requested size: 150.32503pt x 120.26149pt.
+
+<comp2r.pdf, id=80, 722.7pt x 578.16pt>
+File: comp2r.pdf Graphic file (type pdf)
+ <use comp2r.pdf>
+Package pdftex.def Info: comp2r.pdf used on input line 263.
+(pdftex.def)             Requested size: 150.32503pt x 120.26149pt.
+
+<comp3r.pdf, id=81, 722.7pt x 578.16pt>
+File: comp3r.pdf Graphic file (type pdf)
+ <use comp3r.pdf>
+Package pdftex.def Info: comp3r.pdf used on input line 267.
+(pdftex.def)             Requested size: 150.32503pt x 120.26149pt.
+
+<excountout.png, id=82, 1294.8375pt x 412.54124pt>
+File: excountout.png Graphic file (type png)
+ <use excountout.png>
+Package pdftex.def Info: excountout.png used on input line 276.
+(pdftex.def)             Requested size: 347.04231pt x 110.5719pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<exmagout.png, id=83, 931.48pt x 362.35374pt>
+File: exmagout.png Graphic file (type png)
+ <use exmagout.png>
+Package pdftex.def Info: exmagout.png used on input line 282.
+(pdftex.def)             Requested size: 284.23601pt x 110.5719pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[12
+
+ <./wasplightcurve.pdf>] [13 <./comp1r.pdf> <./comp2r.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./comp2r.pdf): PDF inclusion
+: multiple pdfs with page group included in a single page
+> <./comp3r.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./comp3r.pdf): PDF inclusion
+: multiple pdfs with page group included in a single page
+> <./excountout.png> <./exmagout.png>] (./STEPUPImageAnalysisUserGuide.aux) ) 
+Here is how much of TeX's memory you used:
+ 2106 strings out of 492995
+ 29138 string characters out of 6132704
+ 97713 words of memory out of 5000000
+ 5642 multiletter control sequences out of 15000+600000
+ 11481 words of font info for 39 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 39i,8n,35p,918b,331s stack positions out of 5000i,500n,10000p,200000b,80000s
+</
+usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></u
+sr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
+r/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></u
+sr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></u
+sr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr
+/local/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/l
+ocal/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/lo
+cal/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/loc
+al/texlive/2017/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb>
+Output written on STEPUPImageAnalysisUserGuide.pdf (14 pages, 896339 bytes).
+PDF statistics:
+ 306 PDF objects out of 1000 (max. 8388607)
+ 99 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 46 words of extra memory for PDF output out of 10000 (max. 10000000)
+

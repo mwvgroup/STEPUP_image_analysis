@@ -1,0 +1,23 @@
+\contentsline {chapter}{\numberline {1}Introduction}{2}
+\contentsline {chapter}{\numberline {2}Preliminary Steps}{3}
+\contentsline {section}{\numberline {2.1}Data Configuration}{3}
+\contentsline {section}{\numberline {2.2}Creating Input File (General)}{4}
+\contentsline {section}{\numberline {2.3}Generating \emph {new-image.fits} File (General)}{6}
+\contentsline {section}{\numberline {2.4}Preliminary Steps for Allen 302}{6}
+\contentsline {subsection}{\numberline {2.4.1}Transferring Data}{6}
+\contentsline {subsection}{\numberline {2.4.2}Creating Input File (Allen 302)}{7}
+\contentsline {subsection}{\numberline {2.4.3}Generating \emph {new-image.fits} File (Allen 302)}{7}
+\contentsline {section}{\numberline {2.5}Preliminary Steps for Observatory Lab}{7}
+\contentsline {subsection}{\numberline {2.5.1}Creating Input File (Observatory Lab)}{7}
+\contentsline {subsection}{\numberline {2.5.2}Generating \emph {new-image.fits} File (Observatory Lab)}{8}
+\contentsline {chapter}{\numberline {3}Running STEPUP Image Analysis}{9}
+\contentsline {section}{\numberline {3.1}Program Flow Chart}{9}
+\contentsline {section}{\numberline {3.2}Running in Allen 302}{9}
+\contentsline {subsection}{\numberline {3.2.1}Generating a Color Light Curve}{10}
+\contentsline {section}{\numberline {3.3}Running at Allegheny Observatory}{10}
+\contentsline {chapter}{\numberline {4}Troubleshooting}{11}
+\contentsline {section}{\numberline {4.1}Instrument Signature Removal}{11}
+\contentsline {section}{\numberline {4.2}Perform Astrometry}{11}
+\contentsline {section}{\numberline {4.3}Perform Photometry}{11}
+\contentsline {chapter}{\numberline {5}Examples}{12}
+\contentsline {section}{\numberline {5.1}Example Output of WASP-52 Data}{12}

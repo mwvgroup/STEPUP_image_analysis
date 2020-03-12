@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -43,8 +45,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
     the target and check aperture sums as well as the target error.
     Then, mag_plot is called, which plots the target magnitudes with error over
     time and check magnitudes over time. Then write_file is called to write an
-    output file in the AAVSO extended file format to be submitted to AAVSO
-    using WebObs.
+    output text file that includes a summary of the analysis results.
 
     Parameters
     ----------
@@ -86,8 +87,12 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
     None
     """
     for fil in filters:
-        os.chdir(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
-                              'accurate_WCS'))
+        os.chdir(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS'))
+
+        try:
+            os.mkdir('output')
+        except FileExistsError:
+            pass
 
         aper_sum, comp_aper_sums, check_aper_sum, err, date_obs, altitudes, final_comp_mags, saturated, exposure_times = photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags, set_rad, aper_rad, ann_in_rad, ann_out_rad)
 
@@ -98,6 +103,15 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
         mag_plot(target_mags, target_err, date_obs, target, date, fil, dirtarget, check_mags)
 
         write_file(target_mags, target_err, date_obs, target, dirtarget, fil, altitudes, clabel, check_mags, date)
+
+        path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
+                            'output/saturated_{}.txt'.format(fil))
+
+        with open(path, 'w+') as f:
+            f.write('#Files in which the target star met or exceeded the saturation level:\n')
+            for o_file in saturated:
+                f.write(str(o_file) + '\n')
+            f.close()
 
         print('Saturated images ({}): {}'.format(fil, saturated))
         print('Exposure times ({}): {}'.format(fil, exposure_times))
@@ -123,7 +137,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec,
     ----------
     dirtarget : str
         Directory containing all bias, flat, and raw science images.
-    filters : list
+    fil : list
         List containing string of each filter keyword found in header of flat
         field and light frame images.
     coords : list
@@ -152,9 +166,9 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec,
     -------
     aper_sum : numpy.ndarray
         Array of aperture sums for target star in counts.
-    comp_aper_sums : numpy.ndarray
+    comp_apers : numpy.ndarray
         Filtered array of comparison star magnitudes.
-    check_aper_sum : numpy.ndarray
+    check_apers : numpy.ndarray
         Filtered array of aperture sum for check star in counts.
     err : numpy.ndarray
         Array of error values for each aperture sum of the target star in
@@ -163,7 +177,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec,
         Array of times each image was taken in Julian Days.
     altitudes : np.ndarray
         Array of object altitudes for each image.
-    final_comp_mags : numpy.ndarray
+    comp_mags : numpy.ndarray
         Filtered array of comparison star magnitudes.
     saturated : list
         List of string of image paths that have objects in them that are at the
@@ -186,17 +200,25 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec,
     check_aper_sum = np.array(check_aper_sum, dtype=float)
     check_aper_sum = check_aper_sum[0]
 
-    # Determine if any of the comparison stars are not in the image.
+    # To determine if any of the comparison stars are not in the image, the
+    # comp_apers arrays are individually checked for NaN and negative values.
+    # If an array contains a negative value, the the total number of images
+    # containing negative numbers is considered before ruling out the star
+    # completely.
     good_comp = []
     for i, o_aper in enumerate(comp_apers):
         no_nan = (len(np.argwhere(np.isnan(o_aper))) == 0)
         no_neg = (len(np.where(o_aper <= 0)[0]) == 0)
+        if not no_neg:
+            where_neg = np.where(o_aper < 0)[0]
+            if len(where_neg) < (0.25 * len(o_aper)):
+                no_neg = True
         if no_nan and no_neg:
             good_comp.append(i)
     comp_apers = np.array([comp_apers[i] for i in good_comp])
     comp_mags = np.array([comp_mags[i] for i in good_comp])
 
-    # Remove any bad data points.
+    # Remove any bad images from analysis.
     good_im = []
     good_im.extend(np.where(aper_sum != np.nan)[0])
     good_im.extend(np.where(aper_sum > 0)[0])
@@ -235,16 +257,24 @@ def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
         Array of aperture sums for target star in counts.
     check_aper_sum : numpy.ndarray
         Filtered array of aperture sum for check star in counts.
-    err : numpy.ndarray
+    t_err : numpy.ndarray
         Array of error values for each aperture sum of the target star in
         counts.
+    date_obs : np.ndarray
+        Array of times each image was taken in Julian Days.
+    altitudes : np.ndarray
+        Array of object altitudes for each image.
+    target : str
+        Name of target.
+    clabel : str
+        Name of check star.
 
     Returns
     -------
     None
     """
-    path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS', 'accurate_WCS',
-                        'net_counts_{}.txt'.format(date))
+    path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
+                        'output/net_counts_{}.txt'.format(date))
 
     with open(path, 'w+') as f:
         f.write('#SOFTWARE=STEPUP Image Analysis\n#DELIM=,\n#DATE=JD\n' +
@@ -260,16 +290,13 @@ def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
                                                                t_err,
                                                                check_aper_sum,
                                                                altitudes)):
-            if tsum != np.nan:
-                csums = comp_sums[n]
-                zenith = np.deg2rad(90 - alt)
-                airmass = 1 / np.cos(zenith)
-                input_list = [target, date_i, tsum, err, fil, csums, clabel, csum,
-                              airmass]
-                input_string = ",".join(map(str, input_list))
-                f.write(input_string + '\n')
-            else:
-                continue
+            csums = comp_sums[n]
+            zenith = np.deg2rad(90 - alt)
+            airmass = 1 / np.cos(zenith)
+            input_list = [target, date_i, tsum, err, fil, csums, clabel, csum,
+                          airmass]
+            input_string = ",".join(map(str, input_list))
+            f.write(input_string + '\n')
         f.close()
 
 
@@ -313,14 +340,13 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
 
     for i, (obj, mag) in enumerate(zip(comp_aper_sums, comp_mags)):
         figure = plt.figure(figsize=(10,8))
-        plt.plot(date_obs, 2.5 * np.log10(obj), "o", c='cadetblue', label='STEPUP {}'.format(fil))
+        plt.plot(date_obs, 2.5 * np.log10(obj), "o", c='cadetblue', label='{}'.format(fil))
         plt.ylabel("Instrumental Magnitude")
         plt.xlabel("Time [JD]")
         plt.gca().invert_yaxis()
         plt.title("Comp {}, {} = {} mag".format(i + 1, fil, mag))
-        plt.savefig("comp_{}_{}.pdf".format(i + 1, fil))
+        plt.savefig("output/comp_{}_{}.pdf".format(i + 1, fil))
         plt.legend()
-        plt.show()
 
     for i, (mag, obj) in enumerate(zip(comp_mags, comp_aper_sums)):
         # Using magnitude value of comparison star (mag) and aperture sum
@@ -361,9 +387,8 @@ def mag_plot(target_mags, target_err, date_obs, target, date, fil, dirtarget,
 
     Creates a subplot with the target magntidues and their error over time in
     Julian Days on top and the check star magnitudes on the bottom with the
-    same x-axis as the target star. A PDF of the lightcurve is written to
-    /home/depot/STEPUP/raw/<name-of-target>/<date-of-observation>/ISR_Images/
-    <filter-name>/WCS/accurate_WCS.
+    same x-axis as the target star. A PDF of the lightcurve is written to the
+    location of the ISR, plate-solved dataset.
 
     Parameters
     ----------
@@ -391,22 +416,23 @@ def mag_plot(target_mags, target_err, date_obs, target, date, fil, dirtarget,
     f, axarr = plt.subplots(2, sharex=True,
                             gridspec_kw={'height_ratios': [3, 1]},
                             figsize=(10, 8))
-    axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o', c='cadetblue', label='STEPUP {}'.format(fil))
+    axarr[0].errorbar(date_obs, target_mags, yerr=target_err, fmt='o',
+                      c='cadetblue', label='{}'.format(fil))
     axarr[0].set_title('Light Curve of {}, {}'.format(target, date))
     axarr[0].set_ylabel('Magnitude')
     axarr[0].invert_yaxis
     axarr[0].legend()
     axarr[0].set_ylim(axarr[0].get_ylim()[::-1])
-    axarr[1].scatter(date_obs, check_mags, c='cadetblue', label='STEPUP {}'.format(fil))
+    axarr[1].scatter(date_obs, check_mags, c='cadetblue',
+                     label='{}'.format(fil))
     axarr[1].set_ylim(axarr[1].get_ylim()[::-1])
     axarr[1].invert_yaxis
     axarr[1].legend()
     axarr[1].set_title('Check Star')
     axarr[1].set_ylabel('Magnitude')
     axarr[1].set_xlabel('Time [JD]')
-    f.savefig(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS', 'accurate_WCS',
-                           'lightcurve_{}_{}.pdf'.format(date, fil)))
-    plt.show()
+    f.savefig(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
+                           'output/lightcurve_{}_{}.pdf'.format(date, fil)))
 
 
 def write_file(target_mags, target_err, date_obs, target, dirtarget, fil,
@@ -445,8 +471,8 @@ def write_file(target_mags, target_err, date_obs, target, dirtarget, fil,
     -------
     None
     """
-    path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS', 'accurate_WCS',
-                        'output_{}_{}.txt'.format(date, fil))
+    path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
+                        'output/output_{}_{}.txt'.format(date, fil))
 
     with open(path, 'w+') as f:
         f.write('#SOFTWARE=STEPUP Image Analysis\n#DELIM=,\n#DATE=JD\n' +
@@ -501,6 +527,10 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
         User-specified annulus inner radius in arcseconds.
     ann_out_rad : float
         User-specified annulus outer radius in arcseconds.
+    name : str
+        Type of star that get_counts is being ran on (e.g. target, comp, check).
+    centroid_plt : Boolean
+        Whether or not to plot centroid shifts for object.
 
     Returns
     -------
@@ -520,8 +550,7 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
     exposure_times : list
         List of floats corresponding to exposure time of a given image.
     """
-    dirtarget_wcs = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
-                                 'accurate_WCS')
+    dirtarget_wcs = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS')
     size = len(glob.glob(os.path.join(dirtarget_wcs, '*.fits')))
     err = np.empty(size)
     err[:] = np.nan
@@ -572,15 +601,15 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
             # Get the image array.
             image_array = fits.getdata(o_file)
 
-            # Read in a 30 x 30 square centered at the star for which the
+            # Read in a 40 x 40 square centered at the star for which the
             # counts are being summed.
-            star = image_array[(py_int - 9):(py_int + 11),
-                               (px_int - 9):(px_int + 11)]
+            star = image_array[(py_int - 19):(py_int + 21),
+                               (px_int - 19):(px_int + 21)]
 
             # Ensure that the square is entirely on the image.
-            if ((py_int - 9) < 0) or ((py_int + 11) > 2084):
+            if ((py_int - 19) < 0) or ((py_int + 21) > 2084):
                 continue
-            if ((px_int - 9) < 0) or ((px_int + 11) > 3072):
+            if ((px_int - 19) < 0) or ((px_int + 21) > 3072):
                 continue
 
             # Flatten the array so that it is one-dimensional.
@@ -596,16 +625,17 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
                 continue
 
             arr_x_centroid, arr_y_centroid = c.centroid_2dg(star)
-            pix_x_centroid = int((px_int - 9) + arr_x_centroid)
-            pix_y_centroid = int((py_int - 9) + arr_y_centroid)
+            pix_x_centroid = int((px_int - 19) + arr_x_centroid)
+            pix_y_centroid = int((py_int - 19) + arr_y_centroid)
             pix_centroid_coords = (pix_x_centroid, pix_y_centroid)
             print('\nPlate-solution (x, y) object location: ({}, {})'.format(px_int, py_int))
             print('\nCentroided (x, y) object location: ({}, {})'.format(pix_x_centroid, pix_y_centroid))
-            centroid_coords = SkyCoord.from_pixel(pix_x_centroid, pix_y_centroid, w)
+            centroid_coords = SkyCoord.from_pixel(pix_x_centroid,
+                                                  pix_y_centroid, w)
 
             print('\nCentroided R.A. and declination: {}'.format(centroid_coords))
 
-            i_plot = np.where(cent_ind == i)[0]  
+            i_plot = np.where(cent_ind == i)[0]
 
             # Define aperture and annulus radii.
             radius = None
@@ -639,13 +669,24 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
 
             if centroid_plt:
                 if i in cent_ind:
-                    p1 = axis[i_plot[0]].scatter([px_int+1], [py_int+1], c="thistle", label="Original", edgecolors='mistyrose')
-                    p2 = axis[i_plot[0]].scatter([pix_x_centroid+1], [pix_y_centroid+1], c="rebeccapurple", label="Corrected", edgecolors='mistyrose')
-                    im = axis[i_plot[0]].imshow(star, extent=(px_int - 9,px_int + 11,py_int - 9,py_int + 11), cmap='magma', origin='lower')
+                    p1 = axis[i_plot[0]].scatter([px_int+1], [py_int+1],
+                              c="thistle", label="Original",
+                              edgecolors='mistyrose')
+                    p2 = axis[i_plot[0]].scatter([pix_x_centroid+1],
+                              [pix_y_centroid+1], c="rebeccapurple",
+                              label="Corrected", edgecolors='mistyrose')
+                    im = axis[i_plot[0]].imshow(star, extent=(px_int - 19,
+                                                              px_int + 21,
+                                                              py_int - 19,
+                                                              py_int + 21),
+                                                cmap='magma', origin='lower')
                     axis[i_plot[0]].set_title('Image {}'.format(i), size=10)
-                    circ = Circle((pix_x_centroid+1, pix_y_centroid+1), radius.value/secpix1, fill=False, label='Aperture', ls='-', color='mistyrose')
+                    circ = Circle((pix_x_centroid+1, pix_y_centroid+1),
+                                  radius.value/secpix1, fill=False,
+                                  label='Aperture', ls='-', color='mistyrose')
                     axis[i_plot[0]].add_patch(circ)
-                    for label in (axis[i_plot[0]].get_xticklabels() + axis[i_plot[0]].get_yticklabels()):
+                    for label in (axis[i_plot[0]].get_xticklabels() +
+                                  axis[i_plot[0]].get_yticklabels()):
                         label.set_fontsize(8)
 
             apers = (aperture, annulus)
@@ -688,12 +729,15 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
             cb = figure.colorbar(im, cax=cbar_ax)
             plt.setp(cb.ax.get_yticklabels(), fontsize=8)
 
-            plt.figlegend([p1, p2, circ], ['Original', 'Corrected', 'Aperture'], fontsize=14)
-            figure.suptitle('Aperture Centroiding on {}, {}'.format(ra, dec), fontsize=16)        
+            plt.figlegend([p1, p2, circ], ['Original', 'Corrected', 'Aperture'],
+                          fontsize=14)
+            figure.suptitle('Aperture Centroiding on {}, {}'.format(ra, dec),
+                            fontsize=16)
             figure.text(0.5, 0.04, 'x [pixel]', ha='center')
-            figure.text(0.04, 0.5, 'y [pixel]', va='center', rotation='vertical')
+            figure.text(0.04, 0.5, 'y [pixel]', va='center',
+                        rotation='vertical')
             plt.savefig(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
-                                     'accurate_WCS', 'centroid_{}.pdf'.format(name)))
+                                     'output/centroid_{}.pdf'.format(name)))
         else:
             continue
 
@@ -729,10 +773,10 @@ def multi_filter_analysis(dirtarget, date, target, filters):
     """
     # Sets answer to 'N' if only one filter was used for observation so that the
     # function does not plot a color light curve and returns None.
-    answer = 'N'
+    answer = 'n'
     if len(filters) > 1:
         answer = input('\nWould you like to plot a color light curve? (Y/N): ')
-    if answer == 'Y':
+    if answer.lower() == 'y':
         # Determine color user would like to plot in light curve.
         fil_color = input('\nInput magnitude filters to subtract (comma-delimited): ').split(',')
         dates = []
@@ -742,8 +786,7 @@ def multi_filter_analysis(dirtarget, date, target, filters):
             date_fil = []
             mag_fil = []
             err_fil = []
-            os.chdir(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
-                                  'accurate_WCS'))
+            os.chdir(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS'))
             # Read in magnitudes of target in fil from output file generated by
             # SIA for analysis corresponding to that filter.
             with open('output_{}_{}.txt'.format(date, fil), "r") as f:
@@ -780,6 +823,6 @@ def multi_filter_analysis(dirtarget, date, target, filters):
         plt.gca().invert_yaxis()
         plt.savefig(os.path.join(dirtarget,
                                  'color_lightcurve_{}.pdf'.format(date)))
-        plt.show()
+
     else:
         pass
