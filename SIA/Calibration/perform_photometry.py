@@ -94,7 +94,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
         except FileExistsError:
             pass
 
-        aper_sum, comp_aper_sums, check_aper_sum, err, date_obs, altitudes, final_comp_mags, saturated, exposure_times = photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags, set_rad, aper_rad, ann_in_rad, ann_out_rad)
+        aper_sum, comp_aper_sums, check_aper_sum, err, date_obs, altitudes, final_comp_mags, saturated, exposure_times, centroid_coords, init_coord_list = photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags, set_rad, aper_rad, ann_in_rad, ann_out_rad)
 
         write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum, check_aper_sum, err, date_obs, altitudes, target, clabel)
 
@@ -104,6 +104,8 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
 
         write_file(target_mags, target_err, date_obs, target, dirtarget, fil, altitudes, clabel, check_mags, date)
 
+
+        # Write output file to summarize target saturation levels.
         path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
                             'output/saturated_{}.txt'.format(fil))
 
@@ -111,6 +113,20 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
             f.write('#Files in which the target star met or exceeded the saturation level:\n')
             for o_file in saturated:
                 f.write(str(o_file) + '\n')
+            f.close()
+
+        # Write output file to summarize target pixel locations before and
+        # after centroiding for non-saturated images.
+        path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
+                            'output/centroid_{}.txt'.format(fil))
+        with open(path, 'w+') as f:
+            f.write('Summary of target pixel locations before and after ' +
+                    'centroiding for non-saturated images.\n')
+            f.write('#RAW-XPIX,#RAW-YPIX,#CENT-XPIX,#CENT-YPIX,#DATE[JD]\n')
+            for coord, date, init_coord in zip(centroid_coords, date_obs, init_coord_list):
+                input_list = [init_coord[0], init_coord[1], coord[0], coord[1], date]
+                input_string = ",".join(map(str, input_list))
+                f.write(input_string + '\n')
             f.close()
 
         print('Saturated images ({}): {}'.format(fil, saturated))
@@ -187,7 +203,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec,
     """
     # Get aperture sum, error of aperture sum, times of data collection,
     # and altitudes for target.
-    aper_sum, err, date_obs, altitudes, saturated, exposure_times = get_counts(dirtarget, coords[0], coords[1], fil, set_rad, aper_rad, ann_in_rad, ann_out_rad, "target", True)
+    aper_sum, err, date_obs, altitudes, saturated, exposure_times, centroid_coords, init_coord_list = get_counts(dirtarget, coords[0], coords[1], fil, set_rad, aper_rad, ann_in_rad, ann_out_rad, "target", True)
     aper_sum = aper_sum[0]
     aper_sum = np.array(aper_sum, dtype=float)
 
@@ -234,7 +250,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec,
     comp_apers = np.array(comp_apers_n)
     check_apers = np.array([check_aper_sum[i] for i in good_im])
 
-    return aper_sum, comp_apers, check_apers, err, date_obs, altitudes, comp_mags, saturated, exposure_times
+    return aper_sum, comp_apers, check_apers, err, date_obs, altitudes, comp_mags, saturated, exposure_times, centroid_coords, init_coord_list
 
 
 def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
@@ -564,6 +580,8 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
     raw_loc = []
     centroid_corrections = []
     image_stack = []
+    centroid_coord_list = []
+    init_coord_list = []
     im = None
     p1 = None
     p2 = None
@@ -588,6 +606,15 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
             # Determine the exposure time for item.
             exposure_times.append(hdulist[0].header['EXPTIME'])
 
+            # Determine the time at which the image was taken in Julian Days
+            # and the altitude and write them to an array.
+            date = hdulist[0].header['DATE-OBS']
+            t = Time(date)
+            time = t.jd
+
+            date_obs[i] = (time)
+            altitudes[i] = (hdulist[0].header['OBJCTALT'])
+
             # Determine what physical position corresponds to the right
             # ascension and declination that are defined as SkyCoord objects
             # with units of hourangles and degrees.
@@ -597,7 +624,7 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
             px, py = w.wcs_world2pix(coords.ra.deg, coords.dec.deg, 1)
             px_int = int(px)
             py_int = int(py)
-
+            init_coord_list.append((px_int, py_int))
             # Get the image array.
             image_array = fits.getdata(o_file)
 
@@ -628,6 +655,7 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
             pix_x_centroid = int((px_int - 19) + arr_x_centroid)
             pix_y_centroid = int((py_int - 19) + arr_y_centroid)
             pix_centroid_coords = (pix_x_centroid, pix_y_centroid)
+            centroid_coord_list.append(pix_centroid_coords)
             print('\nPlate-solution (x, y) object location: ({}, {})'.format(px_int, py_int))
             print('\nCentroided (x, y) object location: ({}, {})'.format(pix_x_centroid, pix_y_centroid))
             centroid_coords = SkyCoord.from_pixel(pix_x_centroid,
@@ -710,15 +738,6 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
             aper_sum[i] = phot_table['residual_aperture_sum'][0]
             err[i] = np.sqrt(source + bkg_sum)
 
-            # Determine the time at which the image was taken in Julian Days
-            # and the altitude and write them to an array.
-            date = hdulist[0].header['DATE-OBS']
-            t = Time(date)
-            time = t.jd
-
-            date_obs[i] = (time)
-            altitudes[i] = (hdulist[0].header['OBJCTALT'])
-
             hdulist.close()
 
         total_sum.append(aper_sum)
@@ -741,7 +760,7 @@ def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
         else:
             continue
 
-    return total_sum, err, date_obs, altitudes, saturated, exposure_times
+    return total_sum, err, date_obs, altitudes, saturated, exposure_times, centroid_coord_list, init_coord_list
 
 
 def multi_filter_analysis(dirtarget, date, target, filters):
