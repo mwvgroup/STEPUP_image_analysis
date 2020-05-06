@@ -1,19 +1,16 @@
-import matplotlib
-matplotlib.use('agg')
+import glob
+from matplotlib.patches import Circle
 import matplotlib.pyplot as plt
+from matplotlib import use
 import numpy as np
 import os
-import glob
-from astropy.io import fits
-from astropy.coordinates import SkyCoord
-from astropy.wcs import WCS
-from astropy import units as u
-from photutils import SkyCircularAperture, SkyCircularAnnulus
-import photutils.centroids as c
-from photutils import aperture_photometry
-from astropy.time import Time
-from matplotlib import gridspec
-from matplotlib.patches import Circle
+import sys
+import warnings
+
+sys.path.insert(0, 'Calibration')
+from get_counts import get_counts
+
+use('agg')
 plt.rcParams.update({'font.size': 16})
 plt.rcParams.update({'font.family': 'serif'})
 plt.rcParams.update({'mathtext.default':'regular'})
@@ -94,7 +91,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
         except FileExistsError:
             pass
 
-        aper_sum, comp_aper_sums, check_aper_sum, err, date_obs, altitudes, final_comp_mags, saturated, exposure_times, centroid_coords, init_coord_list = photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags, set_rad, aper_rad, ann_in_rad, ann_out_rad)
+        aper_sum, comp_aper_sums, check_aper_sum, err, date_obs, altitudes, final_comp_mags, saturated, exposure_times, centroid_coords, init_coord_list, image_num = photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags, set_rad, aper_rad, ann_in_rad, ann_out_rad, date)
 
         write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum, check_aper_sum, err, date_obs, altitudes, target, clabel)
 
@@ -102,7 +99,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
 
         mag_plot(target_mags, target_err, date_obs, target, date, fil, dirtarget, check_mags)
 
-        write_file(target_mags, target_err, date_obs, target, dirtarget, fil, altitudes, clabel, check_mags, date)
+        write_file(target_mags, target_err, date_obs, target, dirtarget, fil, altitudes, clabel, check_mags, date, image_num)
 
 
         # Write output file to summarize target saturation levels.
@@ -122,21 +119,22 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
         with open(path, 'w+') as f:
             f.write('Summary of target pixel locations before and after ' +
                     'centroiding for non-saturated images.\n')
-            f.write('#RAW-XPIX,#RAW-YPIX,#CENT-XPIX,#CENT-YPIX,#DATE[JD]\n')
-            for coord_i, date_i, init_coord_i in zip(centroid_coords, date_obs, init_coord_list):
-                input_list = [init_coord_i[0], init_coord_i[1], coord_i[0], coord_i[1], date_i]
+            f.write('#IMAGE-NUM,#RAW-XPIX,#RAW-YPIX,#CENT-XPIX,#CENT-YPIX,#DATE[JD]\n')
+            for im, coord_i, date_i, init_coord_i in zip(image_num, centroid_coords, date_obs, init_coord_list):
+                im = int(im)
+                input_list = [im, init_coord_i, coord_i, date_i]
                 input_string = ",".join(map(str, input_list))
                 f.write(input_string + '\n')
             f.close()
 
-        print('Saturated images ({}): {}'.format(fil, saturated))
-        print('Exposure times ({}): {}'.format(fil, exposure_times))
+        print('\nSaturated images ({}): {}'.format(fil, saturated))
+        print('\nExposure times ({}): {}'.format(fil, exposure_times))
 
     multi_filter_analysis(dirtarget, date, target, filters)
 
 
-def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec,
-               comp_mags, set_rad, aper_rad, ann_in_rad, ann_out_rad):
+def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
+               set_rad, aper_rad, ann_in_rad, ann_out_rad, date):
     """Gets aperture sums for target, comparison, and check stars.
 
     Calls get_counts for the list of right ascension(s) and declination(s) for
@@ -203,54 +201,124 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec,
     """
     # Get aperture sum, error of aperture sum, times of data collection,
     # and altitudes for target.
-    aper_sum, err, date_obs, altitudes, saturated, exposure_times, centroid_coords, init_coord_list = get_counts(dirtarget, coords[0], coords[1], fil, set_rad, aper_rad, ann_in_rad, ann_out_rad, "target", True)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        aper_sum, err, date_obs, altitudes, saturated, exposure_times, init_coord_list, centroid_coords, image_num, sat_qual, cent_qual = get_counts(dirtarget, coords[0], coords[1], fil, aper_rad, ann_in_rad, ann_out_rad, "target", set_rad, True)
     aper_sum = aper_sum[0]
+    err = err[0]
+    date_obs = date_obs[0]
+    altitudes = altitudes[0]
+    saturated = saturated[0]
+    exposure_times = exposure_times[0]
+    centroid_coords = centroid_coords[0]
+    init_coord_list = init_coord_list[0]
+    image_num = image_num[0]
+    sat_qual = sat_qual[0]
+    cent_qual = cent_qual[0]
     aper_sum = np.array(aper_sum, dtype=float)
 
     # Get aperture sums for each somparison star.
-    comp_apers = (get_counts(dirtarget, comp_ra, comp_dec, fil, set_rad, aper_rad, ann_in_rad, ann_out_rad, "comp", False))[0]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        comp_apers, comp_err, comp_date_obs, comp_altitudes, comp_saturated, comp_exposure_times, comp_init_coord_list, comp_centroid_coords, comp_image_num, comp_sat_qual, comp_cent_qual = get_counts(dirtarget, comp_ra, comp_dec, fil, aper_rad, ann_in_rad, ann_out_rad, "comp", set_rad, False)
     comp_apers = np.array(comp_apers, dtype=float)
 
     # Get aperture sum of the check star.
-    check_aper_sum = (get_counts(dirtarget, cra, cdec, fil, set_rad, aper_rad, ann_in_rad, ann_out_rad, "check", True))[0]
-    check_aper_sum = np.array(check_aper_sum, dtype=float)
-    check_aper_sum = check_aper_sum[0]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        check_apers, check_err, check_date_obs, check_altitudes, check_saturated, check_exposure_times, check_init_coord_list, check_centroid_coords, check_image_num, check_sat_qual, check_cent_qual = get_counts(dirtarget, cra, cdec, fil, aper_rad, ann_in_rad, ann_out_rad, "check", set_rad, False)
+    check_err = check_err[0]
+    check_date_obs = check_date_obs[0]
+    check_altitudes = check_altitudes[0]
+    check_saturated = check_saturated[0]
+    check_exposure_times = check_exposure_times[0]
+    check_centroid_coords = check_centroid_coords[0]
+    check_init_coord_list = check_init_coord_list[0]
+    check_image_num = check_image_num[0]
+    check_sat_qual = check_sat_qual[0]
+    check_cent_qual = check_cent_qual[0]
+    check_apers = np.array(check_apers, dtype=float)[0]
 
-    # To determine if any of the comparison stars are not in the image, the
-    # comp_apers arrays are individually checked for NaN and negative values.
-    # If an array contains a negative value, the the total number of images
-    # containing negative numbers is considered before ruling out the star
-    # completely.
-    good_comp = []
-    for i, o_aper in enumerate(comp_apers):
-        no_nan = (len(np.argwhere(np.isnan(o_aper))) == 0)
-        no_neg = (len(np.where(o_aper <= 0)[0]) == 0)
-        if not no_neg:
-            where_neg = np.where(o_aper < 0)[0]
-            if len(where_neg) < (0.25 * len(o_aper)):
-                no_neg = True
-        if no_nan and no_neg:
-            good_comp.append(i)
-    comp_apers = np.array([comp_apers[i] for i in good_comp])
-    comp_mags = np.array([comp_mags[i] for i in good_comp])
+    comp_sat_qual_tot = np.sum(comp_sat_qual, axis=0)
+    comp_cent_qual_tot = np.sum(comp_cent_qual, axis=0)
 
-    # Remove any bad images from analysis.
-    good_im = []
-    good_im.extend(np.where(aper_sum != np.nan)[0])
-    good_im.extend(np.where(aper_sum > 0)[0])
-    good_im = np.unique(good_im)
-    aper_sum = np.array([aper_sum[i] for i in good_im])
-    err = np.array([err[i] for i in good_im])
-    date_obs = np.array([date_obs[i] for i in good_im])
-    altitudes = np.array([altitudes[i] for i in good_im])
-    exposure_times = np.array([exposure_times[i] for i in good_im])
-    comp_apers_n = []
-    for obj in comp_apers:
-        comp_apers_n.append([obj[i] for i in good_im])
-    comp_apers = np.array(comp_apers_n)
-    check_apers = np.array([check_aper_sum[i] for i in good_im])
+    data_qual = np.sum([sat_qual, cent_qual, check_sat_qual, check_cent_qual,
+                        comp_sat_qual_tot, comp_cent_qual_tot], axis=0)
 
-    return aper_sum, comp_apers, check_apers, err, date_obs, altitudes, comp_mags, saturated, exposure_times, centroid_coords, init_coord_list
+    good_im = np.where(data_qual == 0)[0]
+
+    bool_im = (data_qual == 0)
+
+    path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
+                        'output/data_quality_{}_{}.txt'.format(fil, date))
+
+    with open(path, 'w+') as f:
+        comp_n = len(comp_sat_qual)
+        header_str = str('#IMAGE NUMBER,IMAGE USED,TARGET [SAT, CENT],CHECK ' +
+                         '[SAT, CENT],C1,...,C{} [SAT, CENT]\n'.format(comp_n))
+        f.write(header_str)
+        comp_sat_qual_w = comp_sat_qual.astype(str)
+        comp_sat_qual_w = list(zip(*comp_sat_qual_w))
+        comp_cent_qual_w = comp_cent_qual.astype(str)
+        comp_cent_qual_w = list(zip(*comp_cent_qual_w))
+        for num, bool, t_sat, t_cent, c_sat, c_cent, comp_sat, comp_cent in zip(image_num, bool_im, sat_qual, cent_qual, check_sat_qual, check_cent_qual, comp_sat_qual_w, comp_cent_qual_w):
+            targ_qual = [t_sat, t_cent]
+            check_qual = [c_sat, c_cent]
+            comp_qual = [comp_sat, comp_cent]
+            input_list = [int(num), bool, targ_qual, check_qual, comp_qual]
+            input_string = ",".join(map(str, input_list))
+            f.write(input_string + '\n')
+        f.close()
+
+    print('\nImages passed data quality checks ({}): {}'.format(fil, good_im))
+
+    aper_sum = aper_sum[good_im]
+    comp_apers_return = []
+    for ap in comp_apers:
+        comp_apers_return.append(ap[good_im])
+    comp_apers_return = np.array(comp_apers_return, dtype=float)
+    check_apers = check_apers[good_im]
+    err = err[good_im]
+    date_obs = date_obs[good_im]
+    altitudes = altitudes[good_im]
+    exposure_times = exposure_times[good_im]
+    centroid_coords = centroid_coords[good_im]
+    init_coord_list = init_coord_list[good_im]
+    image_num = image_num[good_im]
+
+    """
+    try:
+        os.mkdir(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS', 'output', 'centroid'))
+    except FileExistsError:
+        pass
+
+    for i, im in enumerate(image_arr):
+        figure, axis = plt.subplots(nrows=1, ncols=1, figsize=(10,8))
+        axis.set_title('Image {}'.format(i+1), size=10)
+        for label in (axis.get_xticklabels() + axis.get_yticklabels()):
+            label.set_fontsize(8)
+
+            p1 = axis.scatter(init_coord_list[i][0], init_coord_list[i][1], c="thistle", label="Original", edgecolors='mistyrose')
+            p2 = axis.scatter(centroid_coords[i][0], centroid_coords[i][1], c="rebeccapurple", label="Corrected", edgecolors='mistyrose')
+            print(im)
+            im = axis.imshow(im, cmap='jet', origin='lower')
+            c_targ = Circle((centroid_coords[i][0]+1, centroid_coords[i][1]+1), 5*pix_radius, fill=False, label='Aperture', ls='-', color='mistyrose')
+            axis.add_patch(c_targ)
+
+            figure.subplots_adjust(right=0.8)
+            cbar_ax = figure.add_axes([0.85, 0.15, 0.05, 0.7])
+            cb = figure.colorbar(np.log10(im), cax=cbar_ax)
+            plt.setp(cb.ax.get_yticklabels(), fontsize=8)
+
+            plt.figlegend([p1, p2, c_targ], ['Original', 'Corrected', 'Aperture'], fontsize=14)
+            figure.text(0.5, 0.04, 'x [pixel]', ha='center')
+            figure.text(0.04, 0.5, 'y [pixel]', va='center', rotation='vertical')
+            plt.savefig(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS', 'output', 'centroid/imcent_{}.pdf'.format(i)))
+    """
+
+    return aper_sum, comp_apers_return, check_apers, err, date_obs, altitudes, \
+           comp_mags, saturated, exposure_times, centroid_coords, \
+           init_coord_list, image_num
 
 
 def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
@@ -296,17 +364,18 @@ def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
         f.write('#SOFTWARE=STEPUP Image Analysis\n#DELIM=,\n#DATE=JD\n' +
                 '#OBSTYPE=CCD\n')
         comp_n = len(comp_aper_sums)
-        header_str = str('#TARGET NAME,DATE,TARGET COUNTS,ERR,FILTER,(C1,...,C{})'+
-                         ' COUNTS,CHECK LABEL,CHECK COUNTS,' +
-                         'AIRMASS\n'.format(comp_n))
+        header_str = str('#TARGET NAME,DATE,TARGET COUNTS,ERR,FILTER,'+
+                         'C1,...,C{} COUNTS,CHECK LABEL,'.format(comp_n) +
+                         'CHECK COUNTS,AIRMASS\n')
         f.write(header_str)
+        comp_aper_sums = comp_aper_sums.astype(str)
         comp_sums = list(zip(*comp_aper_sums))
         for n, (date_i, tsum, err, csum, alt) in enumerate(zip(date_obs,
                                                                aper_sum,
                                                                t_err,
                                                                check_aper_sum,
                                                                altitudes)):
-            csums = comp_sums[n]
+            csums = ",".join(comp_sums[n])
             zenith = np.deg2rad(90 - alt)
             airmass = 1 / np.cos(zenith)
             input_list = [target, date_i, tsum, err, fil, csums, clabel, csum,
@@ -356,7 +425,8 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
 
     for i, (obj, mag) in enumerate(zip(comp_aper_sums, comp_mags)):
         figure = plt.figure(figsize=(10,8))
-        plt.plot(date_obs, 2.5 * np.log10(obj), "o", c='cadetblue', label='{}'.format(fil))
+        plt.plot(date_obs, 2.5 * np.log10(obj), "o", c='cadetblue',
+                 label='{}'.format(fil))
         plt.ylabel("Instrumental Magnitude")
         plt.xlabel("Time [JD]")
         plt.gca().invert_yaxis()
@@ -390,9 +460,9 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
     else:
         check_mags_f = 0
 
-    print('\nTarget mags: ', target_mags)
-    print('\nTarget error: ', target_err)
-    print('\nCheck mags: ', check_mags_f)
+    print('\nTarget mags ({}): '.format(fil), target_mags)
+    print('\nTarget error ({}): '.format(fil), target_err)
+    print('\nCheck mags ({}): '.format(fil), check_mags_f)
 
     return target_mags, target_err, check_mags_f
 
@@ -452,8 +522,8 @@ def mag_plot(target_mags, target_err, date_obs, target, date, fil, dirtarget,
 
 
 def write_file(target_mags, target_err, date_obs, target, dirtarget, fil,
-               altitudes, clabel, cmags, date):
-    """Writes file of observational data to submit to AAVSO.
+               altitudes, clabel, cmags, date, image_num):
+    """Writes file of target scaled magnitudes.
 
     Formats data to be compatible for submission for the AAVSO Extended File
     Format, which is saved to the directory containing FITS files with accurate
@@ -493,274 +563,18 @@ def write_file(target_mags, target_err, date_obs, target, dirtarget, fil,
     with open(path, 'w+') as f:
         f.write('#SOFTWARE=STEPUP Image Analysis\n#DELIM=,\n#DATE=JD\n' +
                 '#OBSTYPE=CCD\n')
-        f.write('TARGET,DATE,TARGET MAG,ERROR,FILTER,CHECK LABEL,CHECK MAG,' +
+        f.write('TARGET,IMAGE NUMBER,DATE,TARGET MAG,ERROR,FILTER,CHECK LABEL,CHECK MAG,' +
                 'AIRMASS\n')
-        for date_i, mag, err, cmag, alt in zip(date_obs, target_mags,
-                                               target_err, cmags, altitudes):
+        for num, date_i, mag, err, cmag, alt in zip(image_num, date_obs,
+                                                    target_mags, target_err,
+                                                    cmags, altitudes):
             zenith = np.deg2rad(90 - alt)
             airmass = 1 / np.cos(zenith)
-            input_list = [target, date_i, mag, err, fil, clabel, cmag, airmass]
+            input_list = [target, int(num), date_i, mag, err, fil, clabel, cmag,
+                          airmass]
             input_string = ",".join(map(str, input_list))
             f.write(input_string + '\n')
         f.close()
-
-
-def get_counts(dirtarget, rightascension, declination, fil, set_rad, aper_rad,
-               ann_in_rad, ann_out_rad, name, centroid_plt):
-    """Determines count values for star(s).
-
-    Reads in all files from dirtarget and initializes arrays for error,
-    observation times, and altitudes corresponding to the number of images
-    that will be processed as well as a list for the arrays of aperture sums
-    that will be generated for each object get_counts has been called for.
-    Then, for each object corresponding to each ra and dec pair in
-    rightascension and declination, if WCS Tools has matches at least 20 stars
-    in the image, a SkyCoord and SkyCircularAnnulus object are craeted, both
-    centered at the object's location. The area of the aperture and annulus
-    are calculated and phot_table is called in order to get an aperture and
-    annulus sum for the object. The source error and background error are
-    calculated in order to determine to aperture sum error and the aperture sum
-    and its error are added to their corresponding arrays, as well as the time
-    and altitude. The aperture is appended to total_sum and this process is
-    repeated for each object that get_counts has been called for.
-
-    Parameters
-    ----------
-    dirtarget : str
-        Directory containing all bias, flat, and raw science images.
-    rightascension : list
-        List of string(s) of right ascension(s) of object(s) to be processed.
-    declination : list
-        List of string(s) of declination(s) of object(s) to be processed.
-    fil : str
-        Name of filter used for images which are currently being processed.
-    set_rad : Boolean
-        Determine whether user would like to use default aperture/annulus radii
-        or specify their own.
-    aper_rad : float
-        User-specified aperture radius in arcseconds.
-    ann_in_rad : float
-        User-specified annulus inner radius in arcseconds.
-    ann_out_rad : float
-        User-specified annulus outer radius in arcseconds.
-    name : str
-        Type of star that get_counts is being ran on (e.g. target, comp, check).
-    centroid_plt : Boolean
-        Whether or not to plot centroid shifts for object.
-
-    Returns
-    -------
-    total_sum : list
-        List of numpy arrays containing aperture sum of each RA and dec in
-        rightascension and declination
-    err : numpy.ndarray
-        Array of error values for each aperture sum for the last RA and dec
-        in rightascension and declination.
-    date_obs : numpy.ndarray
-        Array of times each image was taken in Julian Days.
-    altitudes : numpy.ndarray
-        Array of object altitudes for each image.
-    saturated : list
-        List of string of image paths that have objects in them that are at the
-        saturation value for the ISR images.
-    exposure_times : list
-        List of floats corresponding to exposure time of a given image.
-    """
-    dirtarget_wcs = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS')
-    size = len(glob.glob(os.path.join(dirtarget_wcs, '*.fits')))
-    err = np.empty(size)
-    err[:] = np.nan
-    date_obs = np.empty(size)
-    date_obs[:] = np.nan
-    altitudes = np.empty(size)
-    altitudes[:] = np.nan
-    total_sum = []
-    saturated = []
-    exposure_times = []
-    raw_loc = []
-    centroid_corrections = []
-    image_stack = []
-    centroid_coord_list = []
-    init_coord_list = []
-    im = None
-    p1 = None
-    p2 = None
-    circ = None
-    figure = None
-    axis = None
-
-    for ra, dec in zip(rightascension, declination):
-        cent_ind = np.linspace(0, size-1, 9).astype(int)
-        if centroid_plt:
-            figure, axis = plt.subplots(nrows=3, ncols=3, figsize=(10,8))
-            axis = axis.flatten()
-        aper_sum = np.empty(size)
-        aper_sum[:] = np.nan
-        for i, item in enumerate(sorted(glob.glob(os.path.join(dirtarget_wcs,
-                                                               '*.fits')))):
-            o_file = os.path.join(dirtarget_wcs, item)
-            hdulist = fits.open(o_file)
-            if hdulist[0].header['WCSMATCH'] < 10:
-                print('Less than 10 stars matched in WCS calculation.\n')
-                continue
-            # Determine the exposure time for item.
-            exposure_times.append(hdulist[0].header['EXPTIME'])
-
-            # Determine the time at which the image was taken in Julian Days
-            # and the altitude and write them to an array.
-            date = hdulist[0].header['DATE-OBS']
-            t = Time(date)
-            time = t.jd
-
-            date_obs[i] = (time)
-            altitudes[i] = (hdulist[0].header['OBJCTALT'])
-
-            # Determine what physical position corresponds to the right
-            # ascension and declination that are defined as SkyCoord objects
-            # with units of hourangles and degrees.
-            header = fits.getheader(o_file)
-            w = WCS(header)
-            coords = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
-            px, py = w.wcs_world2pix(coords.ra.deg, coords.dec.deg, 1)
-            px_int = int(px)
-            py_int = int(py)
-            init_coord_list.append((px_int, py_int))
-            # Get the image array.
-            image_array = fits.getdata(o_file)
-
-            # Read in a 40 x 40 square centered at the star for which the
-            # counts are being summed.
-            star = image_array[(py_int - 19):(py_int + 21),
-                               (px_int - 19):(px_int + 21)]
-
-            # Ensure that the square is entirely on the image.
-            if ((py_int - 19) < 0) or ((py_int + 21) > 2084):
-                continue
-            if ((px_int - 19) < 0) or ((px_int + 21) > 3072):
-                continue
-
-            # Flatten the array so that it is one-dimensional.
-            star_flat = star.reshape(1, len(star) * len(star[0]))
-
-            # Determine if the image is saturated at the star's position using
-            # the expected saturation level. If saturated, the loop will move
-            # on to the next image.
-            print('Saturation value: {}'.format(hdulist[0].header['SATLEVEL']))
-            print('Max aperture value: {}'.format(int(np.amax(star_flat))))
-            if np.amax(star_flat) >= hdulist[0].header['SATLEVEL']:
-                saturated.append(item)
-                continue
-
-            arr_x_centroid, arr_y_centroid = c.centroid_2dg(star)
-            pix_x_centroid = int((px_int - 19) + arr_x_centroid)
-            pix_y_centroid = int((py_int - 19) + arr_y_centroid)
-            pix_centroid_coords = (pix_x_centroid, pix_y_centroid)
-            centroid_coord_list.append(pix_centroid_coords)
-            print('\nPlate-solution (x, y) object location: ({}, {})'.format(px_int, py_int))
-            print('\nCentroided (x, y) object location: ({}, {})'.format(pix_x_centroid, pix_y_centroid))
-            centroid_coords = SkyCoord.from_pixel(pix_x_centroid,
-                                                  pix_y_centroid, w)
-
-            print('\nCentroided R.A. and declination: {}'.format(centroid_coords))
-
-            i_plot = np.where(cent_ind == i)[0]
-
-            # Define aperture and annulus radii.
-            radius = None
-            r_in = None
-            r_out = None
-            if set_rad:
-                radius = float(aper_rad) * u.arcsec
-                r_in = float(ann_in_rad) * u.arcsec
-                r_out = float(ann_out_rad) * u.arcsec
-
-            else:
-                radius = 4 * u.arcsec
-                r_in = 25 * u.arcsec
-                r_out = 27 * u.arcsec
-
-            # Create SkyCircularAperture and SkyCircularAnnulus objects
-            # centered at the position of the star whose counts are being
-            # summed.
-            aperture = SkyCircularAperture(centroid_coords, radius)
-            annulus = SkyCircularAnnulus(centroid_coords, r_in=r_in,
-                                         r_out=r_out)
-
-            secpix1 = abs(hdulist[0].header['SECPIX1'])
-
-            # Determine the area of the aperture and annulus using the
-            # arcseconds per pixel in the horizontal dimension header keyword.
-            aper_area = np.pi * (radius / secpix1) ** 2
-            area_out = np.pi * (r_out / secpix1) ** 2
-            area_in = np.pi * (r_in / secpix1) ** 2
-            annulus_area = area_out - area_in
-
-            if centroid_plt:
-                if i in cent_ind:
-                    p1 = axis[i_plot[0]].scatter([px_int+1], [py_int+1],
-                              c="thistle", label="Original",
-                              edgecolors='mistyrose')
-                    p2 = axis[i_plot[0]].scatter([pix_x_centroid+1],
-                              [pix_y_centroid+1], c="rebeccapurple",
-                              label="Corrected", edgecolors='mistyrose')
-                    im = axis[i_plot[0]].imshow(star, extent=(px_int - 19,
-                                                              px_int + 21,
-                                                              py_int - 19,
-                                                              py_int + 21),
-                                                cmap='magma', origin='lower')
-                    axis[i_plot[0]].set_title('Image {}'.format(i), size=10)
-                    circ = Circle((pix_x_centroid+1, pix_y_centroid+1),
-                                  radius.value/secpix1, fill=False,
-                                  label='Aperture', ls='-', color='mistyrose')
-                    axis[i_plot[0]].add_patch(circ)
-                    for label in (axis[i_plot[0]].get_xticklabels() +
-                                  axis[i_plot[0]].get_yticklabels()):
-                        label.set_fontsize(8)
-
-            apers = (aperture, annulus)
-
-            # Call aperture_photometry function in order to sum all of the
-            # counts in both the aperture and annulus for item.
-            phot_table = aperture_photometry(hdulist, apers)
-
-            # Remove the background level from the aperture sum.
-            bkg_mean = phot_table['aperture_sum_1'] / annulus_area
-            bkg_sum = bkg_mean * aper_area
-            final_sum = phot_table['aperture_sum_0'] - bkg_sum
-            phot_table['residual_aperture_sum'] = final_sum
-
-            # Determine the error in the aperture sum and background level.
-            # source_err = np.sqrt(phot_table['residual_aperture_sum'])
-            source = phot_table['residual_aperture_sum']
-
-            bkg_err = np.sqrt(bkg_sum)
-
-            aper_sum[i] = phot_table['residual_aperture_sum'][0]
-            err[i] = np.sqrt(source + bkg_sum)
-
-            hdulist.close()
-
-        total_sum.append(aper_sum)
-
-        if centroid_plt:
-            figure.subplots_adjust(right=0.8)
-            cbar_ax = figure.add_axes([0.85, 0.15, 0.05, 0.7])
-            cb = figure.colorbar(im, cax=cbar_ax)
-            plt.setp(cb.ax.get_yticklabels(), fontsize=8)
-
-            plt.figlegend([p1, p2, circ], ['Original', 'Corrected', 'Aperture'],
-                          fontsize=14)
-            figure.suptitle('Aperture Centroiding on {}, {}'.format(ra, dec),
-                            fontsize=16)
-            figure.text(0.5, 0.04, 'x [pixel]', ha='center')
-            figure.text(0.04, 0.5, 'y [pixel]', va='center',
-                        rotation='vertical')
-            plt.savefig(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
-                                     'output/centroid_{}.pdf'.format(name)))
-        else:
-            continue
-
-    return total_sum, err, date_obs, altitudes, saturated, exposure_times, centroid_coord_list, init_coord_list
 
 
 def multi_filter_analysis(dirtarget, date, target, filters):
