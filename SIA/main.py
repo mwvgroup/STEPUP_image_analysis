@@ -1,11 +1,11 @@
 import os
+from shutil import copyfile
 import sys
 sys.path.insert(0, 'ISR')
 import ISR
 sys.path.insert(0, 'Calibration')
 import perform_astrometry
 import perform_photometry
-from shutil import copyfile
 
 
 def main():
@@ -38,10 +38,14 @@ def main():
     # command line.
     dirtarget = input('\nInput target directory: ')
     while not os.path.exists((os.path.join(dirtarget, 'input-file.txt'))):
-        dirtarget = input('\nThis directory does not contain an input file. Check to ensure that the file exists and is saved in your data directory.\n\nInput target directory or enter "Q" to quit: ')
+        dirtarget = input('\nThis directory does not contain an input file. ' +
+                          ' Check to ensure that the file exists and is ' +
+                          'saved in your data directory.\n\nInput target ' +
+                          'directory or enter "Q" to quit: ')
         if dirtarget.lower() == 'q':
             return None
-    interactive = input('\nWould you like to run SIA interatively? (Y/N): ').lower().strip(' ')
+    interactive = input('\nWould you like to run SIA interatively? (Y/N): ') \
+        .lower().strip(' ')
 
     # Specify keywords SIA should search for in input-file.txt.
     str_keywords = ['#TARGET=', '#DATE=', '#DIRDARK=', '#CLABEL=', '#APERRAD=',
@@ -63,7 +67,8 @@ def main():
             for keyword in list_keywords:
                 # Look for list variables.
                 if line.startswith(keyword):
-                    list_input_values.append(line[len(keyword):].strip('\n').split(','))
+                    list_input_values.append(line[len(keyword):].strip('\n')
+                                             .split(','))
 
             if line.startswith('#APERRAD='):
                 if len(line.strip(' ').strip('\n')) == 9:
@@ -111,14 +116,16 @@ def main():
         # Allows user to specify functions to be ran at command line.
         cont_analysis = interactive
         while cont_analysis == 'y':
-            answer = input('\nWhich function would you like to run? (ISR, ASTROM, PHOT): ').lower().strip(' ')
+            answer = input('\nWhich function would you like to run? (ISR, ' +
+                           'ASTROM, PHOT): ').lower().strip(' ')
             # Run function specified by "answer" variable.
             which_analysis(interactive, answer, target, date, filters, coords,
                            dirtarget, dirdark, comp_mags, comp_ra, comp_dec,
                            clabel, cra, cdec, set_rad,
                            aper_rad, ann_in_rad, ann_out_rad)
             # Determine if user has finished running STEPUP Image Analysis.
-            cont_analysis = input('\nWould you still like to perform a function? (Y/N): ').lower().strip(' ')
+            cont_analysis = input('\nWould you still like to perform a ' +
+                                  'function? (Y/N): ').lower().strip(' ')
         print('\nGoodbye.')
 
     else:
@@ -201,10 +208,11 @@ def which_analysis(interactive, answer, target, date, filters, coords,
         im = None
         try:
             copyfile(os.path.join(dirtarget, 'new-image.fits'),
-                         os.path.join(dirtarget, 'ISR_Images/new-image.fits'))
+                     os.path.join(dirtarget, 'ISR_Images/new-image.fits'))
             im = 'y'
         except FileNotFoundError:
-            print('\nnew-image.fits not found in raw data directory. Try again.')
+            print('\nnew-image.fits not found in raw data directory. Try ' +
+                  'again.')
 
         # Determines if user has saved new-image.fits WCS calibration file to
         # ISR_Images directory that was created in ISR function.
@@ -223,8 +231,9 @@ def which_analysis(interactive, answer, target, date, filters, coords,
         # from, and generate output file of dataset.
         perform_photometry.perform_photometry(target, dirtarget, filters, date,
                                               coords, comp_ra, comp_dec,
-                                              comp_mags, clabel, cra, cdec, set_rad,
-                                              aper_rad, ann_in_rad, ann_out_rad)
+                                              comp_mags, clabel, cra, cdec,
+                                              aper_rad, ann_in_rad,
+                                              ann_out_rad, set_rad)
         print('\nPhotometry completed.')
 
 
