@@ -146,7 +146,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
 
 
 def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
-               set_rad, aper_rad, ann_in_rad, ann_out_rad, date):
+               aper_rad, ann_in_rad, ann_out_rad, date, set_rad=False):
     """Gets aperture sums for target, comparison, and check stars.
 
     Calls get_counts for the list of right ascension(s) and declination(s) for
@@ -178,38 +178,48 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
         List of string of delination of check star.
     comp_mags : list
         List of floats representing the magnitudes of the comparison stars.
-    set_rad : Boolean
-        Determine whether user would like to use default aperture/annulus radii
-        or specify their own.
     aper_rad : float
         User-specified aperture radius in arcseconds.
     ann_in_rad : float
         User-specified annulus inner radius in arcseconds.
     ann_out_rad : float
         User-specified annulus outer radius in arcseconds.
+    date : str
+        Date of observation.
+    set_rad : Boolean
+        Determine whether user would like to use default aperture/annulus radii
+        or specify their own.
 
     Returns
     -------
     aper_sum : numpy.ndarray
-        Array of aperture sums for target star in counts.
-    comp_apers : numpy.ndarray
-        Filtered array of comparison star magnitudes.
+        Array of floats corresponding to aperture sums of target star.
+    comp_apers_return : numpy.ndarray
+        Array of arrays of aperture sum floats for each comparison star.
     check_apers : numpy.ndarray
-        Filtered array of aperture sum for check star in counts.
+        Array of floats corresponding to aperture sums of check star.
     err : numpy.ndarray
-        Array of error values for each aperture sum of the target star in
-        counts.
-    date_obs : np.ndarray
-        Array of times each image was taken in Julian Days.
-    altitudes : np.ndarray
-        Array of object altitudes for each image.
+        Array of floats corresponding to uncertainty of each aperture sum.
+    date_obs : numpy.ndarray
+        Array of floats corresponding to Julian Date of each image.
+    altitudes : numpy.ndarray
+        Array of floats corresponding to the altitude of each image.
     comp_mags : numpy.ndarray
-        Filtered array of comparison star magnitudes.
+        Array of floats of comparison star magnitudes.
     saturated : list
-        List of string of image paths that have objects in them that are at the
-        saturation value for the ISR images.
-    exposure_times : list
-        List of floats corresponding to exposure time of a given image.
+        List of strings containing the file path of any image whose source
+        meets or exceeds the expected saturation level.
+    exposure_times : numpy.ndarray
+        Array of floats corresponding to exposure time of each image.
+    centroid_coords : numpy.ndarray
+        Array of strings corresponding to the central pixel coordinates (x,y)
+        of the centroided aperture. If the centroid routine failed, the string
+        'init' is returned for that image.
+    init_coords : numpy.ndarray
+        Array of strings corresponding to the pixel coordinates (x,y) of the
+        R.A. and dec. of the image's source, according to its WCS solution.
+    image_num : numpy.ndarray
+        Array of integers containing the number of each image in dirtarget.
     """
     # Get aperture sum, error of aperture sum, times of data collection,
     # and altitudes for target.
