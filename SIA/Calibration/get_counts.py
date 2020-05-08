@@ -39,15 +39,12 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
                set_rad=False, centroid_plot=False):
     """Generates background-substracted aperture sums for a source in an image.
 
-    Reads in all files from dirtarget and initializes arrays for various outputs
-    based on the number of images in dirtarget. Then, for each image, the source
-    located at ra, dec is checked to ensure that more than 10 stars were matched
-    in the WCS calculation, that it is entirely in the image, and that it is not
-    saturated. A 2D Gaussian fit is performed to centroid the aperture on the
-    source by searching in a 1600 square pixel region surrounding the pixel
-    corresponding to the RA and Dec. of the source. Then, aperture_photometry
-    sums the counts within this aperture. The background level per pixel is
-    calculated and used to subtract the background level from the aperture sum.
+    Defines source region as a 20x20 square centered at the input R.A. and dec.
+    Source region is checked to ensure it is below the CCD saturation level,
+    and lies entirely in the image. Centroiding is then performed to locate the
+    central pixel of the source. An aperture and annulus are placed around this
+    pixel and the background-subtracted aperture sum is calculated. All returns
+    have size (#source(s) x #image(s)).
 
     Parameters
     ----------
@@ -59,9 +56,6 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
         List of string(s) of declination(s) of object(s) to be processed.
     fil : str
         Name of filter used for images which are currently being processed.
-    set_rad : Boolean
-        Determine whether user would like to use default aperture/annulus radii
-        or specify their own.
     aper_rad : float
         User-specified aperture radius in arcseconds.
     ann_in_rad : float
@@ -70,31 +64,43 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
         User-specified annulus outer radius in arcseconds.
     name : str
         Type of star that get_counts is being ran on (e.g. target, comp, check).
+    set_rad : Boolean
+        Determine whether user would like to use default aperture/annulus radii
+        or specify their own.
     centroid_plot : Boolean
         Whether or not to plot centroid shifts for object.
 
     Returns
     -------
-    total_sum : list
-        List of numpy arrays containing aperture sum of each RA and dec in
-        rightascension and declination
+    aper_sum : numpy.ndarray
+        Array of floats corresponding to aperture sums of each source.
     err : numpy.ndarray
-        Array of error values for each aperture sum for the last RA and dec
-        in rightascension and declination.
+        Array of floats corresponding to uncertainty of each aperture sum.
     date_obs : numpy.ndarray
-        Array of times each image was taken in Julian Days.
-    alts_out : numpy.ndarray
-        Array of object altitudes for each image.
+        Array of floats corresponding to Julian Date of each image.
+    altitudes : numpy.ndarray
+        Array of floats corresponding to the altitude of each image.
     saturated : list
-        List of string of image paths that have objects in them that are at the
-        saturation value for the ISR images.
-    exptimes : list
-        List of floats corresponding to exposure time of a given image.
-    cent_coord_list : numpy.ndarray
-    init_coord_list : numpy.ndarray
-    image_num : list
-    pix_radius :
-    image_arr :
+        List of list(s) containing the file path of any image whose source
+        meets or exceeds the expected saturation level.
+    exptimes : numpy.ndarray
+        Array of floats corresponding to exposure time of each image.
+    init_coords : numpy.ndarray
+        Array of strings corresponding to the pixel coordinates (x,y) of the
+        R.A. and dec. of the image's source, according to its WCS solution.
+    cent_coords : numpy.ndarray
+        Array of strings corresponding to the central pixel coordinates (x,y) of
+        the centroided aperture. If the centroid routine failed, the string
+        'init' is returned for that image.
+    image_num : numpy.ndarray
+        Array of integers containing the number of each image in dirtarget.
+    sat_qual : numpy.ndarray
+        Data quality mask that contains 0s for images that do not have a
+        saturated source and 1s for source that do.
+    cent_qual : numpy.ndarray
+        Data quality mask that contains 0s for images with successful aperture
+        centroiding and 1s for images with failed centoiding or poor WCS
+        solutions.
     """
     dirtarget_wcs = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS')
     files = sorted(glob.glob(os.path.join(dirtarget_wcs, '*.fits')))
@@ -102,31 +108,31 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
     size_sources = len(ra)
 
     # Initialize output arrays.
-    aper_sum = np.empty([size_sources, size_files])
+    # Dimensions: #sources x #(images in dirtarget)
+    aper_sum = np.empty([size_sources, size_files], dtype=float)
     aper_sum[:][:] = np.nan
-    err = np.empty([size_sources, size_files])
+    err = np.empty([size_sources, size_files], dtype=float)
     err[:][:] = np.nan
-    date_obs = np.empty([size_sources, size_files])
+    date_obs = np.empty([size_sources, size_files], dtype=float)
     date_obs[:][:] = np.nan
-    altitudes = np.empty([size_sources, size_files])
+    altitudes = np.empty([size_sources, size_files], dtype=float)
     altitudes[:][:] = np.nan
     saturated = []
-    exptimes = np.empty([size_sources, size_files])
+    exptimes = np.empty([size_sources, size_files], dtype=float)
     exptimes[:][:] = np.nan
     init_coords = np.empty([size_sources, size_files], dtype=object)
-    init_coords[:][:] = 'temp'
+    init_coords[:][:] = 'init'
     cent_coords = np.empty([size_sources, size_files], dtype=object)
-    cent_coords[:][:] = 'temp'
-    image_num = np.empty([size_sources, size_files])
-    image_num[:][:] = np.nan
-    pix_radius = np.empty(size_sources)
+    cent_coords[:][:] = 'init'
+    image_num = np.empty([size_sources, size_files], dtype=object)
+    image_num[:][:] = 'init'
+    pix_radius = np.empty(size_sources, dtype=float)
     pix_radius[:] = np.nan
-    image_arr = np.empty([size_sources, size_files])
+    image_arr = np.empty([size_sources, size_files], dtype=float)
     image_arr[:][:] = np.nan
-
-    sat_qual = np.empty([size_sources, size_files])
+    sat_qual = np.empty([size_sources, size_files], dtype=int)
     sat_qual[:][:] = 0
-    cent_qual = np.empty([size_sources, size_files])
+    cent_qual = np.empty([size_sources, size_files], dtype=int)
     cent_qual[:][:] = 0
 
     for i, (ra_i, dec_i) in enumerate(zip(ra, dec)):
@@ -139,15 +145,6 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
         fig = None
         ax = None
         pix_radius = None
-
-        init_x = np.empty(size_files)
-        init_x[:] = np.nan
-        init_y = np.empty(size_files)
-        init_y[:] = np.nan
-        cent_x = np.empty(size_files)
-        cent_x[:] = np.nan
-        cent_y = np.empty(size_files)
-        cent_y[:] = np.nan
 
         saturated_i = []
 
@@ -175,6 +172,15 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
             header = hdulist[0].header
             data = hdulist[0].data
 
+            im_str = str(o_file)
+            im_n = im_str[-10:-7]
+            try:
+                int(im_n)
+            except ValueError:
+                im_n = j
+
+            image_num[i][j] = im_n
+
             # Read output information from header of image being processed.
             exptimes[i][j] = float(header['EXPTIME'])
             date = header['DATE-OBS']
@@ -189,6 +195,7 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
                 cent_qual[i][j] = 1
                 continue
 
+            # Find pixel location of R.A. and dec. according to WCS solution
             w = WCS(header)
             coords = SkyCoord(ra_i, dec_i, unit=(u.hourangle, u.deg))
             px_dec, py_dec = w.wcs_world2pix(coords.ra.deg, coords.dec.deg, 1)
@@ -196,15 +203,18 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
             init_coords_pix = (px, py)
             init_coords[i][j] = ','.join(map(str, init_coords_pix))
 
+            # Define source region as a 20x20 square centered at (px,py)
             star = data[(py - 19):(py + 21), (px - 19):(px + 21)]
 
             # Check that region lies entirely within image.
             if ((py - 19) < 0) or ((py + 21) > 2084):
-                print('\n{} star not entirely in the image.'.format(name))
+                print('\n{} star not entirely in the image for image number ' +
+                      '{}'.format(name, im_n))
                 cent_qual[i][j] = 1
                 continue
             if ((px - 19) < 0) or ((px + 21) > 3072):
-                print('\n{} star not entirely in the image.'.format(name))
+                print('\n{} star not entirely in the image for image number ' +
+                      '{}'.format(name, im_n))
                 cent_qual[i][j] = 1
                 continue
 
@@ -213,14 +223,16 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
             # Check that source does not exceed the expected saturation level.
             max_pix = int(np.amax(star_flat))
             if max_pix >= header['SATLEVEL']:
+                print('\n{} star met or exceeded saturation level for image ' +
+                      'number {}.'.format(name, im_n))
                 print('\nSaturation value: {}'.format(header['SATLEVEL']))
                 print('\nMax aperture value: {}'.format(max_pix))
                 saturated_i.append(item)
                 sat_qual[i][j] = 1
                 continue
 
-            image_num[i][j] = j
-
+            # Peform aperture centroiding for the source.
+            # If centroiding failed, then move onto the next image in dirtarget.
             FWHM = 4
             try:
                 mean, median, std = sigma_clipped_stats(star, sigma=3.0)
@@ -229,10 +241,11 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
                 px_cent = np.average(sources['xcentroid'])
                 py_cent = np.average(sources['ycentroid'])
             except TypeError:
-                print('\nAperture centroiding failed for image {}.'.format(j))
+                print('\nCentroiding failed for image {}.'.format(im_n))
                 cent_qual[i][j] = 1
                 continue
 
+            # Return centroided pixel coordinates.
             x_cent = int(px - 19 + px_cent)
             y_cent = int(py - 19 + py_cent)
 
