@@ -21,22 +21,23 @@ import warnings
 use('agg')
 plt.rcParams.update({'font.size': 16})
 plt.rcParams.update({'font.family': 'serif'})
-plt.rcParams.update({'mathtext.default':'regular'})
-plt.rcParams.update({'mathtext.fontset':'stixsans'})
+plt.rcParams.update({'mathtext.default': 'regular'})
+plt.rcParams.update({'mathtext.fontset': 'stixsans'})
 plt.rcParams.update({'axes.linewidth': 1.5})
-plt.rcParams.update({'xtick.direction':'in'})
+plt.rcParams.update({'xtick.direction': 'in'})
 plt.rcParams.update({'xtick.major.size': 5})
-plt.rcParams.update({'xtick.major.width': 1.25 })
+plt.rcParams.update({'xtick.major.width': 1.25})
 plt.rcParams.update({'xtick.minor.size': 2.5})
-plt.rcParams.update({'xtick.minor.width': 1.25 })
-plt.rcParams.update({'ytick.direction':'in'})
+plt.rcParams.update({'xtick.minor.width': 1.25})
+plt.rcParams.update({'ytick.direction': 'in'})
 plt.rcParams.update({'ytick.major.size': 5})
-plt.rcParams.update({'ytick.major.width': 1.25 })
+plt.rcParams.update({'ytick.major.width': 1.25})
 plt.rcParams.update({'ytick.minor.size': 2.5})
-plt.rcParams.update({'ytick.minor.width': 1.25 })
+plt.rcParams.update({'ytick.minor.width': 1.25})
 
-def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
-               set_rad=False, centroid_plot=False):
+
+def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
+               name, set_rad=False, centroid_plot=False):
     """Generates background-substracted aperture sums for a source in an image.
 
     Defines source region as a 20x20 square centered at the input R.A. and dec.
@@ -63,7 +64,7 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
     ann_out_rad : float
         User-specified annulus outer radius in arcseconds.
     name : str
-        Type of star that get_counts is being ran on (e.g. target, comp, check).
+        Object type that get_counts is being ran on (e.g. target, comp, check).
     set_rad : Boolean
         Determine whether user would like to use default aperture/annulus radii
         or specify their own.
@@ -89,8 +90,8 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
         Array of strings corresponding to the pixel coordinates (x,y) of the
         R.A. and dec. of the image's source, according to its WCS solution.
     cent_coords : numpy.ndarray
-        Array of strings corresponding to the central pixel coordinates (x,y) of
-        the centroided aperture. If the centroid routine failed, the string
+        Array of strings corresponding to the central pixel coordinates (x,y)
+        of the centroided aperture. If the centroid routine failed, the string
         'init' is returned for that image.
     image_num : numpy.ndarray
         Array of integers containing the number of each image in dirtarget.
@@ -151,7 +152,7 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
         # Find nine evenly-spaced indices to plot a centroiding summary.
         cent_ind = np.linspace(0, size_files-1, 9).astype(int)
         if centroid_plot:
-            fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10,8))
+            fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 8))
             ax = ax.flatten()
             for k in range(0, 9):
                 ax[k].set_title('Image {}'.format(cent_ind[k]), size=10)
@@ -232,7 +233,7 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
                 continue
 
             # Peform aperture centroiding for the source.
-            # If centroiding failed, then move onto the next image in dirtarget.
+            # If centroiding failed, then move onto the next image.
             FWHM = 4
             try:
                 mean, median, std = sigma_clipped_stats(star, sigma=3.0)
@@ -312,4 +313,4 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad, name,
         saturated.append(saturated_i)
 
     return aper_sum, err, date_obs, altitudes, saturated, exptimes, \
-           init_coords, cent_coords, image_num, sat_qual, cent_qual
+        init_coords, cent_coords, image_num, sat_qual, cent_qual
