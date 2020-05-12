@@ -16,7 +16,6 @@ from photutils import aperture_photometry
 import photutils.centroids as c
 from photutils import DAOStarFinder
 from photutils import SkyCircularAperture, SkyCircularAnnulus
-import warnings
 
 use('agg')
 plt.rcParams.update({'font.size': 16})
