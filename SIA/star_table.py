@@ -13,10 +13,10 @@ def star_table(image, FWHM):
 
     Parameters
     ----------
-    dirtarget : str
-        Directory containing all bias, flat, and raw science images.
-    fil : str
-        Name of filter used for images which are currently being processed.
+    image : str
+        Absolute filename of image whose sources are being extracted.
+    FWHM : float
+        FWHM of image's PSF.
 
     Returns
     -------
@@ -72,6 +72,8 @@ def main():
                        'Input global filename or enter "Q" to quit: ')
         if t_file.lower() == 'q':
             return None
+
+    t_file = os.path.join(t_file)
 
     FWHM = input('\nInput image FWHM: ')
 
