@@ -89,9 +89,9 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
             final_comp_mags, saturated, exposure_times, centroid_coords, \
             init_coord_list, image_num = photometry(dirtarget, fil, coords,
                                                     comp_ra, comp_dec, cra,
-                                                    cdec, comp_mags, set_rad,
-                                                    aper_rad, ann_in_rad,
-                                                    ann_out_rad, date)
+                                                    cdec, comp_mags, aper_rad,
+                                                    ann_in_rad, ann_out_rad,
+                                                    date, set_rad)
 
         write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
                          check_aper_sum, err, date_obs, altitudes, target,
@@ -102,7 +102,8 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
                                                             err,
                                                             final_comp_mags,
                                                             check_aper_sum,
-                                                            fil, date_obs)
+                                                            fil, date_obs,
+                                                            date)
 
         mag_plot(target_mags, target_err, date_obs, target, date, fil,
                  dirtarget, check_mags)
@@ -112,7 +113,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
 
         # Write output file to summarize target saturation levels.
         path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
-                            'output/saturated_{}.txt'.format(fil))
+                            'output/saturated_{}_{}.txt'.format(date, fil))
 
         with open(path, 'w+') as f:
             f.write('#Files in which the target star met or exceeded the ' +
@@ -124,7 +125,7 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
         # Write output file to summarize target pixel locations before and
         # after centroiding for non-saturated images.
         path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
-                            'output/centroid_{}.txt'.format(fil))
+                            'output/centroid_{}_{}.txt'.format(date, fil))
         with open(path, 'w+') as f:
             f.write('Summary of target pixel locations before and after ' +
                     'centroiding for non-saturated images.\n')
@@ -228,7 +229,8 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
         aper_sum, err, date_obs, altitudes, saturated, exposure_times, \
             init_coord_list, centroid_coords, image_num, sat_qual, cent_qual \
             = get_counts(dirtarget, coords[0], coords[1], fil, aper_rad,
-                         ann_in_rad, ann_out_rad, "target", set_rad, True)
+                         ann_in_rad, ann_out_rad, "target", date, set_rad,
+                         True)
     aper_sum = aper_sum[0]
     err = err[0]
     date_obs = date_obs[0]
@@ -249,7 +251,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
             comp_exposure_times, comp_init_coord_list, comp_centroid_coords, \
             comp_image_num, comp_sat_qual, comp_cent_qual = \
             get_counts(dirtarget, comp_ra, comp_dec, fil, aper_rad, ann_in_rad,
-                       ann_out_rad, "comp", set_rad, False)
+                       ann_out_rad, "comp", date, set_rad, True)
     comp_apers = np.array(comp_apers, dtype=float)
 
     # Get aperture sum of the check star.
@@ -260,7 +262,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
             check_centroid_coords, check_image_num, check_sat_qual, \
             check_cent_qual = get_counts(dirtarget, cra, cdec, fil, aper_rad,
                                          ann_in_rad, ann_out_rad, "check",
-                                         set_rad, False)
+                                         date, set_rad, True)
     check_err = check_err[0]
     check_date_obs = check_date_obs[0]
     check_altitudes = check_altitudes[0]
@@ -284,7 +286,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
     bool_im = (data_qual == 0)
 
     path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
-                        'output/data_quality_{}_{}.txt'.format(fil, date))
+                        'output/data_quality_{}_{}.txt'.format(date, fil))
 
     with open(path, 'w+') as f:
         comp_n = len(comp_sat_qual)
@@ -404,7 +406,7 @@ def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
     None
     """
     path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
-                        'output/net_counts_{}.txt'.format(date))
+                        'output/net_counts_{}_{}.txt'.format(date, fil))
 
     with open(path, 'w+') as f:
         f.write('#SOFTWARE=STEPUP Image Analysis\n#DELIM=,\n#DATE=JD\n' +
@@ -432,7 +434,7 @@ def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
 
 
 def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
-                  fil, date_obs):
+                  fil, date_obs, date):
     """Scales the aperture sums from counts to magnitudes.
 
     Parameters
@@ -452,6 +454,8 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
         Name of filter used for images which are currently being processed.
     date_obs : numpy.ndarray
         Array of times each image was taken in Julian Days.
+    date : str
+        Date of observation.
 
     Returns
     -------
@@ -477,7 +481,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
         plt.xlabel("Time [JD]")
         plt.gca().invert_yaxis()
         plt.title("Comp {}, {} = {} mag".format(i + 1, fil, mag))
-        plt.savefig("output/comp_{}_{}.pdf".format(i + 1, fil))
+        plt.savefig("output/comp{}_{}_{}.pdf".format(i + 1, date, fil))
         plt.legend()
 
     for i, (mag, obj) in enumerate(zip(comp_mags, comp_aper_sums)):

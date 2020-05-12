@@ -36,7 +36,7 @@ plt.rcParams.update({'ytick.minor.width': 1.25})
 
 
 def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
-               name, set_rad=False, centroid_plot=False):
+               name, date, set_rad=False, centroid_plot=False):
     """Generates background-substracted aperture sums for a source in an image.
 
     Defines source region as a 20x20 square centered at the input R.A. and dec.
@@ -148,7 +148,7 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
 
         saturated_i = []
 
-        # Find nine evenly-spaced indices to plot a centroiding summary.
+        # Initialize nine evenly-spaced indices to plot a centroiding summary.
         cent_ind = np.linspace(0, size_files-1, 9).astype(int)
         if centroid_plot:
             fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 8))
@@ -157,11 +157,6 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
                 ax[k].set_title('Image {}'.format(cent_ind[k]), size=10)
                 for l in (ax[k].get_xticklabels() + ax[k].get_yticklabels()):
                     l.set_fontsize(8)
-
-        try:
-            os.mkdir(os.path.join(dirtarget_wcs, 'output', name))
-        except FileExistsError:
-            pass
 
         # fig_anim, ax_anim = plt.subplots(nrows=1, ncols=1, figsize=(10,8))
         # im_anim = plt.imshow()
@@ -183,8 +178,8 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
 
             # Read output information from header of image being processed.
             exptimes[i][j] = float(header['EXPTIME'])
-            date = header['DATE-OBS']
-            t = Time(date)
+            date_j = header['DATE-OBS']
+            t = Time(date_j)
             time = t.jd
             date_obs[i][j] = float(time)
             altitudes[i][j] = float(header['OBJCTALT'])
@@ -306,10 +301,59 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
             aper_sum[i][j] = phot_table['residual_aperture_sum'][0]
             err[i][j] = np.sqrt(source + bkg_sum)
 
+            j_plot = np.where(cent_ind == j)[0]
+            if centroid_plot:
+                if j in cent_ind:
+                    j_plot = j_plot[0]
+                    p1 = ax[j_plot].scatter([px+1], [py+1], c="thistle",
+                                            label="Original",
+                                            edgecolors='mistyrose')
+                    p2 = ax[j_plot].scatter([x_cent+1], [y_cent+1],
+                                            c="rebeccapurple",
+                                            label="Corrected",
+                                            edgecolors='mistyrose')
+                    im = ax[j_plot].imshow(star, extent=(px - 19, px + 21,
+                                                         py - 19, py + 21),
+                                           cmap='magma', origin='lower')
+                    ax[j_plot].set_title('Image {}'.format(im_n), size=10)
+                    circ = Circle((x_cent+1, y_cent+1), radius.value/secpix1,
+                                  fill=False, label='Aperture', ls='-',
+                                  color='mistyrose')
+                    ax[j_plot].add_patch(circ)
+                    for label in (ax[j_plot].get_xticklabels() +
+                                  ax[j_plot].get_yticklabels()):
+                        label.set_fontsize(8)
+
+
             hdulist.close()
             del data
 
         saturated.append(saturated_i)
+
+        if centroid_plot:
+            fig.subplots_adjust(right=0.8)
+            cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+            cb = fig.colorbar(im, cax=cbar_ax)
+            plt.setp(cb.ax.get_yticklabels(), fontsize=8)
+
+            plt.figlegend([p1, p2, circ], ['Original', 'Corrected', 'Aperture'],
+                          fontsize=14)
+            fig.suptitle('Aperture Centroiding on {}, {}'.format(ra_i, dec_i),
+                         fontsize=16)
+            fig.text(0.5, 0.04, 'x [pixel]', ha='center')
+            fig.text(0.04, 0.5, 'y [pixel]', va='center', rotation='vertical')
+            if name == 'comp':
+                out_file = os.path.join('centroid_{}{}_{}_{}.pdf'.format(name,
+                                                                         i+1,
+                                                                         date,
+                                                                         fil))
+            else:
+                out_file = os.path.join('centroid_{}_{}_{}.pdf'.format(name,
+                                                                       date,
+                                                                       fil))
+
+            plt.savefig(os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
+                                     'output', out_file))
 
     return aper_sum, err, date_obs, altitudes, saturated, exptimes, \
         init_coords, cent_coords, image_num, sat_qual, cent_qual
