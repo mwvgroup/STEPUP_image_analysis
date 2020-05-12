@@ -64,6 +64,8 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
         User-specified annulus outer radius in arcseconds.
     name : str
         Object type that get_counts is being ran on (e.g. target, comp, check).
+    date : str
+        Date of observation.
     set_rad : Boolean
         Determine whether user would like to use default aperture/annulus radii
         or specify their own.
