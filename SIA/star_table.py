@@ -6,6 +6,26 @@ import numpy as np
 import os
 from photutils import DAOStarFinder
 import warnings
+from photutils import CircularAperture
+from astropy.visualization.mpl_normalize import ImageNormalize
+import matplotlib.pyplot as plt
+from astropy.visualization import SqrtStretch
+
+plt.rcParams.update({'font.size': 16})
+plt.rcParams.update({'font.family': 'serif'})
+plt.rcParams.update({'mathtext.default': 'regular'})
+plt.rcParams.update({'mathtext.fontset': 'stixsans'})
+plt.rcParams.update({'axes.linewidth': 1.5})
+plt.rcParams.update({'xtick.direction': 'in'})
+plt.rcParams.update({'xtick.major.size': 5})
+plt.rcParams.update({'xtick.major.width': 1.25})
+plt.rcParams.update({'xtick.minor.size': 2.5})
+plt.rcParams.update({'xtick.minor.width': 1.25})
+plt.rcParams.update({'ytick.direction': 'in'})
+plt.rcParams.update({'ytick.major.size': 5})
+plt.rcParams.update({'ytick.major.width': 1.25})
+plt.rcParams.update({'ytick.minor.size': 2.5})
+plt.rcParams.update({'ytick.minor.width': 1.25})
 
 
 def star_table(image, FWHM):
@@ -41,6 +61,9 @@ def star_table(image, FWHM):
     sources['ra'] = ra
     sources['dec'] = dec
 
+    positions = np.transpose((sources['xcentroid'], sources['ycentroid']))
+    apertures = CircularAperture(positions, r=15.)
+
     print('\n', sources)
 
     path_file = os.path.split(os.path.abspath(image))
@@ -49,6 +72,12 @@ def star_table(image, FWHM):
     filechars = np.array(list(filename))
     n = np.where(filechars == '.')[0][0]
     filename = filename[:n]
+
+    fig = plt.figure(figsize=(10, 8))
+    norm = ImageNormalize(stretch=SqrtStretch())
+    plt.imshow(data, cmap='Greys', origin='lower', norm=norm)
+    apertures.plot(color='blue', lw=1.5, alpha=0.5)
+    plt.savefig(os.path.join(path,'{}_startable.pdf'.format(filename)))
 
     out_path = os.path.join(path, '{}_startable.txt'.format(filename))
     sources.write(out_path, format='csv', overwrite=True)
@@ -75,7 +104,9 @@ def main():
 
     t_file = os.path.join(t_file)
 
-    FWHM = input('\nInput image FWHM: ')
+    # Option to set FWHM using user input (in pixels).
+    """
+    FWHM = input('\nInput image FWHM (in pixels): ')
 
     def is_float(var):
         try:
@@ -92,6 +123,9 @@ def main():
         float_check = is_float(FWHM)
 
     FWHM = float(FWHM)
+    """
+    # Set FWHM using default value (in pixels).
+    FWHM = 6
 
     star_table(t_file, FWHM)
 
