@@ -4,6 +4,7 @@ from astropy.wcs import WCS
 import glob
 import numpy as np
 import os
+import pandas as pd
 from photutils import DAOStarFinder
 import warnings
 from photutils import CircularAperture
@@ -26,6 +27,7 @@ plt.rcParams.update({'ytick.major.size': 5})
 plt.rcParams.update({'ytick.major.width': 1.25})
 plt.rcParams.update({'ytick.minor.size': 2.5})
 plt.rcParams.update({'ytick.minor.width': 1.25})
+plt.rcParams.update({'axes.titlepad': 13})
 
 
 def star_table(image, FWHM):
@@ -55,9 +57,9 @@ def star_table(image, FWHM):
     daofind = DAOStarFinder(fwhm=FWHM, threshold=5.*std)
     sources = daofind(data - median)
 
-    x_cent = sources['xcentroid']
-    y_cent = sources['ycentroid']
-    ra, dec = w.wcs_pix2world(x_cent, y_cent, 1, ra_dec_order=True)
+    xcent = sources['xcentroid']
+    ycent = sources['ycentroid']
+    ra, dec = w.wcs_pix2world(xcent, ycent, 1, ra_dec_order=True)
     sources['ra'] = ra
     sources['dec'] = dec
 
@@ -73,10 +75,26 @@ def star_table(image, FWHM):
     n = np.where(filechars == '.')[0][0]
     filename = filename[:n]
 
-    fig = plt.figure(figsize=(10, 8))
+    fig = plt.figure(figsize=(12, 7.5))
     norm = ImageNormalize(stretch=SqrtStretch())
+
+    plt.title('{}'.format(header['DATE-OBS']))
+    plt.xlabel('x [pix]')
+    plt.ylabel('y [pix]')
     plt.imshow(data, cmap='Greys', origin='lower', norm=norm)
     apertures.plot(color='blue', lw=1.5, alpha=0.5)
+    plt.axis([np.amin(xcent), np.amax(xcent), np.amin(ycent), np.max(ycent)])
+
+    plt.twinx()
+    plt.ylabel(r'$\delta$ [deg]')
+    plt.axis([np.amin(xcent), np.amax(xcent), np.amin(dec), np.max(dec)])
+
+    plt.twiny()
+    plt.xlabel(r'$\alpha$ [deg]')
+    plt.axis([np.amin(ra), np.amax(ra), np.amin(dec), np.max(dec)])
+
+    fig.tight_layout()
+
     plt.savefig(os.path.join(path,'{}_startable.pdf'.format(filename)))
 
     out_path = os.path.join(path, '{}_startable.txt'.format(filename))
