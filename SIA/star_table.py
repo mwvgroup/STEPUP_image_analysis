@@ -95,7 +95,7 @@ def star_table(image, FWHM):
 
     fig.tight_layout()
 
-    plt.savefig(os.path.join(path,'{}_startable.pdf'.format(filename)))
+    plt.savefig(os.path.join(path, '{}_startable.pdf'.format(filename)))
 
     out_path = os.path.join(path, '{}_startable.txt'.format(filename))
     sources.write(out_path, format='csv', overwrite=True)
