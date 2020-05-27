@@ -85,31 +85,27 @@ def perform_photometry(target, dirtarget, filters, date, coords, comp_ra,
         except FileExistsError:
             pass
 
-        aper_sum, comp_aper_sums, check_aper_sum, err, date_obs, altitudes, \
-            final_comp_mags, saturated, exposure_times, centroid_coords, \
-            init_coord_list, image_num = photometry(dirtarget, fil, coords,
-                                                    comp_ra, comp_dec, cra,
-                                                    cdec, comp_mags, aper_rad,
-                                                    ann_in_rad, ann_out_rad,
-                                                    date, set_rad)
+        aper_sum, comp_aper_sums, check_aper_sum, err, check_err, date_obs, \
+            altitudes, final_comp_mags, saturated, exposure_times, \
+            centroid_coords, init_coord_list, \
+            image_num = photometry(dirtarget, fil, coords, comp_ra, comp_dec,
+                                   cra, cdec, comp_mags, aper_rad, ann_in_rad,
+                                   ann_out_rad, date, set_rad)
 
         write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
-                         check_aper_sum, err, date_obs, altitudes, target,
-                         clabel)
+                         check_aper_sum, err, check_err, date_obs, altitudes,
+                         target, clabel)
 
-        target_mags, target_err, check_mags = counts_to_mag(aper_sum,
-                                                            comp_aper_sums,
-                                                            err,
-                                                            final_comp_mags,
-                                                            check_aper_sum,
-                                                            fil, date_obs,
-                                                            date)
+        target_mags, target_err, check_mags, check_err = \
+            counts_to_mag(aper_sum, comp_aper_sums, err, check_err,
+                          final_comp_mags, check_aper_sum, fil, date_obs,
+                          date)
 
         mag_plot(target_mags, target_err, date_obs, target, date, fil,
-                 dirtarget, check_mags)
+                 dirtarget, check_mags, check_err)
 
         write_file(target_mags, target_err, date_obs, target, dirtarget, fil,
-                   altitudes, clabel, check_mags, date, image_num)
+                   altitudes, clabel, check_mags, check_err, date, image_num)
 
         # Write output file to summarize target saturation levels.
         path = os.path.join(dirtarget, 'ISR_Images', fil, 'WCS',
@@ -314,6 +310,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
         comp_apers_return.append(ap[good_im])
     comp_apers_return = np.array(comp_apers_return, dtype=float)
     check_apers = check_apers[good_im]
+    check_err = check_err[good_im]
     err = err[good_im]
     date_obs = date_obs[good_im]
     altitudes = altitudes[good_im]
@@ -365,14 +362,14 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
                                      'centroid/imcent_{}.pdf'.format(i)))
     """
 
-    return aper_sum, comp_apers_return, check_apers, err, date_obs, \
-        altitudes, comp_mags, saturated, exposure_times, centroid_coords, \
-        init_coord_list, image_num
+    return aper_sum, comp_apers_return, check_apers, err, check_err, \
+        date_obs, altitudes, comp_mags, saturated, exposure_times, \
+        centroid_coords, init_coord_list, image_num
 
 
 def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
-                     check_aper_sum, t_err, date_obs, altitudes, target,
-                     clabel):
+                     check_aper_sum, t_err, check_err, date_obs, altitudes,
+                     target, clabel):
     """Save output file with net count values.
 
     Parameters
@@ -391,6 +388,9 @@ def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
         Filtered array of aperture sum for check star in counts.
     t_err : numpy.ndarray
         Array of error values for each aperture sum of the target star in
+        counts.
+    check_err : numpy.ndarray
+        Array of error values for each aperture sum of the check star in
         counts.
     date_obs : np.ndarray
         Array of times each image was taken in Julian Days.
@@ -414,15 +414,13 @@ def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
         comp_n = len(comp_aper_sums)
         header_str = str('#TARGET NAME,DATE,TARGET COUNTS,ERR,FILTER,' +
                          'C1,...,C{} COUNTS,CHECK LABEL,'.format(comp_n) +
-                         'CHECK COUNTS,AIRMASS\n')
+                         'CHECK COUNTS,CHECK ERR,AIRMASS\n')
         f.write(header_str)
         comp_aper_sums = comp_aper_sums.astype(str)
         comp_sums = list(zip(*comp_aper_sums))
-        for n, (date_i, tsum, err, csum, alt) in enumerate(zip(date_obs,
-                                                               aper_sum,
-                                                               t_err,
-                                                               check_aper_sum,
-                                                               altitudes)):
+        zip_n = zip(date_obs, aper_sum, t_err, check_err, check_aper_sum,
+                    altitudes)
+        for n, (date_i, tsum, err, csum, cerr, alt) in enumerate(zip_n):
             csums = ",".join(comp_sums[n])
             zenith = np.deg2rad(90 - alt)
             airmass = 1 / np.cos(zenith)
@@ -433,8 +431,8 @@ def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
         f.close()
 
 
-def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
-                  fil, date_obs, date):
+def counts_to_mag(aper_sum, comp_aper_sums, err, check_err, comp_mags,
+                  check_aper_sum, fil, date_obs, date):
     """Scales the aperture sums from counts to magnitudes.
 
     Parameters
@@ -495,6 +493,7 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
         check_mags[i] = mag - 2.5 * np.log10(check_aper_sum / obj)
 
     target_err = (2.5 * np.log10((aper_sum + err) / aper_sum))
+    c_err = (2.5 * np.log10((check_aper_sum + check_err) / check_aper_sum))
 
     # For each image, the scaled magnitude value for each comparison star is
     # averaged.
@@ -508,12 +507,13 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, comp_mags, check_aper_sum,
     print('\nTarget mags ({}): '.format(fil), target_mags)
     print('\nTarget error ({}): '.format(fil), target_err)
     print('\nCheck mags ({}): '.format(fil), check_mags_f)
+    print('\nCheck error ({}): '.format(fil), c_err)
 
-    return target_mags, target_err, check_mags_f
+    return target_mags, target_err, check_mags_f, c_err
 
 
 def mag_plot(target_mags, target_err, date_obs, target, date, fil, dirtarget,
-             check_mags):
+             check_mags, check_err):
     """Plots magnitudes of target star with error and check star over time.
 
     Creates a subplot with the target magntidues and its error over time in
@@ -554,8 +554,8 @@ def mag_plot(target_mags, target_err, date_obs, target, date, fil, dirtarget,
     axarr[0].invert_yaxis
     axarr[0].legend()
     axarr[0].set_ylim(axarr[0].get_ylim()[::-1])
-    axarr[1].scatter(date_obs, check_mags, c='cadetblue',
-                     label='{}'.format(fil))
+    axarr[1].errorbar(date_obs, check_mags, yerr=check_err, fmt='o',
+                      c='cadetblue', label='{}'.format(fil))
     axarr[1].set_ylim(axarr[1].get_ylim()[::-1])
     axarr[1].invert_yaxis
     axarr[1].legend()
@@ -567,7 +567,7 @@ def mag_plot(target_mags, target_err, date_obs, target, date, fil, dirtarget,
 
 
 def write_file(target_mags, target_err, date_obs, target, dirtarget, fil,
-               altitudes, clabel, cmags, date, image_num):
+               altitudes, clabel, cmags, cerrs, date, image_num):
     """Writes file of target scaled magnitudes.
 
     Formats data to be compatible for submission for the AAVSO Extended File
@@ -609,14 +609,14 @@ def write_file(target_mags, target_err, date_obs, target, dirtarget, fil,
         f.write('#SOFTWARE=STEPUP Image Analysis\n#DELIM=,\n#DATE=JD\n' +
                 '#OBSTYPE=CCD\n')
         f.write('TARGET,IMAGE NUMBER,DATE,TARGET MAG,ERROR,FILTER,CHECK ' +
-                'LABEL,CHECK MAG,AIRMASS\n')
-        for num, date_i, mag, err, cmag, alt in zip(image_num, date_obs,
-                                                    target_mags, target_err,
-                                                    cmags, altitudes):
+                'LABEL,CHECK MAG,CHECK ERR,AIRMASS\n')
+        zip_num = zip(image_num, date_obs, target_mags, target_err, cmags,
+                      cerrs, altitudes)
+        for num, date_i, mag, err, cmag, cerr, alt in zip_num:
             zenith = np.deg2rad(90 - alt)
             airmass = 1 / np.cos(zenith)
             input_list = [target, num, date_i, mag, err, fil, clabel, cmag,
-                          airmass]
+                          cerr, airmass]
             input_string = ",".join(map(str, input_list))
             f.write(input_string + '\n')
         f.close()

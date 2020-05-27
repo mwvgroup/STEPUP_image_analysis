@@ -220,8 +220,8 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
             # Check that source does not exceed the expected saturation level.
             max_pix = int(np.amax(star_flat))
             if max_pix >= header['SATLEVEL']:
-                print('\n{} star met or exceeded saturation level for image ' +
-                      'number {}.'.format(name, im_n))
+                print('\n{} star met or exceeded saturation '.format(name) +
+                      'level for image number {}.'.format(im_n))
                 print('\nSaturation value: {}'.format(header['SATLEVEL']))
                 print('\nMax aperture value: {}'.format(max_pix))
                 saturated_i.append(item)
