@@ -298,8 +298,6 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
             # source_err = np.sqrt(phot_table['residual_aperture_sum'])
             source = phot_table['residual_aperture_sum']
 
-            bkg_err = np.sqrt(bkg_sum)
-
             aper_sum[i][j] = phot_table['residual_aperture_sum'][0]
             err[i][j] = np.sqrt(source + bkg_sum)
 
