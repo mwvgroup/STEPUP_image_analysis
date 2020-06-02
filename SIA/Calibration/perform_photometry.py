@@ -286,8 +286,12 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
 
     with open(path, 'w+') as f:
         comp_n = len(comp_sat_qual)
+        key_str_0 = '#0=passed data quality check.\n'
+        key_str_1 = '#1=failed data quality check.\n'
         header_str = str('#IMAGE NUMBER,IMAGE USED,TARGET [SAT, CENT],CHECK ' +
                          '[SAT, CENT],C1,...,C{} [SAT, CENT]\n'.format(comp_n))
+        f.write(key_str_0)
+        f.write(key_str_1)
         f.write(header_str)
         comp_sat_qual_w = comp_sat_qual.astype(str)
         comp_sat_qual_w = list(zip(*comp_sat_qual_w))
