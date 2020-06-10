@@ -168,7 +168,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
     comp_ra : list
         List of strings of comparison stars' right ascension.
     comp_dec : list
-        List of strings of comparison stars' right ascension.
+        List of strings of comparison stars' declination.
     cra : list
         List of string of right ascension of check star.
     cdec : list
@@ -197,6 +197,8 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
         Array of floats corresponding to aperture sums of check star.
     err : numpy.ndarray
         Array of floats corresponding to uncertainty of each aperture sum.
+    check_err : numpy.ndarray
+        Array of floats corresponding to uncertainty of each aperture sum of the check star.
     date_obs : numpy.ndarray
         Array of floats corresponding to Julian Date of each image.
     altitudes : numpy.ndarray
