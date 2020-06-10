@@ -214,7 +214,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
         Array of strings corresponding to the central pixel coordinates (x,y)
         of the centroided aperture. If the centroid routine failed, the string
         'init' is returned for that image.
-    init_coords : numpy.ndarray
+    init_coord_list : numpy.ndarray
         Array of strings corresponding to the pixel coordinates (x,y) of the
         R.A. and dec. of the image's source, according to its WCS solution.
     image_num : numpy.ndarray
@@ -386,7 +386,7 @@ def write_net_counts(dirtarget, fil, date, comp_aper_sums, aper_sum,
         Name of filter used for images which are currently being processed.
     date : str
         Date of observation.
-    comp_aper_sum : numpy.ndarray
+    comp_aper_sums : numpy.ndarray
         Filtered array of comparison star magnitudes.
     aper_sum : numpy.ndarray
         Array of aperture sums for target star in counts.
@@ -450,6 +450,9 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, check_err, comp_mags,
     err : numpy.ndarray
         Array of error values for each aperture sum of the target star in
         counts.
+    check_err : numpy.ndarray
+        Array of error values for each aperture sum of the check star in
+        counts.
     comp_mags : list
         List of floats representing the magnitudes of the comparison stars.
     check_aper_sum : numpy.ndarray
@@ -469,6 +472,8 @@ def counts_to_mag(aper_sum, comp_aper_sums, err, check_err, comp_mags,
         Array of error values for target magnitudes.
     check_mags_f : numpy.ndarray
         Array of magnitude values for the check star.
+    c_err : numpy.ndarray
+        Array of error values for check star magnitudes.
     """
     # Initialize arrays for target magnitudes, check magnitudes,
     # and errors in target magnitudes.
@@ -545,6 +550,9 @@ def mag_plot(target_mags, target_err, date_obs, target, date, fil, dirtarget,
         Directory containing all bias, flat, and raw science images.
     check_mags : numpy.ndarray
         Array of magnitude values for the check star.
+    check_err : numpy.ndarray
+        Array of error values for each aperture sum of the check star in
+        counts.
 
     Returns
     -------
@@ -601,6 +609,8 @@ def write_file(target_mags, target_err, date_obs, target, dirtarget, fil,
     cmags : numpy.ndarray
         Array of count values of aperture sum of comparison star of closest
         location to the target star.
+    cerrs : numpy.ndarray
+        Array of error values for the check star magnitude
     date : str
         Date of observation.
 
@@ -650,6 +660,8 @@ def multi_filter_analysis(dirtarget, date, target, filters):
     target : str
         Name of target.
     filters : list
+        List containing string of each filter keyword found in header of flat
+        field and light frame images.
 
     Returns
     -------
