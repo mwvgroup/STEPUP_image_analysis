@@ -333,11 +333,6 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
     err = np.sqrt(err ** 2 + err_ens ** 2)
     check_err = np.sqrt(check_err ** 2 + err_ens ** 2)
 
-    print(comp_err)
-    print(err_ens)
-    print(err)
-    print(check_err)
-
     print('\nImages passed data quality check ({}): {}'.format(fil, image_num))
 
     """
