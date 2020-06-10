@@ -1,0 +1,20 @@
+# OS Files
+*.DS_Store
+
+# IDE files
+.idea/
+
+# Python build files
+*__pycache__*
+*.pyc
+.eggs
+*.egg-info
+build
+dist
+
+# Jupyter Checkpoints
+*.ipynb_checkpoints
+
+# Testing and cache files
+.pytest_cache/
+*.prof

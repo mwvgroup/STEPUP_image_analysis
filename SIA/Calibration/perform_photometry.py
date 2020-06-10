@@ -249,6 +249,7 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
             get_counts(dirtarget, comp_ra, comp_dec, fil, aper_rad, ann_in_rad,
                        ann_out_rad, "comp", date, set_rad, True)
     comp_apers = np.array(comp_apers, dtype=float)
+    comp_err = np.array(comp_err)
 
     # Get aperture sum of the check star.
     with warnings.catch_warnings():
@@ -310,9 +311,13 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
 
     aper_sum = aper_sum[good_im]
     comp_apers_return = []
-    for ap in comp_apers:
-        comp_apers_return.append(ap[good_im])
+    comp_err_return = []
+    for ap_i, err_i in zip(comp_apers, comp_err):
+        comp_apers_return.append(ap_i[good_im])
+        comp_err_return.append(err_i[good_im])
+
     comp_apers_return = np.array(comp_apers_return, dtype=float)
+    comp_err_return = np.array(comp_err_return, dtype=float)
     check_apers = check_apers[good_im]
     check_err = check_err[good_im]
     err = err[good_im]
@@ -322,6 +327,11 @@ def photometry(dirtarget, fil, coords, comp_ra, comp_dec, cra, cdec, comp_mags,
     centroid_coords = centroid_coords[good_im]
     init_coord_list = init_coord_list[good_im]
     image_num = image_num[good_im]
+
+    # Calculate uncertainty for ensemble of comparison stars.
+    err_ens = 1 / np.sqrt(np.sum(1 / comp_err_return ** 2))
+    err = np.sqrt(err ** 2 + err_ens ** 2)
+    check_err = np.sqrt(check_err ** 2 + err_ens ** 2)
 
     print('\nImages passed data quality check ({}): {}'.format(fil, image_num))
 
