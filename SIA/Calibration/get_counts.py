@@ -205,13 +205,13 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
 
             # Check that region lies entirely within image.
             if ((py - 19) < 0) or ((py + 21) > 2084):
-                print('\n{} star not entirely in the image for image number ' +
-                      '{}'.format(name, im_n))
+                print('\n{} star not entirely in the image for'.format(name) +
+                      ' image number {}'.format(im_n))
                 cent_qual[i][j] = 1
                 continue
             if ((px - 19) < 0) or ((px + 21) > 3072):
-                print('\n{} star not entirely in the image for image number ' +
-                      '{}'.format(name, im_n))
+                print('\n{} star not entirely in the image for'.format(name) +
+                      ' image number {}'.format(im_n))
                 cent_qual[i][j] = 1
                 continue
 
