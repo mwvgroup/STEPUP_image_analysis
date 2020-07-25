@@ -3,12 +3,12 @@
 <img src="https://github.com/helenarichie/helenarichie/blob/master/images/STEPUP_logo.png" alt="logo" width="200"/>
 
 
-STEPUP Image Analysis (SIA) is a pipeline written for easy photometric analysis to extact light curves from image data using differential aperture photometry. SIA runs in three main (independent) steps: instrument signature removal (**ISR**), generating plate solutions (**ASTROM**), and differential aperture photometry (**PHOT**). Please feel free to contact the author, [Helena Richie](https://helenarichie.github.io/helenarichie/), with any questions!
+STEPUP Image Analysis (SIA) is a pipeline written for easy photometric analysis to extact light curves from astronomical image data using differential aperture photometry. SIA runs in three main (independent) steps: instrument signature removal (**ISR**), generating plate solutions (**ASTROM**), and differential aperture photometry (**PHOT**). Please feel free to contact the author, [Helena Richie](https://helenarichie.github.io/helenarichie/), with any questions!
 
-This respository contains the SIA pipeline and a user manual written explicity for use by University of Pittsburgh students that are either members of the STEPUP team or students in ASTRON 1263. The guide can also be applied for general use, omitting location-specific steps. A manual for general use is coming soon.
+This respository contains the SIA pipeline and a user manual written explicity for use by University of Pittsburgh students that are either members of the STEPUP team or students in ASTRON 1263. The guide can also be applied for general use, omitting location-specific steps. A manual for general use will be available soon.
 
 ## Installation
-To run SIA_II, user must have Python 3 with standard libraries and the following Python packages: 
+To run SIA, user must have Python 3 with standard libraries and the following Python packages: 
 - Matplotlib
 - NumPy
 - AstroPy
@@ -28,5 +28,5 @@ Target light curve:
 Centroid corrections:  
 <img src="https://github.com/helenarichie/STEPUP_image_analysis_II/blob/master/user_manual/centroid.png" alt="centroid" width="450"/>
 
-Unscaled comparison star magnitudes:  
+Unscaled comparison star light curve:  
 <img src="https://github.com/helenarichie/STEPUP_image_analysis_II/blob/master/user_manual/comp1r.png" alt="complc" width="450"/>
