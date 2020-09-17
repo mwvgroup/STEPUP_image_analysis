@@ -260,8 +260,8 @@ def instrument_signature_removal(dirtarget, target, image_filters):
 
         for path in sorted(os.listdir(dirtarget)):
             if path.endswith('.fit'):
-                o_file = fits.open(os.path.join(dirtarget, path,
-                                   ignore_missing_end=True))
+                o_file = fits.open(os.path.join(dirtarget, path),
+                                   ignore_missing_end=True)
                 if o_file[0].header['IMAGETYP'] == 'Light Frame':
                     if o_file[0].header['FILTER'] == fil:
                         exptime = float(o_file[0].header['EXPTIME'])
