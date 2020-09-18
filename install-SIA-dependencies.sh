@@ -26,26 +26,38 @@ pip3 install photutils
 pip3 install scipy
 
 
+# Install wcstools 3.9.6 if not already installed
+if [ ! -d "/usr/local/wcstools-3.9.6" ]
+then
+	# Download wcstools 3.9.6 from the internet
+	sudo curl  http://tdc-www.harvard.edu/software/wcstools/wcstools-3.9.6.tar.gz -o /usr/local/wcstools-3.9.6.tar.gz
+
+	cd /usr/local/
+
+	# Expand the download
+	sudo tar -xf wcstools-3.9.6.tar.gz -C /usr/local/
+
+	# Remove the archived version of wcstools
+	sudo rm wcstools-3.9.6.tar.gz
+
+	cd wcstools-3.9.6/
+
+	# Compile the wcstools stuff
+	sudo make all
+fi
 
 
-# Download wcstools 3.9.6
-sudo curl  http://tdc-www.harvard.edu/software/wcstools/wcstools-3.9.6.tar.gz -o /usr/local/wcstools-3.9.6.tar.gz
+# Add wcstools to PATH if not already there
+if ! grep -c "export PATH=\$PATH:/usr/local/wcstools-3.9.6/bin" ~/.bashrc
+then
+        echo "export PATH=\$PATH:/usr/local/wcstools-3.9.6/bin" >> ~/.bashrc
+fi
 
-cd /usr/local/
+if ! grep -c "export PATH=\$PATH:/usr/local/wcstools-3.9.6/bin" ~/.zshrc
+then
+        echo "export PATH=\$PATH:/usr/local/wcstools-3.9.6/bin" >> ~/.zshrc
+fi
 
-sudo tar -xf wcstools-3.9.6.tar.gz -C /usr/local/
-
-# Remove the archived version of wcstools
-sudo rm wcstools-3.9.6.tar.gz
-
-cd wcstools-3.9.6/
-
-# Compile the wcstools stuff
-sudo make all
-
-# Add wcstools to PATH
-echo "export PATH=\$PATH:/usr/local/wcstools-3.9.6/bin" >> ~/.bashrc
-echo "export PATH=\$PATH:/usr/local/wcstools-3.9.6/bin" >> ~/.zshrc
 
 
 echo ""
