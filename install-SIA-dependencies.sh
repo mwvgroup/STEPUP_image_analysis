@@ -4,26 +4,22 @@
 # Make sure python3 is installed
 if ! command -v python3 &> /dev/null
 then
-    echo "installation failed:  python3 could not be found."
-    echo "Make sure python3 is installed and in your PATH."
+    echo -e "\e[1;31minstallation failed:  python3 could not be found."
+    echo -e "Make sure python3 is installed and in your PATH.\e[0m"
     exit
 fi
 
 # Make sure pip3 is installed
 if ! command -v pip3 &> /dev/null
 then
-    echo "installation failed:  pip3 could not be found."
-    echo "Make sure pip3 is installed."
+    echo -e "\e[1;31minstallation failed:  pip3 could not be found."
+    echo -e "Make sure pip3 is installed.\e[0m"
     exit
 fi
 
 
 # Pip install the necessary python python3 packages
-pip3 install matplotlib
-pip3 install numpy
-pip3 install astropy
-pip3 install photutils
-pip3 install scipy
+pip3 install matplotlib numpy astropy photutils scipy
 
 
 # Install wcstools 3.9.6 if not already installed
@@ -59,9 +55,7 @@ then
 fi
 
 
-
-echo ""
-echo ""
+echo -e "\e[1;31m"
 echo "RESTART YOUR TERMINAL/SHELL BEFORE RUNNING SIA!"
 echo "If you do not restart your terminal before running, it will not work"
-echo ""
+echo -e "\e[0m"
