@@ -8,6 +8,13 @@ import perform_astrometry
 import perform_photometry
 from playsound import playsound
 
+# tkinter does not come with python3 on linux.
+# It is included in Windows and MacOS versions of python though.
+try:
+    from tkinter import filedialog, Tk
+except:
+    print('\nCould not load tkinter. GUI features will be unavailable.')
+
 
 def main():
     """Execute specified functions of STEPUP Image Analysis.
@@ -39,13 +46,17 @@ def main():
     # Determine directory containing input-file.txt, target data, and some or
     # all calibration data as well as if user would like specify functions at
     # command line.
-    dirtarget = input('\nInput target directory: ')
+    dirtarget = input('\nInput target directory (or "GUI" for graphical option): ')
+    if dirtarget.lower() == 'gui':
+        dirtarget = gui_input_target_dir()
     while not os.path.exists((os.path.join(dirtarget, 'input-file.txt'))):
         dirtarget = input('\nThis directory does not contain an input file. ' +
                           ' Check to ensure that the file exists and is ' +
                           'saved in your data directory.\n\nInput target ' +
-                          'directory or enter "Q" to quit: ')
-        if dirtarget.lower() == 'q':
+                          'directory (or "GUI" for graphical option) or enter "Q" to quit: ')
+        if dirtarget.lower() == 'gui':
+            dirtarget = gui_input_target_dir()
+        elif dirtarget.lower() == 'q':
             return None
     interactive = input('\nWould you like to run SIA interatively? (Y/N): ') \
         .lower().strip(' ')
@@ -243,5 +254,15 @@ def which_analysis(interactive, answer, target, date, filters, coords,
                                               ann_out_rad, set_rad)
         print('\nPhotometry completed.')
 
+def gui_input_target_dir():
+    try:
+        root = Tk()
+        root.withdraw()
+        target = filedialog.askdirectory(title = 'Select the Target Directory')
+        root.destroy()
+        return target
+    except:
+        print("Issue with GUI mode. Please use command line entry.")
+        return ''
 
 main()
