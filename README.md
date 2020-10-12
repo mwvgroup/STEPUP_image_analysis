@@ -14,6 +14,7 @@ To run SIA, user must have Python 3 with standard libraries and the following Py
 - AstroPy
 - PhotUtils
 - SciPy
+- playsound
 
 These packages are all available for installation using `pip`. Additionally, the user must install and compile the [WCSTools software package](http://tdc-www.harvard.edu/wcstools/) and add the executables to their device's `PATH`.
 

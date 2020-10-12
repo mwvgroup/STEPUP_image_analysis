@@ -6,6 +6,7 @@ import ISR
 sys.path.insert(0, 'Calibration')
 import perform_astrometry
 import perform_photometry
+from playsound import playsound
 
 
 def main():
@@ -32,6 +33,8 @@ def main():
     # input-file.txt file.
     set_rad = False
     functions = None
+
+    assetsdir = os.path.join(os.getcwd(), 'bonus_feature_assets')
 
     # Determine directory containing input-file.txt, target data, and some or
     # all calibration data as well as if user would like specify functions at
@@ -123,6 +126,8 @@ def main():
                            dirtarget, dirdark, comp_mags, comp_ra, comp_dec,
                            clabel, cra, cdec, set_rad,
                            aper_rad, ann_in_rad, ann_out_rad)
+            # Play sound to alert user that a function has completed.
+            playsound(os.path.join(assetsdir,'chime.mp3'))
             # Determine if user has finished running STEPUP Image Analysis.
             cont_analysis = input('\nWould you still like to perform a ' +
                                   'function? (Y/N): ').lower().strip(' ')
@@ -137,6 +142,8 @@ def main():
                            dirtarget, dirdark, comp_mags, comp_ra, comp_dec,
                            clabel, cra, cdec, set_rad, aper_rad, ann_in_rad,
                            ann_out_rad)
+        # Play sound to alert user that all functions have completed.
+        playsound(os.path.join(assetsdir,'chime.mp3'))
 
 
 def which_analysis(interactive, answer, target, date, filters, coords,

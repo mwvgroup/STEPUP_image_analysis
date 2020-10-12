@@ -19,7 +19,7 @@ fi
 
 
 # Pip install the necessary python python3 packages
-pip3 install matplotlib numpy astropy photutils scipy
+pip3 install matplotlib numpy astropy photutils scipy playsound
 
 
 # Install wcstools 3.9.6 if not already installed
@@ -57,5 +57,8 @@ fi
 
 echo -e "\e[1;31m"
 echo "RESTART YOUR TERMINAL/SHELL BEFORE RUNNING SIA!"
-echo "If you do not restart your terminal before running, it will not work"
+echo "If you do not restart your terminal before running, SIA will not work"
+echo "If you still have issues after restarting, enter"
+echo "'source ~/.bashrc' or 'source ~/.zshrc' depending on your shell."
+echo "Then try to run SIA again."
 echo -e "\e[0m"
