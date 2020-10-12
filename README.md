@@ -14,9 +14,13 @@ To run SIA, user must have Python 3 with standard libraries and the following Py
 - AstroPy
 - PhotUtils
 - SciPy
-- playsound
 
-Linux users must install tkinter for Python 3 in order to use GUI features. Windows and MacOS versions of Python 3 include tkinter in the standard libraries. Debian based operating systems can install with the following command:
+The following Python packages are not necessary to run SIA, but are used in optional features.
+- playsound
+- progress
+- Tkinter
+
+Linux users must install Tkinter for Python 3 in order to use GUI features. Windows and MacOS versions of Python 3 include tkinter in the standard libraries. Debian based operating systems can install Tkinter with the following command:
 
 ```sudo apt-get install python3-tk```
 

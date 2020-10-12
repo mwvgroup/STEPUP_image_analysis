@@ -138,7 +138,10 @@ def main():
                            clabel, cra, cdec, set_rad,
                            aper_rad, ann_in_rad, ann_out_rad)
             # Play sound to alert user that a function has completed.
-            playsound(os.path.join(assetsdir,'chime.mp3'))
+            try:
+                playsound(os.path.join(assetsdir,'chime.mp3'))
+            except:
+                #do nothing
             # Determine if user has finished running STEPUP Image Analysis.
             cont_analysis = input('\nWould you still like to perform a ' +
                                   'function? (Y/N): ').lower().strip(' ')
@@ -154,7 +157,10 @@ def main():
                            clabel, cra, cdec, set_rad, aper_rad, ann_in_rad,
                            ann_out_rad)
         # Play sound to alert user that all functions have completed.
-        playsound(os.path.join(assetsdir,'chime.mp3'))
+        try:
+            playsound(os.path.join(assetsdir,'chime.mp3'))
+        except:
+            #do nothing
 
 
 def which_analysis(interactive, answer, target, date, filters, coords,
@@ -238,7 +244,7 @@ def which_analysis(interactive, answer, target, date, filters, coords,
             print('\nAstrometry in progress...')
             # Calculates WCS information for dataset.
             perform_astrometry.perform_astrometry(target, dirtarget, filters,
-                                                  verbose=False)
+                                                  verbose=False, silent=True)
             print('\nAstrometry completed.')
         else:
             return None

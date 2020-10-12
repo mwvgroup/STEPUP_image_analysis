@@ -5,8 +5,14 @@ from shutil import move
 from shutil import copyfile
 from astropy.io import fits
 
+# Optional feature imports
+try:
+    from progress.bar import IncrementalBar
+except:
+    print('Could not load progress.bar. Progress bar feature will be unavailable.')
 
-def perform_astrometry(target, dirtarget, filters, verbose=False):
+
+def perform_astrometry(target, dirtarget, filters, verbose=False, silent=True):
     """Adds accurate WCS information to all headers in dataset.
 
     Uses imstar command from WCSTools to generate a table of positions and
@@ -58,60 +64,80 @@ def perform_astrometry(target, dirtarget, filters, verbose=False):
         if len(i) == 3:
             numbers.append(i)
 
-    for fil in filters:
-        os.chdir(dirtarget)
+    # Start progress bar
+    try:
+        progress = IncrementalBar('Processing...', max=(len(filters)*len(glob.glob(os.path.join(dirtarget, fil, '*.fits')))))
+    except:
+        #do nothing
+    # Open log file
+    with open(os.path.join(dirtarget,'astrometry.log'), 'w') as logfile:
+        for fil in filters:
+            os.chdir(dirtarget)
 
-        images = sorted(glob.glob(os.path.join(dirtarget, fil, '*.fits')))
+            images = sorted(glob.glob(os.path.join(dirtarget, fil, '*.fits')))
 
-        copyfile('new-image.fits', os.path.join(fil, 'new-image.fits'))
+            copyfile('new-image.fits', os.path.join(fil, 'new-image.fits'))
 
-        im_name = 'new-image.fits'
-        for n, image in enumerate(images):
-            print('Start: {}'.format(im_name))
-            # Creates table with positions of stars and their coordinates.
-            os.chdir(os.path.join(dirtarget, fil))
-            args = '-vhi' if verbose else '-hi'
-            subprocess.call(['imstar', args, '100', '-tw', im_name])
+            im_name = 'new-image.fits'
+            for n, image in enumerate(images):
+                #print('\nProcessing: {}'.format(im_name))
+                #print('Start: {}'.format(im_name))
+                # Creates table with positions of stars and their coordinates.
+                os.chdir(os.path.join(dirtarget, fil))
+                args = '-vhi' if verbose else '-hi'
+                subprocess.run(['imstar', args, '100', '-tw', im_name],
+                                stdout=logfile if silent else None,
+                                stderr= subprocess.STDOUT if silent else None)
 
-            solved_hdu = fits.open(os.path.join(dirtarget, fil, im_name))
-            solved_header = solved_hdu[0].header
+                solved_hdu = fits.open(os.path.join(dirtarget, fil, im_name))
+                solved_header = solved_hdu[0].header
 
-            hdu = fits.open(os.path.join(dirtarget, fil, image))
-            header = hdu[0].header
-            data = hdu[0].data
+                hdu = fits.open(os.path.join(dirtarget, fil, image))
+                header = hdu[0].header
+                data = hdu[0].data
 
-            diff = fits.HeaderDiff(solved_header, header).diff_keywords[0]
+                diff = fits.HeaderDiff(solved_header, header).diff_keywords[0]
 
-            for keyword in diff:
-                # Skips unneeded header keywords and adds uncommon keywords
-                # and their value to images.
-                if keyword not in ('COMMENT', 'HISTORY'):
-                    header.set(keyword, solved_header[keyword])
+                for keyword in diff:
+                    # Skips unneeded header keywords and adds uncommon keywords
+                    # and their value to images.
+                    if keyword not in ('COMMENT', 'HISTORY'):
+                        header.set(keyword, solved_header[keyword])
 
-            tab_name = im_name.rstrip('.fits') + '.tab'
+                tab_name = im_name.rstrip('.fits') + '.tab'
 
-            im_name = target + '-' + fil + '-{}c.fits'.format(numbers[n+1])
+                im_name = target + '-' + fil + '-{}c.fits'.format(numbers[n+1])
 
-            out_path = os.path.join(dirtarget, fil, im_name)
-            hdu.writeto(out_path, overwrite=True)
+                out_path = os.path.join(dirtarget, fil, im_name)
+                hdu.writeto(out_path, overwrite=True)
 
-            print('End: {}'.format(im_name))
-            print(tab_name)
+                #print('End: {}'.format(im_name))
+                #print(tab_name)
 
-            subprocess.call(['imwcs', '-w', '-i', '100', '-c', tab_name,
-                             im_name])
+                subprocess.run(['imwcs', '-w', '-i', '100', '-c', tab_name,im_name], 
+                                stdout=logfile if silent else None,
+                                stderr= subprocess.STDOUT if silent else None)
 
-            im_name = target + '-' + fil + '-{}cw.fits'.format(numbers[n+1])
+                im_name = target + '-' + fil + '-{}cw.fits'.format(numbers[n+1])
 
-        plate_solved = glob.glob(os.path.join(dirtarget, fil, '*cw.fits'))
-        out_path = os.path.join(dirtarget, fil, 'WCS')
-        for image in plate_solved:
-            move(image, out_path)
+                # Update the progress bar
+                try:
+                    progress.suffix= f'{progress.index+1}/{progress.max} - ETA: {progress.eta_td} '
+                    progress.next()
+                except:
+                    #do nothing
 
-        scratch = glob.glob(os.path.join(dirtarget, fil, '*c.fits'))
-        for image in scratch:
-            os.remove(image)
+            plate_solved = glob.glob(os.path.join(dirtarget, fil, '*cw.fits'))
+            out_path = os.path.join(dirtarget, fil, 'WCS')
+            for image in plate_solved:
+                move(image, out_path)
 
-        scratch = glob.glob(os.path.join(dirtarget, fil, '*cw.tab'))
-        for image in scratch:
-            os.remove(image)
+            scratch = glob.glob(os.path.join(dirtarget, fil, '*c.fits'))
+            for image in scratch:
+                os.remove(image)
+
+            scratch = glob.glob(os.path.join(dirtarget, fil, '*cw.tab'))
+            for image in scratch:
+                os.remove(image)
+    # Close progress bar
+    progress.finish()
