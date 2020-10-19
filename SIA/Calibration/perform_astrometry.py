@@ -68,7 +68,7 @@ def perform_astrometry(target, dirtarget, filters, verbose=False, silent=True):
     try:
         progress = IncrementalBar('Processing...', max=(len(filters)*len(glob.glob(os.path.join(dirtarget, fil, '*.fits')))))
     except:
-        #do nothing
+        print('', end='') # Do nothing
     # Open log file
     with open(os.path.join(dirtarget,'astrometry.log'), 'w') as logfile:
         for fil in filters:
@@ -125,7 +125,7 @@ def perform_astrometry(target, dirtarget, filters, verbose=False, silent=True):
                     progress.suffix= f'{progress.index+1}/{progress.max} - ETA: {progress.eta_td} '
                     progress.next()
                 except:
-                    #do nothing
+                    print('', end='') # Do nothing
 
             plate_solved = glob.glob(os.path.join(dirtarget, fil, '*cw.fits'))
             out_path = os.path.join(dirtarget, fil, 'WCS')

@@ -141,7 +141,7 @@ def main():
             try:
                 playsound(os.path.join(assetsdir,'chime.mp3'))
             except:
-                #do nothing
+                print('', end='') # Do nothing
             # Determine if user has finished running STEPUP Image Analysis.
             cont_analysis = input('\nWould you still like to perform a ' +
                                   'function? (Y/N): ').lower().strip(' ')
@@ -160,7 +160,7 @@ def main():
         try:
             playsound(os.path.join(assetsdir,'chime.mp3'))
         except:
-            #do nothing
+            print('', end='') # Do nothing
 
 
 def which_analysis(interactive, answer, target, date, filters, coords,
