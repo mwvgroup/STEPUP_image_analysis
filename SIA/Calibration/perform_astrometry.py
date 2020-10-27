@@ -140,4 +140,7 @@ def perform_astrometry(target, dirtarget, filters, verbose=False, silent=True):
             for image in scratch:
                 os.remove(image)
     # Close progress bar
-    progress.finish()
+    try:
+        progress.finish()
+    except:
+        print('', end='') # Do nothing

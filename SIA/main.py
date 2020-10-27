@@ -6,7 +6,13 @@ import ISR
 sys.path.insert(0, 'Calibration')
 import perform_astrometry
 import perform_photometry
-from playsound import playsound
+
+# playsound must be installed with pip or the installation script
+# this is an optional feature
+try:
+    from playsound import playsound
+except:
+    print('\nCould not load playsound. Audio notifications will be unavailable')
 
 # tkinter does not come with python3 on linux.
 # It is included in Windows and MacOS versions of python though.

@@ -158,6 +158,14 @@ def get_filtered_calibimages(dirtarget):
     files = sorted(glob.glob(os.path.join(dirtarget, '*.fit')))
     calib_files = glob.glob(os.path.join(dirtarget + '/mcalib/', '*.fits'))
 
+    # Open an image file
+    image_file = fits.open(files[0])
+    # Get image dimensions from the header
+    x_dim = int(image_file[0].header['NAXIS1'])
+    y_dim = int(image_file[0].header['NAXIS2'])
+    # Close image file
+    image_file.close()
+
     # Retrieve master bias.
     for o_file in calib_files:
         hdulist = fits.open(o_file)
@@ -202,7 +210,7 @@ def get_filtered_calibimages(dirtarget):
         # Removes bias from and normalizes each flat.
         for flat in flat_array:
             flat -= mbias_array[0]
-            flat /= np.average(flat[700:1348, 450:3622])
+            flat /= np.average(flat[int(y_dim*0.2):int(y_dim*0.8), int(x_dim*0.2):int(x_dim*0.8)])
 
         mflat = np.average(flat_array, 0)
 
@@ -251,6 +259,9 @@ def instrument_signature_removal(dirtarget, target, image_filters):
                 calib_file = fits.open(o_path)
                 if calib_file[0].header['IMAGETYP'] == 'Bias Frame':
                     mbias.append(calib_file[0].data)
+                    # Get image dimensions from the header
+                    x_dim = int(calib_file[0].header['NAXIS1'])
+                    y_dim = int(calib_file[0].header['NAXIS2'])
                 if calib_file[0].header['IMAGETYP'] == 'Dark Frame':
                     mdark.append(calib_file[0].data)
                 if calib_file[0].header['IMAGETYP'] == 'Flat Field':
@@ -275,7 +286,7 @@ def instrument_signature_removal(dirtarget, target, image_filters):
         saturation = 65535
         saturation -= np.median(mbias_array)
         saturation -= np.median(mdark_array*exptime)
-        saturation /= np.average(mflat_array[700:1348, 450:3622])
+        saturation /= np.average(mflat_array[int(y_dim*0.2):int(y_dim*0.8), int(x_dim*0.2):int(x_dim*0.8)])
         saturation *= 0.97
         saturation = int(saturation)
 
