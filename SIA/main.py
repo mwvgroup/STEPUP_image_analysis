@@ -7,6 +7,20 @@ sys.path.insert(0, 'Calibration')
 import perform_astrometry
 import perform_photometry
 
+# playsound must be installed with pip or the installation script
+# this is an optional feature
+try:
+    from playsound import playsound
+except:
+    print('\nCould not load playsound. Audio notifications will be unavailable')
+
+# tkinter does not come with python3 on linux.
+# It is included in Windows and MacOS versions of python though.
+try:
+    from tkinter import filedialog, Tk
+except:
+    print('\nCould not load tkinter. GUI features will be unavailable.')
+
 
 def main():
     """Execute specified functions of STEPUP Image Analysis.
@@ -33,16 +47,22 @@ def main():
     set_rad = False
     functions = None
 
+    assetsdir = os.path.join(os.getcwd(), 'bonus_feature_assets')
+
     # Determine directory containing input-file.txt, target data, and some or
     # all calibration data as well as if user would like specify functions at
     # command line.
-    dirtarget = input('\nInput target directory: ')
+    dirtarget = input('\nInput target directory (or "GUI" for graphical option): ')
+    if dirtarget.lower() == 'gui':
+        dirtarget = gui_input_target_dir()
     while not os.path.exists((os.path.join(dirtarget, 'input-file.txt'))):
         dirtarget = input('\nThis directory does not contain an input file. ' +
                           ' Check to ensure that the file exists and is ' +
                           'saved in your data directory.\n\nInput target ' +
-                          'directory or enter "Q" to quit: ')
-        if dirtarget.lower() == 'q':
+                          'directory (or "GUI" for graphical option) or enter "Q" to quit: ')
+        if dirtarget.lower() == 'gui':
+            dirtarget = gui_input_target_dir()
+        elif dirtarget.lower() == 'q':
             return None
     interactive = input('\nWould you like to run SIA interatively? (Y/N): ') \
         .lower().strip(' ')
@@ -123,6 +143,11 @@ def main():
                            dirtarget, dirdark, comp_mags, comp_ra, comp_dec,
                            clabel, cra, cdec, set_rad,
                            aper_rad, ann_in_rad, ann_out_rad)
+            # Play sound to alert user that a function has completed.
+            try:
+                playsound(os.path.join(assetsdir,'chime.mp3'))
+            except:
+                print('', end='') # Do nothing
             # Determine if user has finished running STEPUP Image Analysis.
             cont_analysis = input('\nWould you still like to perform a ' +
                                   'function? (Y/N): ').lower().strip(' ')
@@ -137,6 +162,11 @@ def main():
                            dirtarget, dirdark, comp_mags, comp_ra, comp_dec,
                            clabel, cra, cdec, set_rad, aper_rad, ann_in_rad,
                            ann_out_rad)
+        # Play sound to alert user that all functions have completed.
+        try:
+            playsound(os.path.join(assetsdir,'chime.mp3'))
+        except:
+            print('', end='') # Do nothing
 
 
 def which_analysis(interactive, answer, target, date, filters, coords,
@@ -220,7 +250,7 @@ def which_analysis(interactive, answer, target, date, filters, coords,
             print('\nAstrometry in progress...')
             # Calculates WCS information for dataset.
             perform_astrometry.perform_astrometry(target, dirtarget, filters,
-                                                  verbose=False)
+                                                  verbose=False, silent=True)
             print('\nAstrometry completed.')
         else:
             return None
@@ -236,5 +266,15 @@ def which_analysis(interactive, answer, target, date, filters, coords,
                                               ann_out_rad, set_rad)
         print('\nPhotometry completed.')
 
+def gui_input_target_dir():
+    try:
+        root = Tk()
+        root.withdraw()
+        target = filedialog.askdirectory(title = 'Select the Target Directory')
+        root.destroy()
+        return target
+    except:
+        print("Issue with GUI mode. Please use command line entry.")
+        return ''
 
 main()

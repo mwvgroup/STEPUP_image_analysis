@@ -1,1 +1,1 @@
-These images are the darks taken in January of 2016.
+These images are the darks taken 2020-10-18.

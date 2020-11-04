@@ -203,13 +203,17 @@ def get_counts(dirtarget, ra, dec, fil, aper_rad, ann_in_rad, ann_out_rad,
             # Define source region as a 20x20 square centered at (px,py)
             star = data[(py - 19):(py + 21), (px - 19):(px + 21)]
 
+            # Get image dimensions from the header
+            x_dim = int(header['NAXIS1'])
+            y_dim = int(header['NAXIS2'])
+
             # Check that region lies entirely within image.
-            if ((py - 19) < 0) or ((py + 21) > 2084):
+            if ((py - 19) < 0) or ((py + 21) > y_dim):
                 print('\n{} star not entirely in the image for'.format(name) +
                       ' image number {}'.format(im_n))
                 cent_qual[i][j] = 1
                 continue
-            if ((px - 19) < 0) or ((px + 21) > 3072):
+            if ((px - 19) < 0) or ((px + 21) > x_dim):
                 print('\n{} star not entirely in the image for'.format(name) +
                       ' image number {}'.format(im_n))
                 cent_qual[i][j] = 1
