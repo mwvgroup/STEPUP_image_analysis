@@ -3,7 +3,7 @@
 <img src="https://github.com/helenarichie/helenarichie/blob/master/images/STEPUP_logo.png" alt="logo" width="200"/>
 
 
-STEPUP Image Analysis (SIA) is a pipeline written for easy photometric analysis to extact light curves from astronomical image data using differential aperture photometry. SIA runs in three main (independent) steps: instrument signature removal (**ISR**), generating plate solutions (**ASTROM**), and differential aperture photometry (**PHOT**). Please feel free to contact the author, [Helena Richie](https://helenarichie.github.io/helenarichie/), with any questions!
+STEPUP Image Analysis (SIA) is a pipeline written for easy photometric analysis to extact light curves from astronomical image data using differential aperture photometry. SIA runs in three main (independent) steps: instrument signature removal (**ISR**), astrometric calibration (**ASTROM**), and differential aperture photometry (**PHOT**). Please feel free to contact the author, [Helena Richie](https://helenarichie.github.io/), with any questions!
 
 This respository contains the SIA pipeline and a user manual written explicity for use by University of Pittsburgh students that are either members of the STEPUP team or students in ASTRON 1263. The guide can also be applied for general use, omitting location-specific steps. A manual for general use will be available soon.
 
