@@ -147,7 +147,7 @@ def main():
             try:
                 playsound(os.path.join(assetsdir,'chime.mp3'))
             except:
-                print('', end='') # Do nothing
+                pass
             # Determine if user has finished running STEPUP Image Analysis.
             cont_analysis = input('\nWould you still like to perform a ' +
                                   'function? (Y/N): ').lower().strip(' ')
@@ -166,7 +166,7 @@ def main():
         try:
             playsound(os.path.join(assetsdir,'chime.mp3'))
         except:
-            print('', end='') # Do nothing
+            pass
 
 
 def which_analysis(interactive, answer, target, date, filters, coords,
@@ -250,7 +250,7 @@ def which_analysis(interactive, answer, target, date, filters, coords,
             print('\nAstrometry in progress...')
             # Calculates WCS information for dataset.
             perform_astrometry.perform_astrometry(target, dirtarget, filters,
-                                                  verbose=False, silent=True)
+                                                  verbose=False, silent=False)
             print('\nAstrometry completed.')
         else:
             return None
