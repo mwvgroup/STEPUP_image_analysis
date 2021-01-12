@@ -19,7 +19,7 @@ fi
 
 
 # Pip install the necessary python python3 packages
-pip3 install matplotlib numpy astropy photutils scipy playsound progress
+pip3 install matplotlib numpy astropy photutils scipy
 
 
 # Install wcstools 3.9.6 if not already installed
