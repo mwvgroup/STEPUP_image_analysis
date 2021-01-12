@@ -5,11 +5,6 @@ from shutil import move
 from shutil import copyfile
 from astropy.io import fits
 
-# Optional feature imports
-try:
-    from progress.bar import IncrementalBar
-except:
-    print('Could not load progress.bar. Progress bar feature will be unavailable.')
 
 
 def perform_astrometry(target, dirtarget, filters, verbose=False, silent=True):
@@ -64,11 +59,6 @@ def perform_astrometry(target, dirtarget, filters, verbose=False, silent=True):
         if len(i) == 3:
             numbers.append(i)
 
-    # Start progress bar
-    try:
-        progress = IncrementalBar('Processing...', max=(len(filters)*len(glob.glob(os.path.join(dirtarget, fil, '*.fits')))))
-    except:
-        print('', end='') # Do nothing
     # Open log file
     with open(os.path.join(dirtarget,'astrometry.log'), 'w') as logfile:
         for fil in filters:
@@ -120,13 +110,6 @@ def perform_astrometry(target, dirtarget, filters, verbose=False, silent=True):
 
                 im_name = target + '-' + fil + '-{}cw.fits'.format(numbers[n+1])
 
-                # Update the progress bar
-                try:
-                    progress.suffix= f'{progress.index+1}/{progress.max} - ETA: {progress.eta_td} '
-                    progress.next()
-                except:
-                    print('', end='') # Do nothing
-
             plate_solved = glob.glob(os.path.join(dirtarget, fil, '*cw.fits'))
             out_path = os.path.join(dirtarget, fil, 'WCS')
             for image in plate_solved:
@@ -139,8 +122,3 @@ def perform_astrometry(target, dirtarget, filters, verbose=False, silent=True):
             scratch = glob.glob(os.path.join(dirtarget, fil, '*cw.tab'))
             for image in scratch:
                 os.remove(image)
-    # Close progress bar
-    try:
-        progress.finish()
-    except:
-        print('', end='') # Do nothing
